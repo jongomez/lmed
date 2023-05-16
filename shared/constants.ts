@@ -1,0 +1,1 @@
+export const WEBSOCKET_SERVER_PORT = 4000;
