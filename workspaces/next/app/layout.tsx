@@ -1,8 +1,7 @@
+import { Providers } from "@/components/Providers.client";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import "xterm/css/xterm.css";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "llmcode",
@@ -16,7 +15,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

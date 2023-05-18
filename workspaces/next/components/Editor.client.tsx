@@ -1,3 +1,5 @@
+"use client";
+
 import React, { ChangeEvent, useState } from "react";
 import { diff as DiffEditor } from "react-ace";
 
