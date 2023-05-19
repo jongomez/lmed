@@ -1,6 +1,6 @@
 "use client";
 
-import type { MainState } from "@/types/Main";
+import type { EditorTab, ExplorerNode, MainState } from "@/types/Main";
 import { Box, Tab, Tabs } from "@mui/material";
 import { useEffect, useState } from "react";
 import "react-tabs/style/react-tabs.css";
@@ -14,24 +14,51 @@ import { TabPanel, tabProps } from "./TabHelpers.client";
 import { MyTerminal } from "./Terminal.client";
 
 const getInitialState = (): MainState => {
+  const initialFile: ExplorerNode = {
+    id: 1,
+    name: "New File",
+    type: "file",
+    selected: true,
+    expanded: false,
+  };
+
+  const initialTab: EditorTab = {
+    file: initialFile,
+    selected: true,
+    name: "New File",
+    value: [""],
+    mode: "text",
+    hasDiff: false,
+    markers: {},
+  };
+
   return {
     socket: undefined,
     tabIndex: 0,
     explorer: {
       explorerTreeRoot: {
+        id: 0,
         name: "root",
         type: "root",
         selected: false,
-        expanded: true,
-        children: [],
+        expanded: false,
+        // Add an initial child to the root node.
+        children: [initialFile],
       },
-      selectedNode: null,
+      selectedNode: initialFile,
+      idCounter: 2,
+    },
+    editor: {
+      currentTab: initialTab,
+      allTabs: [initialTab],
+      fontSize: 14,
+      diffEditorRef: null,
     },
   };
 };
 
 export const Main = () => {
-  const [mainState, setMainState] = useState<MainState>(initialMainState);
+  const [mainState, setMainState] = useState<MainState>(getInitialState());
 
   useEffect(() => {
     const socket = io(`http://localhost:${WEBSOCKET_SERVER_PORT}`);

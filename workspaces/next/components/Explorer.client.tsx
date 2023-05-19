@@ -1,16 +1,24 @@
-import { ExplorerNode, SetMainState } from "@/types/Main";
-import { Button, List } from "@mui/material";
-import { useState } from "react";
+import { ExplorerNode, MainState, SetMainState } from "@/types/Main";
+import { updateExplorerTree } from "@/utils/explorerUtils";
+import {
+  ExpandLess,
+  ExpandMore,
+  Folder,
+  InsertDriveFile,
+} from "@mui/icons-material";
+import {
+  Button,
+  Collapse,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+} from "@mui/material";
 import "react-folder-tree/dist/style.css";
 
 type ExplorerProps = {
   explorerRootNode: ExplorerNode;
   setMainState: SetMainState;
-};
-
-type ExplorerState = {
-  files: ExplorerNode;
-  currentPath: string;
 };
 
 type ExplorerTreeViewerProps = {
@@ -22,64 +30,82 @@ const ExplorerTreeViewer = ({
   node,
   setMainState,
 }: ExplorerTreeViewerProps) => {
-  const [open, setOpen] = useState(false);
+  const handleFileClick = () => {
+    if (node.type !== "file") {
+      throw new Error("handleFileClick called on non-file node");
+    }
 
-  const handleClick = () => {
-    setOpen(!open);
+    setMainState((prevState): MainState => {
+      // updating state for file click
+      const newNode = { ...node, selected: true };
+
+      return {
+        ...prevState,
+        explorer: { ...prevState.explorer, selectedNode: node },
+      };
+    });
   };
 
-  return (
-    <div key={index}>
-      <ListItemButton onClick={handleClick}>
+  const handleFolderClick = () => {
+    if (node.type !== "folder") {
+      throw new Error("handleFolderClick called on non-folder node");
+    }
+
+    setMainState((prevState): MainState => {
+      // updating state for folder click
+      const newNode = { ...node, expanded: !node.expanded };
+
+      return {
+        ...prevState,
+        explorer: {
+          ...prevState.explorer,
+          explorerTreeRoot: updateExplorerTree(
+            prevState.explorer.explorerTreeRoot,
+            newNode
+          ),
+        },
+      };
+    });
+  };
+
+  if (node.type === "folder") {
+    return (
+      <>
+        <ListItemButton onClick={handleFolderClick}>
+          <ListItemIcon>
+            <Folder />
+          </ListItemIcon>
+          <ListItemText primary={node.name} />
+          {node.expanded ? <ExpandLess /> : <ExpandMore />}
+        </ListItemButton>
+        <Collapse in={node.expanded} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {node.children?.map((childNode, index) => (
+              <ExplorerTreeViewer
+                node={childNode}
+                setMainState={setMainState}
+                key={index}
+              />
+            ))}
+          </List>
+        </Collapse>
+      </>
+    );
+  } else if (node.type === "file") {
+    return (
+      <ListItemButton onClick={handleFileClick}>
         <ListItemIcon>
-          <FolderIcon />
+          <InsertDriveFile />
         </ListItemIcon>
         <ListItemText primary={node.name} />
-        {open ? <ExpandLess /> : <ExpandMore />}
       </ListItemButton>
-      <Collapse in={open} timeout="auto" unmountOnExit>
-        <List component="div" disablePadding>
-          {node.children?.map((childNode) => renderNode(childNode))}
-        </List>
-      </Collapse>
-    </div>
-  );
+    );
+  } else {
+    return null;
+  }
 };
 
 export const Explorer = ({ explorerRootNode, setMainState }: ExplorerProps) => {
-  const handleOpenFileClick = async () => {
-    const [fileHandle] = await window.showOpenFilePicker();
-    const file = await fileHandle.getFile();
-
-    setFileExplorerState((prevState) => ({
-      ...prevState,
-      files: [...prevState.files, { name: file.name }],
-    }));
-  };
-
-  const handleOpenFolderClick = async () => {
-    const dirHandle = await window.showDirectoryPicker();
-    const children: NodeData[] = [];
-
-    for await (const entry of dirHandle.values()) {
-      children.push({ name: entry.name });
-    }
-
-    setFileExplorerState((prevState) => ({
-      ...prevState,
-      files: [...prevState.files, { name: dirHandle.name, children }],
-    }));
-  };
-
-  const onTreeStateChange = (state: NodeData, event: unknown) => {
-    console.log(state, event);
-  };
-
-  const handleNameClick = ({ nodeData }: { nodeData: NodeData }) => {
-    console.log("node data clicked:");
-    console.log(nodeData);
-  };
-
   return (
     <div>
       <Button variant="contained" onClick={handleOpenFileClick}>
