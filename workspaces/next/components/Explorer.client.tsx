@@ -1,5 +1,10 @@
-import { ExplorerNode, MainState, SetMainState } from "@/types/Main";
-import { updateExplorerTree } from "@/utils/explorerUtils";
+import type { ExplorerNode, ExplorerState, SetMainState } from "@/types/Main";
+import {
+  handleDirectoryClick,
+  handleFileClick,
+  openDirectory,
+  openFile,
+} from "@/utils/explorerUtils";
 import {
   ExpandLess,
   ExpandMore,
@@ -14,10 +19,9 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
-import "react-folder-tree/dist/style.css";
 
 type ExplorerProps = {
-  explorerRootNode: ExplorerNode;
+  explorerState: ExplorerState;
   setMainState: SetMainState;
 };
 
@@ -30,48 +34,12 @@ const ExplorerTreeViewer = ({
   node,
   setMainState,
 }: ExplorerTreeViewerProps) => {
-  const handleFileClick = () => {
-    if (node.type !== "file") {
-      throw new Error("handleFileClick called on non-file node");
-    }
-
-    setMainState((prevState): MainState => {
-      // updating state for file click
-      const newNode = { ...node, selected: true };
-
-      return {
-        ...prevState,
-        explorer: { ...prevState.explorer, selectedNode: node },
-      };
-    });
-  };
-
-  const handleFolderClick = () => {
-    if (node.type !== "folder") {
-      throw new Error("handleFolderClick called on non-folder node");
-    }
-
-    setMainState((prevState): MainState => {
-      // updating state for folder click
-      const newNode = { ...node, expanded: !node.expanded };
-
-      return {
-        ...prevState,
-        explorer: {
-          ...prevState.explorer,
-          explorerTreeRoot: updateExplorerTree(
-            prevState.explorer.explorerTreeRoot,
-            newNode
-          ),
-        },
-      };
-    });
-  };
-
-  if (node.type === "folder") {
+  if (node.type === "directory") {
     return (
       <>
-        <ListItemButton onClick={handleFolderClick}>
+        <ListItemButton
+          onClick={() => handleDirectoryClick(node, setMainState)}
+        >
           <ListItemIcon>
             <Folder />
           </ListItemIcon>
@@ -93,7 +61,7 @@ const ExplorerTreeViewer = ({
     );
   } else if (node.type === "file") {
     return (
-      <ListItemButton onClick={handleFileClick}>
+      <ListItemButton onClick={() => handleFileClick(node, setMainState)}>
         <ListItemIcon>
           <InsertDriveFile />
         </ListItemIcon>
@@ -101,27 +69,34 @@ const ExplorerTreeViewer = ({
       </ListItemButton>
     );
   } else {
+    // Root node (hopefully).
     return null;
   }
 };
 
-export const Explorer = ({ explorerRootNode, setMainState }: ExplorerProps) => {
+export const Explorer = ({ explorerState, setMainState }: ExplorerProps) => {
   return (
     <div>
-      <Button variant="contained" onClick={handleOpenFileClick}>
+      <Button
+        variant="contained"
+        onClick={() => openFile(setMainState, explorerState)}
+      >
         Open File
       </Button>
-      <Button variant="contained" onClick={handleOpenFolderClick}>
-        Open Folder
+      <Button
+        variant="contained"
+        onClick={() => openDirectory(setMainState, explorerState)}
+      >
+        Open Directory
       </Button>
 
-      {/* File and folder tree */}
+      {/* File and directory tree */}
       <List
         sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}
         component="nav"
       >
         <ExplorerTreeViewer
-          node={explorerRootNode}
+          node={explorerState.explorerTreeRoot}
           setMainState={setMainState}
         />
       </List>

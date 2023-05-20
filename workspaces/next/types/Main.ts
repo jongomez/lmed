@@ -1,12 +1,6 @@
 import type { Dispatch, Ref, SetStateAction } from "react";
 import type { Socket } from "socket.io-client";
 
-export type ExplorerNodeBase = {
-  id: number;
-  name: string;
-  type: "file" | "folder" | "root";
-};
-
 export type RootNode = {
   id: 0;
   name: "root";
@@ -17,18 +11,25 @@ export type RootNode = {
 
 export type FileNode = ExplorerNodeBase & {
   type: "file";
-  fileHandle: FileSystemFileHandle;
+  fileHandle: FileSystemFileHandle | null;
   selected: boolean;
 };
 
-export type FolderNode = ExplorerNodeBase & {
-  type: "folder";
-  folderHandle: FileSystemDirectoryHandle;
+export type DirectoryNode = ExplorerNodeBase & {
+  type: "directory";
+  directoryHandle: FileSystemDirectoryHandle;
   children: RootNode["children"];
   expanded: boolean;
 };
 
-export type ExplorerNode = RootNode | FileNode | FolderNode;
+export type ExplorerNodeBase = {
+  id: number;
+  name: string;
+  type: "file" | "directory" | "root";
+  parentNode: RootNode | DirectoryNode;
+};
+
+export type ExplorerNode = RootNode | FileNode | DirectoryNode;
 
 export type ExplorerState = {
   explorerTreeRoot: RootNode;
@@ -37,7 +38,7 @@ export type ExplorerState = {
 };
 
 export type EditorTab = {
-  file: FileNode;
+  fileNode: FileNode;
   selected: boolean;
   name: string;
   // For the diff editor there can be 2 strings, 1 for each side of the diff editor. Hence the str array.

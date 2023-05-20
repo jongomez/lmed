@@ -1,13 +1,12 @@
 import type {
-  ExplorerNode,
+  DirectoryNode,
   ExplorerState,
   FileNode,
-  FolderNode,
   MainState,
   RootNode,
   SetMainState,
 } from "@/types/Main";
-import { FileSystemDirectoryHandleAlias } from "@/types/global";
+import { createNewTab } from "./editorUtils";
 
 export const openFile = async (
   setMainState: SetMainState,
@@ -16,39 +15,46 @@ export const openFile = async (
   const [fileHandle] = await window.showOpenFilePicker();
   const file = await fileHandle.getFile();
 
+  // XXX: Check if file is already open. If yes, show a message.
+
   const newNode: FileNode = {
     id: explorer.explorerTreeRoot.treeLength + 1, // use treeLength to determine id
     name: file.name,
     type: "file",
     selected: true,
+    parentNode: explorer.explorerTreeRoot,
     fileHandle,
   };
 
   // File will be inserted as a child of the root.
-  setMainState((prevState) => ({
-    ...prevState,
-    explorer: {
-      ...prevState.explorer,
-      explorerTreeRoot: {
-        ...prevState.explorer.explorerTreeRoot,
-        children: [
-          ...(prevState.explorer.explorerTreeRoot.children || []),
-          newNode,
-        ],
+  setMainState(
+    (prevState): MainState => ({
+      ...prevState,
+      explorer: {
+        ...prevState.explorer,
+        explorerTreeRoot: {
+          ...prevState.explorer.explorerTreeRoot,
+          children: [
+            ...(prevState.explorer.explorerTreeRoot.children || []),
+            newNode,
+          ],
+        },
+        selectedNode: newNode,
       },
-      selectedNode: newNode,
-    },
-  }));
+    })
+  );
 };
 
-// Opens a folder from a user's local file system. This function does the following:
-// 1. Opens a directory picker;
-// 2. Creates an explorer tree from the selected directory;
-export const openFolder = async (
+// Opens a directory from a user's local file system. This function does the following:
+// 1. Opens a directory picker
+// 2. Creates an explorer tree from the selected directory
+export const openDirectory = async (
   setMainState: SetMainState,
   explorerState: ExplorerState
 ) => {
   const dirHandle = await window.showDirectoryPicker();
+
+  // XXX: Check if folder is already open. If yes, show a message.
 
   const explorerTreeRoot = await createExplorerTree(
     explorerState.explorerTreeRoot,
@@ -56,119 +62,162 @@ export const openFolder = async (
     dirHandle
   );
 
-  setMainState((prevState) => ({
-    ...prevState,
-    explorer: {
-      ...prevState.explorer,
-      explorerTreeRoot,
-    },
-  }));
+  setMainState(
+    (prevState): MainState => ({
+      ...prevState,
+      explorer: {
+        ...prevState.explorer,
+        explorerTreeRoot,
+      },
+    })
+  );
 };
 
-const createFolderNode = () => {};
+const createFileNode = (
+  id: number,
+  fileHandle: FileSystemFileHandle,
+  parentNode: RootNode | DirectoryNode
+): FileNode => {
+  return {
+    id,
+    fileHandle,
+    parentNode,
+    name: fileHandle.name,
+    type: "file",
+    selected: false,
+  };
+};
 
-const createFileNode = (parentNode: RootNode | FolderNode) => {};
+const createDirectoryNode = (
+  id: number,
+  directoryHandle: FileSystemDirectoryHandle,
+  parentNode: RootNode | DirectoryNode
+): DirectoryNode => {
+  return {
+    id,
+    directoryHandle,
+    parentNode,
+    name: directoryHandle.name,
+    type: "directory",
+    expanded: false,
+    children: [],
+  };
+};
 
 const createExplorerTree = async (
   rootNode: RootNode,
-  parentNode: RootNode | FolderNode,
-  dirHandle: FileSystemDirectoryHandleAlias
-): Promise<ExplorerNode> => {
+  parentNode: RootNode | DirectoryNode,
+  dirHandle: FileSystemDirectoryHandle
+): Promise<RootNode> => {
+  // TODO: Handle case where directory is empty.
+
   for await (const entry of dirHandle.values()) {
-    const newNode: ExplorerNode = {
-      id: rootNode.treeLength + 1,
-      name: entry.name,
-      type: entry.kind,
-      selected: false,
-      expanded: false,
-      children: [],
-    };
+    // FIXME: remove this mutation of the rootNode.
+    rootNode.treeLength += 1;
 
     if (entry.kind === "directory") {
-      (newNode as FolderNode).children.push(
-        await createExplorerTree(rootNode, newNode as FolderNode, entry)
+      const directoryNode = createDirectoryNode(
+        rootNode.treeLength,
+        entry,
+        parentNode
       );
-    } else {
-      newNode.fileHandle = entry;
-    }
+      parentNode.children.push(directoryNode);
 
-    if (parentNode.children) {
-      parentNode.children.push(newNode);
+      // Directory nodes may have children. Recursively add them to the tree.
+      await createExplorerTree(rootNode, directoryNode, entry);
     } else {
-      parentNode.children = [newNode];
+      const fileNode = createFileNode(rootNode.treeLength, entry, parentNode);
+      parentNode.children.push(fileNode);
     }
   }
 
-  return parentNode;
+  return rootNode;
 };
 
 /*
 
-updateExplorerTree is a recursive function that traverses the explorer tree and updates
-the passed in node on the tree. A new root is returned if any changes were made.
+If a node in the tree changes and needs update, we need to:
+1. replace the old node object with the new updated node object
+2. the updated node's parent children array (with the newly updated node)
 
 */
-export const updateExplorerTree = (
-  parentNode: RootNode | FolderNode,
-  newNode: FileNode | FolderNode
-): RootNode => {
-  // Create a new array for children
-  const newChildren = parentNode.children.map((child) => {
-    return updateExplorerTree(child, newNode);
-  });
+export const updateExplorerTreeNode = (
+  oldNode: FileNode | DirectoryNode,
+  newNode: FileNode | DirectoryNode
+): void => {
+  // Find the index of the oldNode in the parentNode's children array
+  const index = oldNode.parentNode.children.findIndex(
+    (child) => child.id === oldNode.id
+  );
 
-  if (newChildren !== root.children) {
-    // If any of the children changed, we need to return a new object for this node
-    return { ...root, children: newChildren };
+  if (index !== -1) {
+    // Replace the old node with the new one
+    oldNode.parentNode.children[index] = newNode;
+  } else {
+    throw new Error("Node not found in parent's children array");
   }
-
-  // No changes, so return the original node
-  return root;
 };
 
-// Node represents the clicked file node
 export const handleFileClick = async (
-  node: ExplorerNode,
-  setMainState: SetMainState,
-  explorer: ExplorerState
+  fileNode: FileNode,
+  setMainState: SetMainState
 ) => {
-  const fileHandle = node.fileHandle;
-
-  if (fileHandle?.kind === "file") {
-    const file = await fileHandle.getFile();
-    const contents = await file.text();
-
-    // Update state to mark the clicked node as selected
-    setMainState(
-      (prevState): MainState => ({
-        ...prevState,
-        explorer: {
-          ...prevState.explorer,
-          explorerTreeRoot: markAsSelected(
-            prevState.explorer.explorerTreeRoot,
-            node
-          ),
-          selectedNode: node,
-        },
-      })
-    );
+  if (!fileNode.fileHandle) {
+    throw new Error(`File handle is null. FileNode name: ${fileNode.name}`);
   }
+
+  const file = await fileNode.fileHandle.getFile();
+  const contents = await file.text();
+
+  // Update the fileNode.
+  fileNode.selected = true;
+
+  // Update state in a function to access prevState
+  setMainState((prevState): MainState => {
+    // Check if tab is already open
+    let currentTab = prevState.editor.allTabs.find(
+      (tab) => tab.fileNode.id === fileNode.id
+    );
+    let allTabs = prevState.editor.allTabs;
+
+    if (!currentTab) {
+      // Switch to existing tab
+      currentTab = createNewTab(fileNode, file, contents);
+      allTabs = [...prevState.editor.allTabs, currentTab];
+    }
+
+    return {
+      ...prevState,
+      explorer: {
+        ...prevState.explorer,
+        selectedNode: fileNode,
+      },
+      editor: {
+        ...prevState.editor,
+        currentTab,
+        allTabs,
+      },
+    };
+  });
 };
 
-// Recursively traverse explorerTreeRoot and mark the node as selected
-const markAsSelected = (
-  parentNode: RootNode | FolderNode,
-  node: FileNode
-): ExplorerNode => {
-  if (tree === node) {
-    return { ...tree, selected: true };
-  }
+export const handleDirectoryClick = async (
+  directoryNode: DirectoryNode,
+  setMainState: SetMainState
+) => {
+  // Toggle expanded state.
+  directoryNode.expanded = !directoryNode.expanded;
 
-  if (tree.children) {
-    tree.children = tree.children.map((childNode) =>
-      markAsSelected(childNode, node)
-    );
-  }
+  // Update the tree.
+  // updateExplorerTreeNode(directoryNode, directoryNode);
 
-  return tree;
+  setMainState(
+    (prevState): MainState => ({
+      ...prevState,
+      explorer: {
+        ...prevState.explorer,
+        selectedNode: directoryNode,
+      },
+    })
+  );
 };

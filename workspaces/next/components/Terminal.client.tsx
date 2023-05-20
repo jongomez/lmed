@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Socket, io } from "socket.io-client";
-import { WEBSOCKET_SERVER_PORT } from "../../../shared/constants";
-import { MainState } from "./Main.client";
+import { Socket } from "socket.io-client";
 
 let initTerminalDone = false;
 

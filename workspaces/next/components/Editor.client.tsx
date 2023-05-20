@@ -4,6 +4,7 @@ import { ChangeEvent } from "react";
 import { diff as DiffEditor, IDiffEditorProps } from "react-ace";
 
 import { EditorState, SetMainState } from "@/types/Main";
+import { mapThemeToImport } from "@/utils/editorUtils";
 import { Box } from "@mui/material";
 import "ace-builds/src-min-noconflict/ext-language_tools";
 import "ace-builds/src-min-noconflict/ext-searchbox";
@@ -19,7 +20,9 @@ const defaultValue = [
 `,
 ];
 
-const languages = [
+// TODO: There are many many more languages / themes / keyboardHandlers available.
+
+export const languages = [
   "javascript",
   "java",
   "python",
@@ -36,12 +39,34 @@ const languages = [
   "elixir",
   "typescript",
   "css",
-];
+] as const;
+export type Language = (typeof languages)[number];
+
+export const themes = [
+  "monokai",
+  "github",
+  "tomorrow",
+  "kuroir",
+  "twilight",
+  "xcode",
+  "textmate",
+  "solarized dark",
+  "solarized light",
+  "terminal",
+] as const;
+export type EditorTheme = (typeof themes)[number];
+
+export const keyboardHandlers = ["emacs", "vim", "vscode", "default"] as const;
+export type KeyboardHandler = (typeof keyboardHandlers)[number];
 
 languages.forEach((lang) => {
   require(`ace-builds/src-noconflict/mode-${lang}`);
   require(`ace-builds/src-noconflict/snippets/${lang}`);
 });
+
+themes.forEach((theme) =>
+  require(`ace-builds/src-noconflict/theme-${mapThemeToImport(theme)}`)
+);
 
 type EditorProps = {
   editorState: EditorState;

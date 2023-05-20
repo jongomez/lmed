@@ -1,9 +1,8 @@
 "use client";
 
-import type { EditorTab, ExplorerNode, MainState } from "@/types/Main";
+import type { EditorTab, FileNode, MainState, RootNode } from "@/types/Main";
 import { Box, Tab, Tabs } from "@mui/material";
 import { useEffect, useState } from "react";
-import "react-tabs/style/react-tabs.css";
 import { io } from "socket.io-client";
 import { WEBSOCKET_SERVER_PORT } from "../../../shared/constants";
 import { Benchmarks } from "./Benchmarks.client";
@@ -14,19 +13,30 @@ import { TabPanel, tabProps } from "./TabHelpers.client";
 import { MyTerminal } from "./Terminal.client";
 
 const getInitialState = (): MainState => {
-  const initialFile: ExplorerNode = {
+  const explorerTreeRoot: RootNode = {
+    id: 0,
+    treeLength: 1,
+    name: "root",
+    type: "root",
+    children: [],
+  };
+
+  const initialFile: FileNode = {
     id: 1,
     name: "New File",
     type: "file",
     selected: true,
-    expanded: false,
+    parentNode: explorerTreeRoot,
+    fileHandle: null,
   };
 
+  explorerTreeRoot.children.push(initialFile);
+
   const initialTab: EditorTab = {
-    file: initialFile,
+    fileNode: initialFile,
     selected: true,
     name: "New File",
-    value: [""],
+    value: ["", ""],
     mode: "text",
     hasDiff: false,
     markers: {},
@@ -36,15 +46,7 @@ const getInitialState = (): MainState => {
     socket: undefined,
     tabIndex: 0,
     explorer: {
-      explorerTreeRoot: {
-        id: 0,
-        name: "root",
-        type: "root",
-        selected: false,
-        expanded: false,
-        // Add an initial child to the root node.
-        children: [initialFile],
-      },
+      explorerTreeRoot,
       selectedNode: initialFile,
       idCounter: 2,
     },
@@ -71,7 +73,10 @@ export const Main = () => {
 
   return (
     <>
-      <Explorer />
+      <Explorer
+        explorerState={mainState.explorer}
+        setMainState={setMainState}
+      />
 
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
         <Tabs
@@ -88,7 +93,7 @@ export const Main = () => {
       </Box>
 
       <TabPanel value={mainState.tabIndex} index={0}>
-        <Editor />
+        <Editor editorState={mainState.editor} setMainState={setMainState} />
       </TabPanel>
       <TabPanel value={mainState.tabIndex} index={1}>
         {!!mainState.socket && <MyTerminal socket={mainState.socket} />}
