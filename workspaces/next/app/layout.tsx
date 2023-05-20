@@ -1,6 +1,4 @@
 import { Providers } from "@/components/Providers.client";
-import "./globals.css";
-import { Inter } from "next/font/google";
 import "xterm/css/xterm.css";
 
 export const metadata = {

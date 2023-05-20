@@ -5,12 +5,12 @@ import {
   openDirectory,
   openFile,
 } from "@/utils/explorerUtils";
-import {
-  ExpandLess,
-  ExpandMore,
-  Folder,
-  InsertDriveFile,
-} from "@mui/icons-material";
+
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import ExpandMore from "@mui/icons-material/ExpandMore";
+import Folder from "@mui/icons-material/Folder";
+import InsertDriveFile from "@mui/icons-material/InsertDriveFile";
+
 import {
   Button,
   Collapse,

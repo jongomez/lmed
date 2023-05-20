@@ -37,7 +37,7 @@ const getInitialState = (): MainState => {
     selected: true,
     name: "New File",
     value: ["", ""],
-    mode: "text",
+    mode: "markdown",
     hasDiff: false,
     markers: {},
   };
@@ -86,9 +86,10 @@ export const Main = () => {
           }}
           aria-label="main tabs"
         >
-          <Tab label="Item One" {...tabProps(0)} />
-          <Tab label="Item Two" {...tabProps(1)} />
-          <Tab label="Item Three" {...tabProps(2)} />
+          <Tab label="Editor" {...tabProps(0)} />
+          <Tab label="Terminal" {...tabProps(1)} />
+          <Tab label="Settings" {...tabProps(2)} />
+          <Tab label="Benchmarks" {...tabProps(2)} />
         </Tabs>
       </Box>
 

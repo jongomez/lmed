@@ -1,17 +1,14 @@
 "use client";
 
-import { ChangeEvent } from "react";
-import { diff as DiffEditor, IDiffEditorProps } from "react-ace";
+import { ChangeEvent, useEffect } from "react";
+import type { IDiffEditorProps, ace, diff } from "react-ace";
 
 import { EditorState, SetMainState } from "@/types/Main";
-import { mapThemeToImport } from "@/utils/editorUtils";
 import { Box } from "@mui/material";
-import "ace-builds/src-min-noconflict/ext-language_tools";
-import "ace-builds/src-min-noconflict/ext-searchbox";
-import "ace-builds/src-noconflict/mode-jsx";
-import "ace-builds/src-noconflict/theme-github";
 
-const defaultValue = [
+import { mapThemeToImport } from "@/utils/editorUtils";
+
+const oldDefaultValue = [
   `// Use this tool to display differences in code.
 // Deletions will be highlighted on the left, insertions highlighted on the right.`,
   `// Use this too to show difference in code.
@@ -59,21 +56,35 @@ export type EditorTheme = (typeof themes)[number];
 export const keyboardHandlers = ["emacs", "vim", "vscode", "default"] as const;
 export type KeyboardHandler = (typeof keyboardHandlers)[number];
 
-languages.forEach((lang) => {
-  require(`ace-builds/src-noconflict/mode-${lang}`);
-  require(`ace-builds/src-noconflict/snippets/${lang}`);
-});
-
-themes.forEach((theme) =>
-  require(`ace-builds/src-noconflict/theme-${mapThemeToImport(theme)}`)
-);
-
 type EditorProps = {
   editorState: EditorState;
   setMainState: SetMainState;
 };
 
 export const Editor = ({ editorState, setMainState }: EditorProps) => {
+  // Disgusting hack.
+  let AceEditor: ace | null = null;
+  let DiffEditor: diff | null = null;
+
+  // https://github.com/securingsincity/react-ace/issues/27
+  // https://github.com/JedWatson/react-codemirror/issues/77
+  useEffect(() => {
+    DiffEditor = require("react-ace";
+    import "ace-builds/src-min-noconflict/ext-language_tools";
+    import "ace-builds/src-min-noconflict/ext-searchbox";
+    import "ace-builds/src-noconflict/mode-jsx";
+    import "ace-builds/src-noconflict/theme-github";
+
+    languages.forEach((lang) => {
+      require(`ace-builds/src-noconflict/mode-${lang}`);
+      require(`ace-builds/src-noconflict/snippets/${lang}`);
+    });
+
+    themes.forEach((theme) =>
+      require(`ace-builds/src-noconflict/theme-${mapThemeToImport(theme)}`)
+    );
+  }, []);
+
   const onChange = (newValue: string[]) => {
     setMainState((prevState) => ({ ...prevState, value: newValue }));
   };
@@ -94,14 +105,15 @@ export const Editor = ({ editorState, setMainState }: EditorProps) => {
 
   return (
     <Box>
-      <h2>Editor</h2>
-      <p>Language detected: {editorState.currentTab.mode}</p>
+      <p>Editor mode: {editorState.currentTab.mode}</p>
 
-      <DiffEditor
-        ref={editorState.diffEditorRef}
-        onChange={onChange}
-        {...editorProps}
-      />
+      {DiffEditor && (
+        <DiffEditor
+          ref={editorState.diffEditorRef}
+          onChange={onChange}
+          {...editorProps}
+        />
+      )}
 
       {/*         
       {editorState.currentTab.hasDiff ? (

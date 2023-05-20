@@ -1,3 +1,4 @@
+import { Language } from "@/components/Editor.client";
 import type { Dispatch, Ref, SetStateAction } from "react";
 import type { Socket } from "socket.io-client";
 
@@ -43,7 +44,7 @@ export type EditorTab = {
   name: string;
   // For the diff editor there can be 2 strings, 1 for each side of the diff editor. Hence the str array.
   value: string[];
-  mode: string;
+  mode: Language;
   hasDiff: boolean;
   // Not sure what this is:
   markers: object;
