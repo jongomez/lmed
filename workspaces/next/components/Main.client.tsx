@@ -37,7 +37,7 @@ const getInitialState = (): MainState => {
     selected: true,
     name: "New File",
     value: ["", ""],
-    mode: "markdown",
+    language: "markdown",
     hasDiff: false,
     markers: {},
   };
@@ -55,6 +55,7 @@ const getInitialState = (): MainState => {
       allTabs: [initialTab],
       fontSize: 14,
       diffEditorRef: null,
+      theme: "github-dark",
     },
   };
 };
