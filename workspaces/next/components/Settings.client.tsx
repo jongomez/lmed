@@ -1,48 +1,39 @@
-"use client";
+import { EditorState, SetMainState } from "@/types/Main";
+import { useSettings } from "@/utils/hooks";
+import { Moon, Sun } from "lucide-react";
 
-import Brightness4Icon from "@mui/icons-material/Brightness4";
-import Brightness7Icon from "@mui/icons-material/Brightness7";
-import { Box, IconButton, useTheme } from "@mui/material";
-import { useContext } from "react";
-import { ColorModeContext } from "./Providers.client";
+/*
 
-export const ToggleMaterialTheme = () => {
-  const theme = useTheme();
-  const colorMode = useContext(ColorModeContext);
+Thanks:
+https://sdorra.dev/posts/2022-11-17-dark-mode-with-next
 
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        width: "100%",
-        alignItems: "center",
-        justifyContent: "center",
-        bgcolor: "background.default",
-        color: "text.primary",
-        borderRadius: 1,
-        p: 3,
-      }}
-    >
-      {theme.palette.mode} mode
-      <IconButton
-        sx={{ ml: 1 }}
-        onClick={colorMode.toggleColorMode}
-        color="inherit"
-      >
-        {theme.palette.mode === "dark" ? (
-          <Brightness7Icon />
-        ) : (
-          <Brightness4Icon />
-        )}
-      </IconButton>
-    </Box>
-  );
+*/
+
+type SettingsProps = {
+  editorState: EditorState;
+  setMainState: SetMainState;
 };
 
-export const Settings = () => {
+export const Settings = ({ editorState, setMainState }: SettingsProps) => {
+  const settings = useSettings();
+  const currentSiteTheme = settings.siteTheme;
+
+  const onThemeSwitchClick = () => {
+    settings.toggleSiteTheme();
+  };
+
   return (
-    <Box className="flex flex-col items-center justify-center">
-      <ToggleMaterialTheme />
-    </Box>
+    <div className="flex flex-col items-center justify-center">
+      <button
+        onClick={onThemeSwitchClick}
+        title={`Enable ${currentSiteTheme === "dark" ? "light" : "dark"} mode`}
+      >
+        {currentSiteTheme === "dark" ? (
+          <Sun className="text-dark dark:text-white" />
+        ) : (
+          <Moon className="text-dark dark:text-white" />
+        )}
+      </button>
+    </div>
   );
 };

@@ -1,5 +1,4 @@
-import { Language } from "@/components/Editor.client";
-import { EditorTheme } from "@/utils/editorUtils";
+import { EditorTheme, Language } from "@/utils/editorUtils";
 import type { Dispatch, Ref, SetStateAction } from "react";
 import type { Socket } from "socket.io-client";
 
@@ -59,6 +58,8 @@ export type EditorState = {
   diffEditorRef: Ref<any>;
   theme: EditorTheme;
 };
+
+export type SiteTheme = "light" | "dark";
 
 export type MainState = {
   socket: Socket | undefined;

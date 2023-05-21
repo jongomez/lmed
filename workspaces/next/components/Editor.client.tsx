@@ -8,7 +8,7 @@ import {
   getEditorLanguageFromState,
   getEditorThemeFromState,
 } from "@/utils/editorUtils";
-import { Box } from "@mui/material";
+import { P } from "./base/Typography.client";
 
 type EditorProps = {
   editorState: EditorState;
@@ -36,8 +36,8 @@ export const Editor = ({ editorState, setMainState }: EditorProps) => {
   );
 
   return (
-    <Box>
-      <p>Editor mode: {editorState.currentTab.language}</p>
+    <div>
+      <P>Editor mode: {editorState.currentTab.language}</P>
 
       <CodeMirror
         value="console.log('hello world!');"
@@ -46,6 +46,6 @@ export const Editor = ({ editorState, setMainState }: EditorProps) => {
         onChange={onChange}
         {...editorProps}
       />
-    </Box>
+    </div>
   );
 };

@@ -1,5 +1,5 @@
-import { Box } from "@mui/material";
+import { P } from "./base/Typography.client";
 
 export const Benchmarks = () => {
-  return <Box m="20px">Benchmarks go here.</Box>;
+  return <P>Benchmarks go here.</P>;
 };

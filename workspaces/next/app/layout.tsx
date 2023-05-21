@@ -1,5 +1,6 @@
-import { Providers } from "@/components/Providers.client";
+import { SettingsProvider } from "@/components/SettingsProvider.client";
 import "xterm/css/xterm.css";
+import "./globals.css";
 
 export const metadata = {
   title: "llmcode",
@@ -12,9 +13,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
-        <Providers>{children}</Providers>
+    <html lang="en" className="dark">
+      <body className="bg-dark dark:bg-slate-800">
+        <SettingsProvider>{children}</SettingsProvider>
       </body>
     </html>
   );
