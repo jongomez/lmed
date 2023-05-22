@@ -7,12 +7,14 @@ import type {
   RootNode,
   SetMainState,
 } from "@/types/Main";
+import { handleDirectoryClick, handleFileClick } from "@/utils/explorerUtils";
 import {
-  handleDirectoryClick,
-  handleFileClick,
+  createNewFile,
   openDirectory,
   openFile,
-} from "@/utils/explorerUtils";
+  saveFile,
+  saveFileAs,
+} from "@/utils/mainMenuUtils";
 import { ChevronDown, ChevronUp, File } from "lucide-react";
 import { Button } from "./base/Button.server";
 import { Li, Ul } from "./base/Typography.server";
@@ -91,8 +93,25 @@ export const Explorer = ({
           </Button>
         </div>
         <div className="flex justify-center flex-wrap">
-          <Button>Save</Button>
-          <Button>Save As...</Button>
+          <Button
+            onClick={() => saveFile(setMainState, explorerState, editorState)}
+          >
+            Save
+          </Button>
+          <Button
+            onClick={() => saveFileAs(setMainState, explorerState, editorState)}
+          >
+            Save As...
+          </Button>
+        </div>
+        <div className="flex justify-center flex-wrap">
+          <Button
+            onClick={() =>
+              createNewFile(setMainState, explorerState, editorState)
+            }
+          >
+            New File
+          </Button>
         </div>
       </div>
     </div>

@@ -7,9 +7,10 @@ import { WEBSOCKET_SERVER_PORT } from "../../../shared/constants";
 import { Benchmarks } from "./Benchmarks.client";
 import { Editor } from "./Editor.client";
 import { Explorer } from "./Explorer.client";
+import { MainFooter } from "./Footer.server";
 import { Settings } from "./Settings.client";
+import { MainTabHeader, MainTabPanel } from "./Tabs.server";
 import { MyTerminal } from "./Terminal.client";
-import { MainTabHeader, MainTabPanel } from "./base/Tabs.server";
 
 const getInitialState = (): MainState => {
   const explorerTreeRoot: RootNode = {
@@ -22,7 +23,7 @@ const getInitialState = (): MainState => {
 
   const initialFile: FileNode = {
     id: 1,
-    name: "New File",
+    name: "New File 1",
     type: "file",
     selected: true,
     parentNode: explorerTreeRoot,
@@ -33,7 +34,6 @@ const getInitialState = (): MainState => {
   const initialTab: EditorTab = {
     fileNode: initialFile,
     selected: true,
-    name: "New File",
     value: ["", ""],
     language: "markdown",
     hasDiff: false,
@@ -104,6 +104,8 @@ export const Main = () => {
       <MainTabPanel activeIndex={activeMainTab} tabPanelIndex={3}>
         <Benchmarks />
       </MainTabPanel>
+
+      <MainFooter editorState={mainState.editor} activeIndex={activeMainTab} />
     </>
   );
 };

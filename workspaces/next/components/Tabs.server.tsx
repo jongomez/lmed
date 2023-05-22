@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
 
-const MAIN_TAB_HEADER_HEIGHT = "40px";
-// This doesn't work :(
-const MAIN_TAB_PANEL_HEIGHT = `h-[calc(100%-${MAIN_TAB_HEADER_HEIGHT})]`;
+// This doesn't work :( https://tailwindcss.com/docs/content-configuration#dynamic-class-names
+// const MAIN_TAB_HEADER_HEIGHT = "40px";
+// const MAIN_TAB_PANEL_HEIGHT = `h-[calc(100%-${MAIN_TAB_HEADER_HEIGHT})]`;
 
 type MainTabHeaderProps = {
   tabs: string[];
@@ -16,7 +16,7 @@ export const MainTabHeader = ({
   activeIndex,
 }: MainTabHeaderProps) => {
   return (
-    <div className={`h-[${MAIN_TAB_HEADER_HEIGHT}]`}>
+    <div className="flex-grow-0 flex-shrink-0 h-40px">
       {tabs.map((tab, index) => {
         return (
           <div
@@ -53,7 +53,7 @@ export const MainTabPanel = ({
   children,
 }: MainTabPanelProps) => (
   <div
-    className={`${className || " "}${
+    className={`${className || " "} ${
       activeIndex === tabPanelIndex ? "" : "hidden"
     } flex-grow`}
   >

@@ -8,7 +8,6 @@ import {
   getEditorLanguageFromState,
   getEditorThemeFromState,
 } from "@/utils/editorUtils";
-import { P } from "./base/Typography.server";
 
 type EditorProps = {
   editorState: EditorState;
@@ -44,8 +43,6 @@ export const Editor = ({ editorState, setMainState }: EditorProps) => {
         onChange={onChange}
         {...editorProps}
       />
-
-      <P>Editor mode: {editorState.currentTab.language}</P>
     </div>
   );
 };

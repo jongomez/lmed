@@ -1,6 +1,5 @@
 import type {
   DirectoryNode,
-  ExplorerState,
   FileNode,
   MainState,
   RootNode,
@@ -8,72 +7,7 @@ import type {
 } from "@/types/Main";
 import { createNewTab } from "./editorUtils";
 
-export const openFile = async (
-  setMainState: SetMainState,
-  explorer: ExplorerState
-) => {
-  const [fileHandle] = await window.showOpenFilePicker();
-  const file = await fileHandle.getFile();
-
-  // XXX: Check if file is already open. If yes, show a message.
-
-  const newNode: FileNode = {
-    id: explorer.explorerTreeRoot.treeLength + 1, // use treeLength to determine id
-    name: file.name,
-    type: "file",
-    selected: true,
-    parentNode: explorer.explorerTreeRoot,
-    fileHandle,
-  };
-
-  // File will be inserted as a child of the root.
-  setMainState(
-    (prevState): MainState => ({
-      ...prevState,
-      explorer: {
-        ...prevState.explorer,
-        explorerTreeRoot: {
-          ...prevState.explorer.explorerTreeRoot,
-          children: [
-            ...(prevState.explorer.explorerTreeRoot.children || []),
-            newNode,
-          ],
-        },
-        selectedNode: newNode,
-      },
-    })
-  );
-};
-
-// Opens a directory from a user's local file system. This function does the following:
-// 1. Opens a directory picker
-// 2. Creates an explorer tree from the selected directory
-export const openDirectory = async (
-  setMainState: SetMainState,
-  explorerState: ExplorerState
-) => {
-  const dirHandle = await window.showDirectoryPicker();
-
-  // XXX: Check if folder is already open. If yes, show a message.
-
-  const explorerTreeRoot = await createExplorerTree(
-    explorerState.explorerTreeRoot,
-    explorerState.explorerTreeRoot,
-    dirHandle
-  );
-
-  setMainState(
-    (prevState): MainState => ({
-      ...prevState,
-      explorer: {
-        ...prevState.explorer,
-        explorerTreeRoot,
-      },
-    })
-  );
-};
-
-const createFileNode = (
+export const createFileNode = (
   id: number,
   fileHandle: FileSystemFileHandle,
   parentNode: RootNode | DirectoryNode
@@ -88,7 +22,7 @@ const createFileNode = (
   };
 };
 
-const createDirectoryNode = (
+export const createDirectoryNode = (
   id: number,
   directoryHandle: FileSystemDirectoryHandle,
   parentNode: RootNode | DirectoryNode
@@ -104,7 +38,7 @@ const createDirectoryNode = (
   };
 };
 
-const createExplorerTree = async (
+export const createExplorerTree = async (
   rootNode: RootNode,
   parentNode: RootNode | DirectoryNode,
   dirHandle: FileSystemDirectoryHandle

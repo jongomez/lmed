@@ -42,8 +42,6 @@ export type ExplorerState = {
 export type EditorTab = {
   fileNode: FileNode;
   selected: boolean;
-  name: string;
-  // For the diff editor there can be 2 strings, 1 for each side of the diff editor. Hence the str array.
   value: string[];
   language: Language;
   hasDiff: boolean;
