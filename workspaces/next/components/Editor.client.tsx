@@ -8,7 +8,7 @@ import {
   getEditorLanguageFromState,
   getEditorThemeFromState,
 } from "@/utils/editorUtils";
-import { P } from "./base/Typography.client";
+import { P } from "./base/Typography.server";
 
 type EditorProps = {
   editorState: EditorState;
@@ -37,8 +37,6 @@ export const Editor = ({ editorState, setMainState }: EditorProps) => {
 
   return (
     <div>
-      <P>Editor mode: {editorState.currentTab.language}</P>
-
       <CodeMirror
         value="console.log('hello world!');"
         theme={getEditorThemeFromState(editorState)}
@@ -46,6 +44,8 @@ export const Editor = ({ editorState, setMainState }: EditorProps) => {
         onChange={onChange}
         {...editorProps}
       />
+
+      <P>Editor mode: {editorState.currentTab.language}</P>
     </div>
   );
 };

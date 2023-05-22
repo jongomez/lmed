@@ -23,7 +23,7 @@ export const Settings = ({ editorState, setMainState }: SettingsProps) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="">
       <button
         onClick={onThemeSwitchClick}
         title={`Enable ${currentSiteTheme === "dark" ? "light" : "dark"} mode`}

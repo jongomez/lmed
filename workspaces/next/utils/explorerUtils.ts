@@ -162,11 +162,15 @@ export const handleFileClick = async (
   fileNode: FileNode,
   setMainState: SetMainState
 ) => {
-  if (!fileNode.fileHandle) {
-    throw new Error(`File handle is null. FileNode name: ${fileNode.name}`);
+  let file: File | Blob;
+  if (fileNode.fileHandle) {
+    file = await fileNode.fileHandle.getFile();
+  } else if (fileNode.file) {
+    file = fileNode.file;
+  } else {
+    throw new Error("No fileHandle or fileNode.file found :(");
   }
 
-  const file = await fileNode.fileHandle.getFile();
   const contents = await file.text();
 
   // Update the fileNode.
@@ -182,7 +186,8 @@ export const handleFileClick = async (
 
     if (!currentTab) {
       // Switch to existing tab
-      currentTab = createNewTab(fileNode, file, contents);
+      // TODO: FIX THIS as File assertion!
+      currentTab = createNewTab(fileNode, file as File, contents);
       allTabs = [...prevState.editor.allTabs, currentTab];
     }
 
@@ -206,6 +211,8 @@ export const handleDirectoryClick = async (
   setMainState: SetMainState
 ) => {
   // Toggle expanded state.
+  // WARNING: This is bad. We're mutating an object in state.
+  // ... well, it's not really in state. The root node is in state. We're mutating a child.
   directoryNode.expanded = !directoryNode.expanded;
 
   // Update the tree.

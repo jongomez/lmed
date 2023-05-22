@@ -12,8 +12,9 @@ export type RootNode = {
 
 export type FileNode = ExplorerNodeBase & {
   type: "file";
-  fileHandle: FileSystemFileHandle | null;
   selected: boolean;
+  fileHandle?: FileSystemFileHandle; // for files that exist on disk.
+  file?: File | Blob; // for files that exist only in memory, not on disk. e.g. if a user creates a new file.
 };
 
 export type DirectoryNode = ExplorerNodeBase & {
@@ -66,6 +67,7 @@ export type MainState = {
   tabIndex: number;
   editor: EditorState;
   explorer: ExplorerState;
+  mainTab: number;
 };
 
 export type SetMainState = Dispatch<SetStateAction<MainState>>;

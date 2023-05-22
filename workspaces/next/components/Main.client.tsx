@@ -6,8 +6,10 @@ import { io } from "socket.io-client";
 import { WEBSOCKET_SERVER_PORT } from "../../../shared/constants";
 import { Benchmarks } from "./Benchmarks.client";
 import { Editor } from "./Editor.client";
+import { Explorer } from "./Explorer.client";
 import { Settings } from "./Settings.client";
 import { MyTerminal } from "./Terminal.client";
+import { MainTabHeader, MainTabPanel } from "./base/Tabs.server";
 
 const getInitialState = (): MainState => {
   const explorerTreeRoot: RootNode = {
@@ -24,7 +26,6 @@ const getInitialState = (): MainState => {
     type: "file",
     selected: true,
     parentNode: explorerTreeRoot,
-    fileHandle: null,
   };
 
   explorerTreeRoot.children.push(initialFile);
@@ -54,13 +55,16 @@ const getInitialState = (): MainState => {
       diffEditorRef: null,
       theme: "github-dark",
     },
+    mainTab: 0,
   };
 };
 
 export const Main = () => {
   const [mainState, setMainState] = useState<MainState>(getInitialState());
+  const activeMainTab: number = mainState.mainTab;
 
   useEffect(() => {
+    // Connect to the websocket server.
     const socket = io(`http://localhost:${WEBSOCKET_SERVER_PORT}`);
     setMainState((prevState: MainState) => ({ ...prevState, socket }));
 
@@ -71,23 +75,35 @@ export const Main = () => {
 
   return (
     <>
-      {/* <Explorer
-        explorerState={mainState.explorer}
-        setMainState={setMainState}
-      /> */}
+      <MainTabHeader
+        tabs={["Editor", "Terminal", "Settings", "Benchmarks"]}
+        onTabClick={(tab: number) => {
+          setMainState((prevState) => ({ ...prevState, mainTab: tab }));
+        }}
+        activeIndex={activeMainTab}
+      />
 
-      <div>
+      <MainTabPanel
+        activeIndex={activeMainTab}
+        tabPanelIndex={0}
+        className="flex"
+      >
+        <Explorer
+          explorerState={mainState.explorer}
+          setMainState={setMainState}
+          parentNode={mainState.explorer.explorerTreeRoot}
+        />
         <Editor editorState={mainState.editor} setMainState={setMainState} />
-      </div>
-      <div>
+      </MainTabPanel>
+      <MainTabPanel activeIndex={activeMainTab} tabPanelIndex={1}>
         {!!mainState.socket && <MyTerminal socket={mainState.socket} />}
-      </div>
-      <div>
+      </MainTabPanel>
+      <MainTabPanel activeIndex={activeMainTab} tabPanelIndex={2}>
         <Settings editorState={mainState.editor} setMainState={setMainState} />
-      </div>
-      <div>
+      </MainTabPanel>
+      <MainTabPanel activeIndex={activeMainTab} tabPanelIndex={3}>
         <Benchmarks />
-      </div>
+      </MainTabPanel>
     </>
   );
 };

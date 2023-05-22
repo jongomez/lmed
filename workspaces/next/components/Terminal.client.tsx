@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { Socket } from "socket.io-client";
+import type { Terminal as TerminalType } from "xterm";
+import { FitAddon as FitAddonType } from "xterm-addon-fit";
 
 let initTerminalDone = false;
 
@@ -17,14 +19,17 @@ if (typeof window !== "undefined") {
   SearchAddon = require("xterm-addon-search").SearchAddon;
 }
 
+let fitAddon: FitAddonType | undefined;
+
 type MyTerminalProps = {
   socket: Socket;
 };
 
 const initTerminal = async (xtermElement: HTMLDivElement, socket: Socket) => {
-  const terminal = new Terminal();
+  const terminal = new Terminal() as TerminalType;
 
-  const fitAddon = new FitAddon();
+  fitAddon = new FitAddon() as FitAddonType;
+
   const searchAddon = new SearchAddon();
   const webLinksAddon = new WebLinksAddon();
 
@@ -58,6 +63,9 @@ export const MyTerminal = ({ socket }: MyTerminalProps) => {
     initTerminal(xtermRef.current, socket);
     initTerminalDone = true;
   }, [xtermRef, socket]);
+
+  // If the tab is not visible, and we call fit, the terminal won't show. Hence this fit() call.
+  fitAddon?.fit();
 
   return (
     <div
