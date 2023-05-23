@@ -13,7 +13,6 @@ export const createFileNode = (
   return {
     id,
     fileHandle,
-    parentNode,
     name: fileHandle.name,
     type: "file",
     selected: false,
@@ -28,7 +27,6 @@ export const createDirectoryNode = (
   return {
     id,
     directoryHandle,
-    parentNode,
     name: directoryHandle.name,
     type: "directory",
     expanded: false,
@@ -92,12 +90,12 @@ export const updateExplorerTreeNode = (
     throw new Error("Node not found in parent's children array");
   }
 };
-
+*/
 export const handleFileClick = async (
   fileNode: FileNode,
   mainStateDispatch: MainStateDispatch
 ) => {
-  let file: File | Blob;
+  let file: File;
   if (fileNode.fileHandle) {
     file = await fileNode.fileHandle.getFile();
   } else if (fileNode.file) {
@@ -111,10 +109,10 @@ export const handleFileClick = async (
   // Update state in a function to access prevState
   mainStateDispatch({
     type: "EXPLORER_FILE_CLICK",
-    payload: { fileNode, file: file as File, contents },
+    payload: { fileNode, file, contents },
   });
 };
-*/
+
 export const handleDirectoryClick = async (
   directoryNode: DirectoryNode,
   mainStateDispatch: MainStateDispatch

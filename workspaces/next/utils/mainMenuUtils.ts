@@ -5,6 +5,7 @@ import type {
   MainStateDispatch,
 } from "@/types/MainTypes";
 import { createExplorerTree } from "./explorerUtils";
+import { createEmptyFileInMemory } from "./fileUtils";
 
 // XXX: Move the below functions to a separate file.
 
@@ -112,15 +113,7 @@ export const createNewFile = async (
   explorerState: ExplorerState,
   editorState: EditorState
 ) => {
-  // Creating an "in-memory" file. This file won't exist on the disk until it's saved.
-  const newNode: FileNode = {
-    id: explorerState.explorerTreeRoot.treeLength + 1,
-    name: "Untitled.txt",
-    type: "file",
-    selected: true,
-    parentNode: explorerState.explorerTreeRoot,
-    file: new Blob([""], { type: "text/plain" }),
-  };
-
+  const newNodeId = explorerState.explorerTreeRoot.treeLength + 1;
+  const newNode = createEmptyFileInMemory(newNodeId);
   mainStateDispatch({ type: "CREATE_NEW_FILE", payload: newNode });
 };

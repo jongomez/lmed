@@ -14,7 +14,7 @@ export type FileNode = ExplorerNodeBase & {
   type: "file";
   selected: boolean;
   fileHandle?: FileSystemFileHandle; // for files that exist on disk.
-  file?: File | Blob; // for files that exist only in memory, not on disk. e.g. if a user creates a new file.
+  file?: File; // for files that exist only in memory, not on disk. e.g. if a user creates a new file.
 };
 
 export type DirectoryNode = ExplorerNodeBase & {
@@ -28,7 +28,6 @@ export type ExplorerNodeBase = {
   id: number;
   name: string;
   type: "file" | "directory" | "root";
-  parentNode: RootNode | DirectoryNode;
 };
 
 export type ExplorerNode = RootNode | FileNode | DirectoryNode;

@@ -3,12 +3,12 @@
 import type {
   EditorTab,
   ExplorerNode,
-  FileNode,
   MainState,
   MainStateAction,
   RootNode,
 } from "@/types/MainTypes";
 import { createNewTab } from "./editorUtils";
+import { createEmptyFileInMemory } from "./fileUtils";
 
 export const getInitialState = (): MainState => {
   const explorerTreeRoot: RootNode = {
@@ -19,13 +19,8 @@ export const getInitialState = (): MainState => {
     children: [],
   };
 
-  const initialFile: FileNode = {
-    id: 1,
-    name: "New File 1",
-    type: "file",
-    selected: true,
-    parentNode: explorerTreeRoot,
-  };
+  const initialFileId = 1;
+  const initialFile = createEmptyFileInMemory(initialFileId);
 
   explorerTreeRoot.children.push(initialFile);
 
@@ -114,6 +109,7 @@ export const mainStateReducer = (
         throw new Error("Node is not a directory");
       }
 
+      // TODO: Check immer patches for this.
       console.log("draftNode === action.payload", draftNode === action.payload);
       console.log("draftNode", draftNode);
       console.log("action.payload", action.payload);
@@ -132,6 +128,7 @@ export const mainStateReducer = (
         fileNode.id
       );
 
+      // TODO: Check immer patches for this.
       console.log("draftNode === fileNode", draftNode === fileNode);
       console.log("draftNode", draftNode);
       console.log("fileNode", fileNode);
