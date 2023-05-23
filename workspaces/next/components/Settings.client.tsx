@@ -1,4 +1,4 @@
-import { EditorState, SetMainState } from "@/types/Main";
+import { EditorState, MainStateDispatch } from "@/types/MainTypes";
 import { useSettings } from "@/utils/hooks";
 import { Moon, Sun } from "lucide-react";
 
@@ -11,10 +11,10 @@ https://sdorra.dev/posts/2022-11-17-dark-mode-with-next
 
 type SettingsProps = {
   editorState: EditorState;
-  setMainState: SetMainState;
+  mainStateDispatch: MainStateDispatch;
 };
 
-export const Settings = ({ editorState, setMainState }: SettingsProps) => {
+export const Settings = ({ editorState, mainStateDispatch }: SettingsProps) => {
   const settings = useSettings();
   const currentSiteTheme = settings.siteTheme;
 

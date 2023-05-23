@@ -2,15 +2,14 @@ import type {
   EditorState,
   ExplorerState,
   FileNode,
-  MainState,
-  SetMainState,
-} from "@/types/Main";
+  MainStateDispatch,
+} from "@/types/MainTypes";
 import { createExplorerTree } from "./explorerUtils";
 
 // XXX: Move the below functions to a separate file.
 
 export const openFile = async (
-  setMainState: SetMainState,
+  mainStateDispatch: MainStateDispatch,
   explorer: ExplorerState
 ) => {
   const [fileHandle] = await window.showOpenFilePicker();
@@ -28,29 +27,14 @@ export const openFile = async (
   };
 
   // File will be inserted as a child of the root.
-  setMainState(
-    (prevState): MainState => ({
-      ...prevState,
-      explorer: {
-        ...prevState.explorer,
-        explorerTreeRoot: {
-          ...prevState.explorer.explorerTreeRoot,
-          children: [
-            ...(prevState.explorer.explorerTreeRoot.children || []),
-            newNode,
-          ],
-        },
-        selectedNode: newNode,
-      },
-    })
-  );
+  mainStateDispatch({ type: "OPEN_FILE", payload: newNode });
 };
 
 // Opens a directory from a user's local file system. This function does the following:
 // 1. Opens a directory picker
 // 2. Creates an explorer tree from the selected directory
 export const openDirectory = async (
-  setMainState: SetMainState,
+  mainStateDispatch: MainStateDispatch,
   explorerState: ExplorerState
 ) => {
   const dirHandle = await window.showDirectoryPicker();
@@ -63,19 +47,11 @@ export const openDirectory = async (
     dirHandle
   );
 
-  setMainState(
-    (prevState): MainState => ({
-      ...prevState,
-      explorer: {
-        ...prevState.explorer,
-        explorerTreeRoot,
-      },
-    })
-  );
+  mainStateDispatch({ type: "OPEN_DIRECTORY", payload: explorerTreeRoot });
 };
 
 export const saveFile = async (
-  setMainState: SetMainState,
+  mainStateDispatch: MainStateDispatch,
   explorerState: ExplorerState,
   editorState: EditorState
 ) => {
@@ -87,7 +63,7 @@ export const saveFile = async (
 
   // If there's no fileHandle, call saveFileAs to save the file with a new name.
   if (!fileHandle) {
-    saveFileAs(setMainState, explorerState, editorState);
+    saveFileAs(mainStateDispatch, explorerState, editorState);
     return;
   }
 
@@ -97,7 +73,7 @@ export const saveFile = async (
 };
 
 export const saveFileAs = async (
-  setMainState: SetMainState,
+  mainStateDispatch: MainStateDispatch,
   explorerState: ExplorerState,
   editorState: EditorState
 ) => {
@@ -132,7 +108,7 @@ export const saveFileAs = async (
 };
 
 export const createNewFile = async (
-  setMainState: SetMainState,
+  mainStateDispatch: MainStateDispatch,
   explorerState: ExplorerState,
   editorState: EditorState
 ) => {
@@ -146,21 +122,5 @@ export const createNewFile = async (
     file: new Blob([""], { type: "text/plain" }),
   };
 
-  // Add the new file to the explorer tree
-  setMainState(
-    (prevState): MainState => ({
-      ...prevState,
-      explorer: {
-        ...prevState.explorer,
-        explorerTreeRoot: {
-          ...prevState.explorer.explorerTreeRoot,
-          children: [
-            ...(prevState.explorer.explorerTreeRoot.children || []),
-            newNode,
-          ],
-        },
-        selectedNode: newNode,
-      },
-    })
-  );
+  mainStateDispatch({ type: "CREATE_NEW_FILE", payload: newNode });
 };

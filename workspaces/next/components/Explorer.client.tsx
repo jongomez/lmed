@@ -2,11 +2,12 @@
 
 import type {
   DirectoryNode,
+  EditorState,
   ExplorerNode,
   ExplorerState,
+  MainStateDispatch,
   RootNode,
-  SetMainState,
-} from "@/types/Main";
+} from "@/types/MainTypes";
 import { handleDirectoryClick, handleFileClick } from "@/utils/explorerUtils";
 import {
   createNewFile,
@@ -19,23 +20,25 @@ import { ChevronDown, ChevronUp, File } from "lucide-react";
 import { Button } from "./base/Button.server";
 import { Li, Ul } from "./base/Typography.server";
 
-type ExplorerProps = {
+type ExplorerListProps = {
   explorerState: ExplorerState;
-  setMainState: SetMainState;
+  mainStateDispatch: MainStateDispatch;
   parentNode: RootNode | DirectoryNode;
 };
 
 const ExplorerList = ({
   parentNode,
   explorerState,
-  setMainState,
-}: ExplorerProps) => {
+  mainStateDispatch,
+}: ExplorerListProps) => {
   const renderNode = (node: ExplorerNode) => {
     switch (node.type) {
       case "directory":
         return (
           <div>
-            <button onClick={() => handleDirectoryClick(node, setMainState)}>
+            <button
+              onClick={() => handleDirectoryClick(node, mainStateDispatch)}
+            >
               {node.expanded ? <ChevronDown /> : <ChevronUp />}
               {node.name}
             </button>
@@ -43,7 +46,7 @@ const ExplorerList = ({
               <ExplorerList
                 parentNode={node}
                 explorerState={explorerState}
-                setMainState={setMainState}
+                mainStateDispatch={mainStateDispatch}
               />
             )}
           </div>
@@ -53,7 +56,7 @@ const ExplorerList = ({
         return (
           <div
             key={node.id}
-            onClick={() => handleFileClick(node, setMainState)}
+            onClick={() => handleFileClick(node, mainStateDispatch)}
             className="flex"
           >
             <File />
@@ -75,31 +78,45 @@ const ExplorerList = ({
   );
 };
 
+type ExplorerProps = {
+  explorerState: ExplorerState;
+  editorState: EditorState;
+  mainStateDispatch: MainStateDispatch;
+  parentNode: RootNode | DirectoryNode;
+};
+
 export const Explorer = ({
   parentNode,
   explorerState,
-  setMainState,
+  editorState,
+  mainStateDispatch,
 }: ExplorerProps) => {
   return (
     <div className="flex flex-col justify-between">
-      <ExplorerList {...{ parentNode, explorerState, setMainState }} />
+      <ExplorerList {...{ parentNode, explorerState, mainStateDispatch }} />
       <div className="w-80 flex flex-col items-center">
         <div className="flex justify-center flex-wrap">
-          <Button onClick={() => openFile(setMainState, explorerState)}>
+          <Button onClick={() => openFile(mainStateDispatch, explorerState)}>
             Open File
           </Button>
-          <Button onClick={() => openDirectory(setMainState, explorerState)}>
+          <Button
+            onClick={() => openDirectory(mainStateDispatch, explorerState)}
+          >
             Open Directory
           </Button>
         </div>
         <div className="flex justify-center flex-wrap">
           <Button
-            onClick={() => saveFile(setMainState, explorerState, editorState)}
+            onClick={() =>
+              saveFile(mainStateDispatch, explorerState, editorState)
+            }
           >
             Save
           </Button>
           <Button
-            onClick={() => saveFileAs(setMainState, explorerState, editorState)}
+            onClick={() =>
+              saveFileAs(mainStateDispatch, explorerState, editorState)
+            }
           >
             Save As...
           </Button>
@@ -107,7 +124,7 @@ export const Explorer = ({
         <div className="flex justify-center flex-wrap">
           <Button
             onClick={() =>
-              createNewFile(setMainState, explorerState, editorState)
+              createNewFile(mainStateDispatch, explorerState, editorState)
             }
           >
             New File

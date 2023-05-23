@@ -1,8 +1,10 @@
 "use client";
 
-import type { EditorTab, FileNode, MainState, RootNode } from "@/types/Main";
-import { useEffect, useState } from "react";
+import type { MainState, MainStateAction } from "@/types/MainTypes";
+import { getInitialState, mainStateReducer } from "@/utils/mainStateUtils";
+import { useEffect } from "react";
 import { io } from "socket.io-client";
+import { useImmerReducer } from "use-immer";
 import { WEBSOCKET_SERVER_PORT } from "../../../shared/constants";
 import { Benchmarks } from "./Benchmarks.client";
 import { Editor } from "./Editor.client";
@@ -12,61 +14,18 @@ import { Settings } from "./Settings.client";
 import { MainTabHeader, MainTabPanel } from "./Tabs.server";
 import { MyTerminal } from "./Terminal.client";
 
-const getInitialState = (): MainState => {
-  const explorerTreeRoot: RootNode = {
-    id: 0,
-    treeLength: 1,
-    name: "root",
-    type: "root",
-    children: [],
-  };
-
-  const initialFile: FileNode = {
-    id: 1,
-    name: "New File 1",
-    type: "file",
-    selected: true,
-    parentNode: explorerTreeRoot,
-  };
-
-  explorerTreeRoot.children.push(initialFile);
-
-  const initialTab: EditorTab = {
-    fileNode: initialFile,
-    selected: true,
-    value: ["", ""],
-    language: "markdown",
-    hasDiff: false,
-    markers: {},
-  };
-
-  return {
-    socket: undefined,
-    tabIndex: 0,
-    explorer: {
-      explorerTreeRoot,
-      selectedNode: initialFile,
-      idCounter: 2,
-    },
-    editor: {
-      currentTab: initialTab,
-      allTabs: [initialTab],
-      fontSize: 14,
-      diffEditorRef: null,
-      theme: "github-dark",
-    },
-    mainTab: 0,
-  };
-};
-
 export const Main = () => {
-  const [mainState, setMainState] = useState<MainState>(getInitialState());
-  const activeMainTab: number = mainState.mainTab;
+  const [mainState, mainStateDispatch] = useImmerReducer<
+    MainState,
+    MainStateAction
+  >(mainStateReducer, getInitialState());
+
+  const activeMainTab = mainState.mainTab;
 
   useEffect(() => {
     // Connect to the websocket server.
     const socket = io(`http://localhost:${WEBSOCKET_SERVER_PORT}`);
-    setMainState((prevState: MainState) => ({ ...prevState, socket }));
+    mainStateDispatch({ type: "SET_SOCKET", payload: socket });
 
     return () => {
       socket.disconnect();
@@ -78,7 +37,7 @@ export const Main = () => {
       <MainTabHeader
         tabs={["Editor", "Terminal", "Settings", "Benchmarks"]}
         onTabClick={(tab: number) => {
-          setMainState((prevState) => ({ ...prevState, mainTab: tab }));
+          mainStateDispatch({ type: "SET_MAIN_TAB", payload: tab });
         }}
         activeIndex={activeMainTab}
       />
@@ -90,16 +49,23 @@ export const Main = () => {
       >
         <Explorer
           explorerState={mainState.explorer}
-          setMainState={setMainState}
+          editorState={mainState.editor}
+          mainStateDispatch={mainStateDispatch}
           parentNode={mainState.explorer.explorerTreeRoot}
         />
-        <Editor editorState={mainState.editor} setMainState={setMainState} />
+        <Editor
+          editorState={mainState.editor}
+          mainStateDispatch={mainStateDispatch}
+        />
       </MainTabPanel>
       <MainTabPanel activeIndex={activeMainTab} tabPanelIndex={1}>
         {!!mainState.socket && <MyTerminal socket={mainState.socket} />}
       </MainTabPanel>
       <MainTabPanel activeIndex={activeMainTab} tabPanelIndex={2}>
-        <Settings editorState={mainState.editor} setMainState={setMainState} />
+        <Settings
+          editorState={mainState.editor}
+          mainStateDispatch={mainStateDispatch}
+        />
       </MainTabPanel>
       <MainTabPanel activeIndex={activeMainTab} tabPanelIndex={3}>
         <Benchmarks />

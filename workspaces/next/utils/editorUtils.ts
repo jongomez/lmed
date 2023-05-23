@@ -1,4 +1,4 @@
-import type { EditorState, EditorTab, FileNode } from "@/types/Main";
+import type { EditorState, EditorTab, FileNode } from "@/types/MainTypes";
 import { Extension } from "@codemirror/state";
 import { langs } from "@uiw/codemirror-extensions-langs";
 import * as themes from "@uiw/codemirror-themes-all";
@@ -201,7 +201,6 @@ export const createNewTab = (
   return {
     fileNode,
     selected: true,
-    name: fileName,
     value: [contents],
     language: getLanguageFromFileName(fileName),
     hasDiff: false,

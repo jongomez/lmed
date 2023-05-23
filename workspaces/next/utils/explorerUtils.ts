@@ -1,11 +1,9 @@
 import type {
   DirectoryNode,
   FileNode,
-  MainState,
+  MainStateDispatch,
   RootNode,
-  SetMainState,
-} from "@/types/Main";
-import { createNewTab } from "./editorUtils";
+} from "@/types/MainTypes";
 
 export const createFileNode = (
   id: number,
@@ -94,7 +92,7 @@ export const updateExplorerTreeNode = (
 
 export const handleFileClick = async (
   fileNode: FileNode,
-  setMainState: SetMainState
+  mainStateDispatch: MainStateDispatch
 ) => {
   let file: File | Blob;
   if (fileNode.fileHandle) {
@@ -107,58 +105,19 @@ export const handleFileClick = async (
 
   const contents = await file.text();
 
-  // Update the fileNode.
-  fileNode.selected = true;
-
   // Update state in a function to access prevState
-  setMainState((prevState): MainState => {
-    // Check if tab is already open
-    let currentTab = prevState.editor.allTabs.find(
-      (tab) => tab.fileNode.id === fileNode.id
-    );
-    let allTabs = prevState.editor.allTabs;
-
-    if (!currentTab) {
-      // Switch to existing tab
-      // TODO: FIX THIS as File assertion!
-      currentTab = createNewTab(fileNode, file as File, contents);
-      allTabs = [...prevState.editor.allTabs, currentTab];
-    }
-
-    return {
-      ...prevState,
-      explorer: {
-        ...prevState.explorer,
-        selectedNode: fileNode,
-      },
-      editor: {
-        ...prevState.editor,
-        currentTab,
-        allTabs,
-      },
-    };
+  mainStateDispatch({
+    type: "EXPLORER_FILE_CLICK",
+    payload: { fileNode, file: file as File, contents },
   });
 };
 
 export const handleDirectoryClick = async (
   directoryNode: DirectoryNode,
-  setMainState: SetMainState
+  mainStateDispatch: MainStateDispatch
 ) => {
-  // Toggle expanded state.
-  // WARNING: This is bad. We're mutating an object in state.
-  // ... well, it's not really in state. The root node is in state. We're mutating a child.
-  directoryNode.expanded = !directoryNode.expanded;
-
-  // Update the tree.
-  // updateExplorerTreeNode(directoryNode, directoryNode);
-
-  setMainState(
-    (prevState): MainState => ({
-      ...prevState,
-      explorer: {
-        ...prevState.explorer,
-        selectedNode: directoryNode,
-      },
-    })
-  );
+  mainStateDispatch({
+    type: "EXPLORER_DIRECTORY_CLICK",
+    payload: directoryNode,
+  });
 };

@@ -3,7 +3,7 @@
 import CodeMirror from "@uiw/react-codemirror";
 import { useCallback } from "react";
 
-import { EditorState, SetMainState } from "@/types/Main";
+import { EditorState, MainStateDispatch } from "@/types/MainTypes";
 import {
   getEditorLanguageFromState,
   getEditorThemeFromState,
@@ -11,10 +11,10 @@ import {
 
 type EditorProps = {
   editorState: EditorState;
-  setMainState: SetMainState;
+  mainStateDispatch: MainStateDispatch;
 };
 
-export const Editor = ({ editorState, setMainState }: EditorProps) => {
+export const Editor = ({ editorState, mainStateDispatch }: EditorProps) => {
   // https://github.com/securingsincity/react-ace/issues/27
   // https://github.com/JedWatson/react-codemirror/issues/77
   // useEffect(() => {}, []);
@@ -26,13 +26,10 @@ export const Editor = ({ editorState, setMainState }: EditorProps) => {
 
   // TODO: serialize editor state and store it in localStorage?
   //  https://github.com/uiwjs/react-codemirror#use-initialstate-to-restore-state-from-json-serialized-representation
-  const onChange = useCallback(
-    (value: string) => {
-      console.log("value:", value);
-      setMainState((prevState) => ({ ...prevState, value }));
-    },
-    [setMainState]
-  );
+  const onChange = useCallback((value: string) => {
+    console.log("value:", value);
+    // setMainState((prevState) => ({ ...prevState, value }));
+  }, []);
 
   return (
     <div>

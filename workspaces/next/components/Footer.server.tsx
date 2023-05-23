@@ -1,4 +1,4 @@
-import type { EditorState } from "@/types/Main";
+import type { EditorState } from "@/types/MainTypes";
 import { P } from "./base/Typography.server";
 
 type MainFooterProps = {
