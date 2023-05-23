@@ -26,6 +26,7 @@ type ExplorerListProps = {
   parentNode: RootNode | DirectoryNode;
 };
 
+// Recursive function.
 const ExplorerList = ({
   parentNode,
   explorerState,

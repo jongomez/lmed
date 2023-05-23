@@ -36,11 +36,13 @@ export const createDirectoryNode = (
   };
 };
 
+// Recursive function.
 export const createExplorerTree = async (
   rootNode: RootNode,
   parentNode: RootNode | DirectoryNode,
   dirHandle: FileSystemDirectoryHandle
 ): Promise<RootNode> => {
+  console.log("hello from createExplorerTree");
   // TODO: Handle case where directory is empty.
 
   for await (const entry of dirHandle.values()) {
@@ -73,6 +75,7 @@ If a node in the tree changes and needs update, we need to:
 2. the updated node's parent children array (with the newly updated node)
 
 */
+/*
 export const updateExplorerTreeNode = (
   oldNode: FileNode | DirectoryNode,
   newNode: FileNode | DirectoryNode
@@ -111,7 +114,7 @@ export const handleFileClick = async (
     payload: { fileNode, file: file as File, contents },
   });
 };
-
+*/
 export const handleDirectoryClick = async (
   directoryNode: DirectoryNode,
   mainStateDispatch: MainStateDispatch

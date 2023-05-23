@@ -132,6 +132,11 @@ export const mainStateReducer = (
         fileNode.id
       );
 
+      console.log("draftNode === fileNode", draftNode === fileNode);
+      console.log("draftNode", draftNode);
+      console.log("fileNode", fileNode);
+      debugger;
+
       if (!draftNode) {
         throw new Error("Could not find file node in tree");
       }
@@ -142,10 +147,12 @@ export const mainStateReducer = (
 
       draftNode.selected = true;
 
+      // Check to see if a tab is already open for this file.
       let currentTab = draft.editor.allTabs.find(
         (tab) => tab.fileNode.id === draftNode.id
       );
 
+      // If the tab is not found (i.e. the file is not open in any tab), create a new tab.
       if (!currentTab) {
         currentTab = createNewTab(draftNode, file as File, contents);
         draft.editor.allTabs.push(currentTab);
