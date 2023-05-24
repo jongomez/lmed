@@ -2,8 +2,8 @@
 
 import type { MainState, MainStateAction } from "@/types/MainTypes";
 import { getInitialState, mainStateReducer } from "@/utils/mainStateUtils";
-import { useEffect } from "react";
-import { io } from "socket.io-client";
+import { useEffect, useState } from "react";
+import { Socket, io } from "socket.io-client";
 import { useImmerReducer } from "use-immer";
 import { WEBSOCKET_SERVER_PORT } from "../../../shared/constants";
 import { Benchmarks } from "./Benchmarks.client";
@@ -14,7 +14,9 @@ import { Settings } from "./Settings.client";
 import { MainTabHeader, MainTabPanel } from "./Tabs.server";
 import { MyTerminal } from "./Terminal.client";
 
-export const Main = () => {
+export const MainContent = () => {
+  // Socket is not part of the mainState because I was getting some immer type errors.
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [mainState, mainStateDispatch] = useImmerReducer<
     MainState,
     MainStateAction
@@ -24,16 +26,16 @@ export const Main = () => {
 
   useEffect(() => {
     // Connect to the websocket server.
-    const socket = io(`http://localhost:${WEBSOCKET_SERVER_PORT}`);
-    mainStateDispatch({ type: "SET_SOCKET", payload: socket });
+    const ioSocket = io(`http://localhost:${WEBSOCKET_SERVER_PORT}`);
+    setSocket(ioSocket);
 
     return () => {
-      socket.disconnect();
+      ioSocket.disconnect();
     };
   }, []);
 
   return (
-    <>
+    <div className={`flex flex-col h-screen w-screen`}>
       <MainTabHeader
         tabs={["Editor", "Terminal", "Settings", "Benchmarks"]}
         onTabClick={(tab: number) => {
@@ -42,25 +44,27 @@ export const Main = () => {
         activeIndex={activeMainTab}
       />
 
-      <MainTabPanel
-        activeIndex={activeMainTab}
-        tabPanelIndex={0}
-        className="flex"
-      >
-        <Explorer
-          explorerState={mainState.explorer}
-          editorState={mainState.editor}
-          mainStateDispatch={mainStateDispatch}
-          parentNode={mainState.explorer.explorerTreeRoot}
-        />
-        <Editor
-          editorState={mainState.editor}
-          mainStateDispatch={mainStateDispatch}
-          explorerState={mainState.explorer}
-        />
+      <MainTabPanel activeIndex={activeMainTab} tabPanelIndex={0}>
+        <div className="grid grid-cols-12 w-screen h-full">
+          <div className="flex flex-col justify-between flex-grow-0 flex-shrink-0 col-span-4">
+            <Explorer
+              explorerState={mainState.explorer}
+              editorState={mainState.editor}
+              mainStateDispatch={mainStateDispatch}
+              parentNode={mainState.explorer.explorerTreeRoot}
+            />
+          </div>
+          <div className="w-full col-span-8">
+            <Editor
+              editorState={mainState.editor}
+              mainStateDispatch={mainStateDispatch}
+              explorerState={mainState.explorer}
+            />
+          </div>
+        </div>
       </MainTabPanel>
       <MainTabPanel activeIndex={activeMainTab} tabPanelIndex={1}>
-        {!!mainState.socket && <MyTerminal socket={mainState.socket} />}
+        {!!socket && <MyTerminal socket={socket} />}
       </MainTabPanel>
       <MainTabPanel activeIndex={activeMainTab} tabPanelIndex={2}>
         <Settings
@@ -73,6 +77,6 @@ export const Main = () => {
       </MainTabPanel>
 
       <MainFooter editorState={mainState.editor} activeIndex={activeMainTab} />
-    </>
+    </div>
   );
 };

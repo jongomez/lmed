@@ -76,7 +76,7 @@ export const Editor = ({
   }, []);
 
   return (
-    <div className="w-full">
+    <>
       <EditorTabs {...{ editorState, mainStateDispatch, explorerState }} />
       <CodeMirror
         value="console.log('hello world!');"
@@ -85,6 +85,6 @@ export const Editor = ({
         onChange={onChange}
         {...editorProps}
       />
-    </div>
+    </>
   );
 };

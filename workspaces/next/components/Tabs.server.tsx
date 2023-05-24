@@ -6,7 +6,7 @@ import { ReactNode } from "react";
 
 // Assuming main tab header height is 40px, and footer height is 20px.
 // Add 2 pixels for header boder, and 2 pixels for footer margin. We have: 40px+20px+2px+2px=64px
-export const MAIN_TAB_PANEL_HEIGHT = "h-[calc(100vh_-_64px)]";
+// export const MAIN_TAB_PANEL_HEIGHT = "h-[calc(100vh_-_64px)]";
 
 type MainTabHeaderProps = {
   tabs: string[];
@@ -56,7 +56,7 @@ export const MainTabPanel = ({
   <div
     className={`${className || " "} ${
       activeIndex === tabPanelIndex ? "" : "hidden"
-    } ${MAIN_TAB_PANEL_HEIGHT} w-screen `}
+    } flex-grow w-screen `}
   >
     {children}
   </div>

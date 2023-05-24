@@ -93,7 +93,7 @@ export const Explorer = ({
   mainStateDispatch,
 }: ExplorerProps) => {
   return (
-    <div className="flex flex-col justify-between flex-grow-0 flex-shrink-0">
+    <>
       <ExplorerList {...{ parentNode, explorerState, mainStateDispatch }} />
       <div className="w-80 flex flex-col items-center">
         <div className="flex justify-center flex-wrap">
@@ -132,6 +132,6 @@ export const Explorer = ({
           </Button>
         </div>
       </div>
-    </div>
+    </>
   );
 };

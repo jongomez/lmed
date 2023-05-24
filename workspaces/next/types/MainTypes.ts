@@ -1,6 +1,5 @@
 import { EditorTheme, Language } from "@/utils/editorUtils";
 import type { Dispatch, Ref } from "react";
-import type { Socket } from "socket.io-client";
 
 export type RootNode = {
   id: 0;
@@ -60,7 +59,6 @@ export type EditorState = {
 export type SiteTheme = "light" | "dark";
 
 export type MainState = {
-  socket: Socket | undefined;
   tabIndex: number;
   editor: EditorState;
   explorer: ExplorerState;
@@ -68,7 +66,6 @@ export type MainState = {
 };
 
 export type MainStateAction =
-  | { type: "SET_SOCKET"; payload: Socket }
   | { type: "SET_MAIN_TAB"; payload: number }
   | { type: "OPEN_FILE"; payload: FileNode }
   | { type: "OPEN_DIRECTORY"; payload: RootNode }

@@ -1,11 +1,9 @@
-import { Main } from "@/components/Main.client";
+import { MainContent } from "@/components/MainContent.client";
 
 export default function Home() {
   return (
     <main>
-      <div className={`h-screen w-screen flex flex-col`}>
-        <Main />
-      </div>
+      <MainContent />
     </main>
   );
 }

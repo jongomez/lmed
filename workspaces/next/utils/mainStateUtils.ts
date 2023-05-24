@@ -34,7 +34,6 @@ export const getInitialState = (): MainState => {
   };
 
   return {
-    socket: undefined,
     tabIndex: 0,
     explorer: {
       explorerTreeRoot,
@@ -78,11 +77,6 @@ export const mainStateReducer = (
   action: MainStateAction
 ): MainState => {
   switch (action.type) {
-    case "SET_SOCKET": {
-      draft.socket = action.payload;
-      return draft;
-    }
-
     case "SET_MAIN_TAB": {
       draft.mainTab = action.payload;
       return draft;
