@@ -151,7 +151,7 @@ export const mainStateReducer = (
 
       // If the tab is not found (i.e. the file is not open in any tab), create a new tab.
       if (!currentTab) {
-        currentTab = createNewTab(draftNode, file as File, contents);
+        currentTab = createNewTab(draftNode, file, contents);
         draft.editor.allTabs.push(currentTab);
       }
 
@@ -167,8 +167,24 @@ export const mainStateReducer = (
     }
 
     case "CREATE_NEW_FILE": {
-      draft.explorer.explorerTreeRoot.children.push(action.payload);
-      draft.explorer.selectedNode = action.payload;
+      const newFileNode = action.payload;
+      draft.explorer.selectedNode = newFileNode;
+      draft.explorer.explorerTreeRoot.children.push(newFileNode);
+
+      if (!newFileNode.file) {
+        throw new Error("CREATE_NEW_FILE - file is undefined");
+      }
+
+      // Handle tabs - create a new tab for the new file, and select that tab.
+      const currentTab = createNewTab(newFileNode, newFileNode.file, "");
+      draft.editor.allTabs.push(currentTab);
+      draft.editor.currentTab = currentTab;
+
+      return draft;
+    }
+
+    case "SET_CURRENT_TAB": {
+      draft.editor.currentTab = action.payload;
       return draft;
     }
   }

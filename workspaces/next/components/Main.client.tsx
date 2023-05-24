@@ -56,6 +56,7 @@ export const Main = () => {
         <Editor
           editorState={mainState.editor}
           mainStateDispatch={mainStateDispatch}
+          explorerState={mainState.explorer}
         />
       </MainTabPanel>
       <MainTabPanel activeIndex={activeMainTab} tabPanelIndex={1}>

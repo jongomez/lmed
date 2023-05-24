@@ -77,7 +77,8 @@ export type MainStateAction =
       type: "EXPLORER_FILE_CLICK";
       payload: { fileNode: FileNode; file: File; contents: string };
     }
-  | { type: "CREATE_NEW_FILE"; payload: FileNode };
+  | { type: "CREATE_NEW_FILE"; payload: FileNode }
+  | { type: "SET_CURRENT_TAB"; payload: EditorTab };
 
 export type MainStateDispatch = Dispatch<MainStateAction>;
 

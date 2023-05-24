@@ -196,7 +196,6 @@ export const createNewTab = (
   file: File,
   contents: string
 ): EditorTab => {
-  debugger;
   const fileName = file.name;
 
   return {
