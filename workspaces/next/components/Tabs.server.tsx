@@ -4,6 +4,10 @@ import { ReactNode } from "react";
 // const MAIN_TAB_HEADER_HEIGHT = "40px";
 // const MAIN_TAB_PANEL_HEIGHT = `h-[calc(100%-${MAIN_TAB_HEADER_HEIGHT})]`;
 
+// Assuming main tab header height is 40px, and footer height is 20px.
+// Add 2 pixels for header boder, and 2 pixels for footer margin. We have: 40px+20px+2px+2px=64px
+export const MAIN_TAB_PANEL_HEIGHT = "h-[calc(100vh_-_64px)]";
+
 type MainTabHeaderProps = {
   tabs: string[];
   onTabClick: (tab: number) => void;
@@ -23,12 +27,9 @@ export const MainTabHeader = ({
             key={index}
             onClick={() => onTabClick(index)}
             className={`
-              cursor-pointer py-2 px-4 inline-block 
-              border-b-2 
+              main-tab-base 
               ${
-                activeIndex === index
-                  ? "text-blue-600 dark:text-blue-300 border-blue-600 dark:border-blue-300"
-                  : "text-slate-500 dark:text-slate-400 border-gray-200 dark:border-gray-700"
+                activeIndex === index ? "active-main-tab" : "innactive-main-tab"
               }`}
           >
             {tab}
@@ -55,7 +56,7 @@ export const MainTabPanel = ({
   <div
     className={`${className || " "} ${
       activeIndex === tabPanelIndex ? "" : "hidden"
-    } flex-grow`}
+    } ${MAIN_TAB_PANEL_HEIGHT} w-screen `}
   >
     {children}
   </div>

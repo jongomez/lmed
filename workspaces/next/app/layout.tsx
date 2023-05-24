@@ -14,7 +14,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="bg-dark dark:bg-slate-800">
+      {/* h-screen w-screen overflow-auto */}
+      <body className="bg-dark dark:bg-slate-800 ">
         <SettingsProvider>{children}</SettingsProvider>
       </body>
     </html>

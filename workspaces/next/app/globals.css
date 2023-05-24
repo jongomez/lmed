@@ -2,14 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-/*
-:root {
-  --background: white;
-  --foreground: black;
+.active-main-tab {
+  @apply text-blue-600 dark:text-blue-300 border-blue-600 dark:border-blue-300;
 }
 
-[data-theme="dark"] {
-  --background: black;
-  --foreground: white;
+.innactive-main-tab {
+  @apply text-slate-500 dark:text-slate-400 border-gray-200 dark:border-gray-700;
 }
-*/
+
+.main-tab-base {
+  @apply cursor-pointer py-2 px-4 inline-block border-b-2;
+}

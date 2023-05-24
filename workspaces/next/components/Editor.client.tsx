@@ -34,7 +34,7 @@ const EditorTabs = ({
   };
 
   return (
-    <div className="h-10">
+    <div className="h-10 flex">
       {editorState.allTabs.map((tab, index) => (
         <div
           key={index}
@@ -76,7 +76,7 @@ export const Editor = ({
   }, []);
 
   return (
-    <div>
+    <div className="w-full">
       <EditorTabs {...{ editorState, mainStateDispatch, explorerState }} />
       <CodeMirror
         value="console.log('hello world!');"
