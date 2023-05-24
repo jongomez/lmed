@@ -8,9 +8,9 @@ type MainFooterProps = {
 
 export const MainFooter = ({ editorState, activeIndex }: MainFooterProps) => {
   return (
-    <div className="flex-grow-0 flex-shrink-0 h-20px flex justify-center">
+    <div className="col-span-full row-start-3 flex justify-center">
       {activeIndex === 0 && (
-        <P>Editor mode: {editorState.currentTab.language}</P>
+        <P className="mt-0">Editor mode: {editorState.currentTab.language}</P>
       )}
     </div>
   );

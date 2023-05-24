@@ -12,9 +12,14 @@ https://sdorra.dev/posts/2022-11-17-dark-mode-with-next
 type SettingsProps = {
   editorState: EditorState;
   mainStateDispatch: MainStateDispatch;
+  className: string;
 };
 
-export const Settings = ({ editorState, mainStateDispatch }: SettingsProps) => {
+export const Settings = ({
+  editorState,
+  mainStateDispatch,
+  className,
+}: SettingsProps) => {
   const settings = useSettings();
   const currentSiteTheme = settings.siteTheme;
 
@@ -23,7 +28,7 @@ export const Settings = ({ editorState, mainStateDispatch }: SettingsProps) => {
   };
 
   return (
-    <div className="">
+    <div className={className}>
       <button
         onClick={onThemeSwitchClick}
         title={`Enable ${currentSiteTheme === "dark" ? "light" : "dark"} mode`}

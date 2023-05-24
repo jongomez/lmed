@@ -2,12 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+.main-text-colors {
+  @apply text-slate-500 dark:text-slate-400;
+}
+
 .active-main-tab {
   @apply text-blue-600 dark:text-blue-300 border-blue-600 dark:border-blue-300;
 }
 
 .innactive-main-tab {
-  @apply text-slate-500 dark:text-slate-400 border-gray-200 dark:border-gray-700;
+  @apply main-text-colors border-gray-200 dark:border-gray-700;
 }
 
 .main-tab-base {

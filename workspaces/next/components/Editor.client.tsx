@@ -34,11 +34,15 @@ const EditorTabs = ({
   };
 
   return (
-    <div className="h-10 flex">
+    <div className="h-10 flex overflow-x-auto overflow-y-hidden">
       {editorState.allTabs.map((tab, index) => (
         <div
           key={index}
-          className={`h-10 ${editorState.currentTab === tab ? "active" : ""}`}
+          className={`h-full ${
+            editorState.currentTab === tab
+              ? "active-main-tab"
+              : "innactive-main-tab"
+          }`}
           onClick={() => handleTabClick(tab)}
         >
           {tab.fileNode.name}
@@ -52,12 +56,14 @@ type EditorProps = {
   editorState: EditorState;
   mainStateDispatch: MainStateDispatch;
   explorerState: ExplorerState;
+  className: string;
 };
 
 export const Editor = ({
   editorState,
   mainStateDispatch,
   explorerState,
+  className,
 }: EditorProps) => {
   // https://github.com/securingsincity/react-ace/issues/27
   // https://github.com/JedWatson/react-codemirror/issues/77
@@ -76,7 +82,7 @@ export const Editor = ({
   }, []);
 
   return (
-    <>
+    <div className={className}>
       <EditorTabs {...{ editorState, mainStateDispatch, explorerState }} />
       <CodeMirror
         value="console.log('hello world!');"
@@ -85,6 +91,6 @@ export const Editor = ({
         onChange={onChange}
         {...editorProps}
       />
-    </>
+    </div>
   );
 };

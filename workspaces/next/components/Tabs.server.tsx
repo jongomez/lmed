@@ -20,7 +20,7 @@ export const MainTabHeader = ({
   activeIndex,
 }: MainTabHeaderProps) => {
   return (
-    <div className="flex-grow-0 flex-shrink-0 h-40px">
+    <div className="col-span-full row-span-1">
       {tabs.map((tab, index) => {
         return (
           <div

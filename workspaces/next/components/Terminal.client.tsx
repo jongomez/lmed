@@ -5,8 +5,6 @@ import { Socket } from "socket.io-client";
 import type { Terminal as TerminalType } from "xterm";
 import { FitAddon as FitAddonType } from "xterm-addon-fit";
 
-let initTerminalDone = false;
-
 let Terminal: any;
 let FitAddon: any;
 let WebLinksAddon: any;
@@ -23,6 +21,7 @@ let fitAddon: FitAddonType | undefined;
 
 type MyTerminalProps = {
   socket: Socket;
+  className: string;
 };
 
 const initTerminal = async (xtermElement: HTMLDivElement, socket: Socket) => {
@@ -52,29 +51,33 @@ const initTerminal = async (xtermElement: HTMLDivElement, socket: Socket) => {
   fitAddon.fit();
 };
 
-export const MyTerminal = ({ socket }: MyTerminalProps) => {
+export const MyTerminal = ({ socket, className }: MyTerminalProps) => {
   const xtermRef = useRef<HTMLDivElement>(null);
+  const hasInitTerminal = useRef(false);
 
   useEffect(() => {
-    if (!xtermRef.current || initTerminalDone) {
+    if (!xtermRef.current || hasInitTerminal.current) {
       return;
     }
 
     initTerminal(xtermRef.current, socket);
-    initTerminalDone = true;
+    hasInitTerminal.current = true;
   }, [xtermRef, socket]);
 
-  // If the tab is not visible, and we call fit, the terminal won't show. Hence this fit() call.
-  fitAddon?.fit();
+  // If the tab is not visible, and we call fit, the terminal won't show.
+  if (!className.includes("hidden")) {
+    fitAddon?.fit();
+  }
 
   return (
     <div
       id="terminal"
       ref={xtermRef}
-      style={{
-        width: "500px",
-        height: "500px",
-      }}
+      // style={{
+      //   width: "100%",
+      //   height: "100%",
+      // }}
+      className={className}
     ></div>
   );
 };

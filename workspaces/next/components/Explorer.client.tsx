@@ -71,7 +71,7 @@ const ExplorerList = ({
   };
 
   return (
-    <Ul className="overflow-auto max-h-full">
+    <Ul className="overflow-auto">
       {parentNode.children.map((node, index) => (
         <Li key={index}>{renderNode(node)}</Li>
       ))}
@@ -84,6 +84,7 @@ type ExplorerProps = {
   editorState: EditorState;
   mainStateDispatch: MainStateDispatch;
   parentNode: RootNode | DirectoryNode;
+  className: string;
 };
 
 export const Explorer = ({
@@ -91,9 +92,12 @@ export const Explorer = ({
   explorerState,
   editorState,
   mainStateDispatch,
+  className,
 }: ExplorerProps) => {
   return (
-    <>
+    <div
+      className={`${className} flex flex-col justify-between overflow-hidden`}
+    >
       <ExplorerList {...{ parentNode, explorerState, mainStateDispatch }} />
       <div className="w-80 flex flex-col items-center">
         <div className="flex justify-center flex-wrap">
@@ -132,6 +136,6 @@ export const Explorer = ({
           </Button>
         </div>
       </div>
-    </>
+    </div>
   );
 };

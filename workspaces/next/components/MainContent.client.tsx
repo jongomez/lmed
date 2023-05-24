@@ -6,12 +6,11 @@ import { useEffect, useState } from "react";
 import { Socket, io } from "socket.io-client";
 import { useImmerReducer } from "use-immer";
 import { WEBSOCKET_SERVER_PORT } from "../../../shared/constants";
-import { Benchmarks } from "./Benchmarks.client";
 import { Editor } from "./Editor.client";
 import { Explorer } from "./Explorer.client";
 import { MainFooter } from "./Footer.server";
 import { Settings } from "./Settings.client";
-import { MainTabHeader, MainTabPanel } from "./Tabs.server";
+import { MainTabHeader } from "./Tabs.server";
 import { MyTerminal } from "./Terminal.client";
 
 export const MainContent = () => {
@@ -34,47 +33,51 @@ export const MainContent = () => {
     };
   }, []);
 
+  const explorerVisibility = activeMainTab === 0 ? "" : "hidden";
+  const editorVisibility = activeMainTab === 0 ? "" : "hidden";
+  const terminalVisibility = activeMainTab === 1 ? "" : "hidden";
+  const settingsVisibility = activeMainTab === 2 ? "" : "hidden";
+
   return (
-    <div className={`flex flex-col h-screen w-screen`}>
+    <div
+      className={`h-screen w-screen grid grid-cols-12 grid-rows-[42px_auto_24px]`}
+    >
       <MainTabHeader
-        tabs={["Editor", "Terminal", "Settings", "Benchmarks"]}
+        tabs={["Editor", "Terminal", "Settings"]}
         onTabClick={(tab: number) => {
           mainStateDispatch({ type: "SET_MAIN_TAB", payload: tab });
         }}
         activeIndex={activeMainTab}
       />
 
-      <MainTabPanel activeIndex={activeMainTab} tabPanelIndex={0}>
-        <div className="grid grid-cols-12 w-screen h-full">
-          <div className="flex flex-col justify-between flex-grow-0 flex-shrink-0 col-span-4">
-            <Explorer
-              explorerState={mainState.explorer}
-              editorState={mainState.editor}
-              mainStateDispatch={mainStateDispatch}
-              parentNode={mainState.explorer.explorerTreeRoot}
-            />
-          </div>
-          <div className="w-full col-span-8">
-            <Editor
-              editorState={mainState.editor}
-              mainStateDispatch={mainStateDispatch}
-              explorerState={mainState.explorer}
-            />
-          </div>
-        </div>
-      </MainTabPanel>
-      <MainTabPanel activeIndex={activeMainTab} tabPanelIndex={1}>
-        {!!socket && <MyTerminal socket={socket} />}
-      </MainTabPanel>
-      <MainTabPanel activeIndex={activeMainTab} tabPanelIndex={2}>
-        <Settings
-          editorState={mainState.editor}
-          mainStateDispatch={mainStateDispatch}
+      <Explorer
+        explorerState={mainState.explorer}
+        editorState={mainState.editor}
+        mainStateDispatch={mainStateDispatch}
+        parentNode={mainState.explorer.explorerTreeRoot}
+        className={`col-span-4 row-start-2 ${explorerVisibility}`}
+      />
+      <Editor
+        editorState={mainState.editor}
+        mainStateDispatch={mainStateDispatch}
+        explorerState={mainState.explorer}
+        className={`col-span-8 row-start-2 ${editorVisibility}`}
+      />
+
+      {!!socket && (
+        <MyTerminal
+          socket={socket}
+          className={`col-span-full ${terminalVisibility}`}
         />
-      </MainTabPanel>
-      <MainTabPanel activeIndex={activeMainTab} tabPanelIndex={3}>
-        <Benchmarks />
-      </MainTabPanel>
+      )}
+
+      <Settings
+        editorState={mainState.editor}
+        mainStateDispatch={mainStateDispatch}
+        className={`col-span-full ${settingsVisibility}`}
+      />
+
+      {/* <Benchmarks className={}/> */}
 
       <MainFooter editorState={mainState.editor} activeIndex={activeMainTab} />
     </div>

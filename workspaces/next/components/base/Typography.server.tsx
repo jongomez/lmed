@@ -1,7 +1,5 @@
 import { ReactNode } from "react";
 
-export const regularTextClasses = "text-slate-500 dark:text-slate-400";
-
 type PProps = {
   children: ReactNode;
   className?: string;
@@ -11,9 +9,7 @@ export const P = ({ children, className }: PProps) => {
   // const settings = useSettings();
 
   return (
-    <p className={`mt-2 ${regularTextClasses} ${className || ""}`}>
-      {children}
-    </p>
+    <p className={`mt-2 main-text-colors ${className || ""}`}>{children}</p>
   );
 };
 
@@ -33,7 +29,7 @@ export type LiProps = {
 
 export const Li = ({ children, className, ...props }: LiProps) => {
   return (
-    <li className={`${regularTextClasses} ${className || ""}`} {...props}>
+    <li className={`main-text-colors ${className || ""}`} {...props}>
       {children}
     </li>
   );
