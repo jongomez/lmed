@@ -1,14 +1,14 @@
 {
-  "name": "llmcode",
+  "name": "llmeditor",
   "version": "0.1.0",
-  "description": "llmcode root package with workspaces",
+  "description": "llmeditor root package with workspaces",
   "private": true,
   "workspaces": [
     "workspaces/*"
   ],
   "scripts": {
-    "next": "yarn workspace llmcode-next",
-    "ws": "yarn workspace llmcode-websocket-server",
+    "next": "yarn workspace llmeditor-next",
+    "ws": "yarn workspace llmeditor-websocket-server",
     "dev": "concurrently \"yarn next dev\" \"yarn ws start\""
   },
   "devDependencies": {

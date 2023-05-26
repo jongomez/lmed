@@ -1,6 +1,6 @@
 {
-  "name": "llmcode-next",
-  "description": "Next.js code for the llmcode project",
+  "name": "llmeditor-next",
+  "description": "Next.js code for the llmeditor project",
   "version": "0.1.0",
   "private": true,
   "scripts": {

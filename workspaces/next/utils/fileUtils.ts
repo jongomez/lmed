@@ -6,14 +6,18 @@ export const createEmptyFileInMemory = (
   id: number,
   fileName = "New File"
 ): FileNode => {
+  const hasWindow = typeof window !== "undefined";
+
   const emptyFile: FileNode = {
     id,
     name: fileName,
     type: "file",
     selected: true,
-    file: new File([""], fileName, {
-      type: "text/plain",
-    }),
+    file: hasWindow
+      ? new File([""], fileName, {
+          type: "text/plain",
+        })
+      : undefined,
   };
 
   return emptyFile;

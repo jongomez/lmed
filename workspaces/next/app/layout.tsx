@@ -3,8 +3,8 @@ import "xterm/css/xterm.css";
 import "./globals.css";
 
 export const metadata = {
-  title: "llmcode",
-  description: "Code with llms",
+  title: "llmeditor",
+  description: "Llm based code editor",
 };
 
 export default function RootLayout({

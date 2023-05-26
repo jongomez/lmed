@@ -5,7 +5,6 @@ import { useCallback } from "react";
 
 import {
   EditorState,
-  EditorTab,
   ExplorerState,
   MainStateDispatch,
 } from "@/types/MainTypes";
@@ -14,43 +13,43 @@ import {
   getEditorThemeFromState,
 } from "@/utils/editorUtils";
 
-type EditorTabsProps = {
-  editorState: EditorState;
-  mainStateDispatch: MainStateDispatch;
-  explorerState: ExplorerState;
-};
+// type EditorTabsProps = {
+//   editorState: EditorState;
+//   mainStateDispatch: MainStateDispatch;
+//   explorerState: ExplorerState;
+// };
 
-const EditorTabs = ({
-  editorState,
-  mainStateDispatch,
-  explorerState,
-}: EditorTabsProps) => {
-  const handleTabClick = (tab: EditorTab) => {
-    // dispatch an action to set the current tab to the tab that was clicked
-    mainStateDispatch({
-      type: "SET_CURRENT_TAB",
-      payload: tab,
-    });
-  };
+// const EditorTabs = ({
+//   editorState,
+//   mainStateDispatch,
+//   explorerState,
+// }: EditorTabsProps) => {
+//   const handleTabClick = (tab: EditorTab) => {
+//     // dispatch an action to set the current tab to the tab that was clicked
+//     mainStateDispatch({
+//       type: "SET_CURRENT_TAB",
+//       payload: tab,
+//     });
+//   };
 
-  return (
-    <div className="h-10 flex overflow-x-auto overflow-y-hidden">
-      {editorState.allTabs.map((tab, index) => (
-        <div
-          key={index}
-          className={`h-full ${
-            editorState.currentTab === tab
-              ? "active-main-tab"
-              : "innactive-main-tab"
-          }`}
-          onClick={() => handleTabClick(tab)}
-        >
-          {tab.fileNode.name}
-        </div>
-      ))}
-    </div>
-  );
-};
+//   return (
+//     <div className="h-10 flex overflow-x-auto overflow-y-hidden">
+//       {editorState.allTabs.map((tab, index) => (
+//         <div
+//           key={index}
+//           className={`h-full ${
+//             editorState.currentTab === tab
+//               ? "active-main-tab"
+//               : "innactive-main-tab"
+//           }`}
+//           onClick={() => handleTabClick(tab)}
+//         >
+//           {tab.fileNode.name}
+//         </div>
+//       ))}
+//     </div>
+//   );
+// };
 
 type EditorProps = {
   editorState: EditorState;
@@ -59,7 +58,7 @@ type EditorProps = {
   className: string;
 };
 
-export const Editor = ({
+export const FileEditor = ({
   editorState,
   mainStateDispatch,
   explorerState,
@@ -83,7 +82,7 @@ export const Editor = ({
 
   return (
     <div className={className}>
-      <EditorTabs {...{ editorState, mainStateDispatch, explorerState }} />
+      {/* <EditorTabs {...{ editorState, mainStateDispatch, explorerState }} /> */}
       <CodeMirror
         value="console.log('hello world!');"
         theme={getEditorThemeFromState(editorState)}

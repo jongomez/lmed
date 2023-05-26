@@ -77,7 +77,7 @@ export const mainStateReducer = (
   action: MainStateAction
 ): MainState => {
   switch (action.type) {
-    case "SET_MAIN_TAB": {
+    case "SET_ICON_TAB": {
       draft.mainTab = action.payload;
       return draft;
     }
@@ -179,6 +179,16 @@ export const mainStateReducer = (
 
     case "SET_CURRENT_TAB": {
       draft.editor.currentTab = action.payload;
+      return draft;
+    }
+
+    case "OPEN_MAIN_MENU": {
+      draft.isMainMenuOpen = true;
+      return draft;
+    }
+
+    case "CLOSE_MAIN_MENU": {
+      draft.isMainMenuOpen = false;
       return draft;
     }
   }

@@ -6,14 +6,22 @@
   @apply text-slate-500 dark:text-slate-400;
 }
 
-.active-main-tab {
-  @apply text-blue-600 dark:text-blue-300 border-blue-600 dark:border-blue-300;
+.hover-main-text-colors {
+  @apply hover:text-slate-700 hover:dark:text-slate-200;
 }
 
-.innactive-main-tab {
-  @apply main-text-colors border-gray-200 dark:border-gray-700;
+.border-innactive-colors {
+  @apply border-gray-200 dark:border-gray-700;
 }
 
-.main-tab-base {
-  @apply cursor-pointer py-2 px-4 inline-block border-b-2;
+.border-active-colors {
+  @apply border-blue-600 dark:border-blue-300;
+}
+
+.shadow-active-colors {
+  @apply shadow-blue-600 dark:shadow-blue-300;
+}
+
+.shadow-innactive-colors {
+  @apply shadow-gray-200 dark:shadow-gray-700;
 }

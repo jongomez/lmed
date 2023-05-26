@@ -63,10 +63,11 @@ export type MainState = {
   editor: EditorState;
   explorer: ExplorerState;
   mainTab: number;
+  isMainMenuOpen: boolean;
 };
 
 export type MainStateAction =
-  | { type: "SET_MAIN_TAB"; payload: number }
+  | { type: "SET_ICON_TAB"; payload: number }
   | { type: "OPEN_FILE"; payload: FileNode }
   | { type: "OPEN_DIRECTORY"; payload: RootNode }
   | { type: "EXPLORER_DIRECTORY_CLICK"; payload: DirectoryNode }
@@ -75,7 +76,9 @@ export type MainStateAction =
       payload: { fileNode: FileNode; file: File; contents: string };
     }
   | { type: "CREATE_NEW_FILE"; payload: FileNode }
-  | { type: "SET_CURRENT_TAB"; payload: EditorTab };
+  | { type: "SET_CURRENT_TAB"; payload: EditorTab }
+  | { type: "OPEN_MAIN_MENU" }
+  | { type: "CLOSE_MAIN_MENU" };
 
 export type MainStateDispatch = Dispatch<MainStateAction>;
 

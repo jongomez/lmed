@@ -3,7 +3,7 @@ import React, { createContext, useEffect, useState } from "react";
 
 export type SiteTheme = "light" | "dark";
 
-type SettingsContextType = {
+export type SettingsContextType = {
   siteTheme: SiteTheme;
   toggleSiteTheme: () => void;
 };

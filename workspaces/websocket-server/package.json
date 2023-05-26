@@ -1,7 +1,7 @@
 {
-  "name": "llmcode-websocket-server",
+  "name": "llmeditor-websocket-server",
   "version": "0.1.0",
-  "description": "Websocket server for the llmcode project",
+  "description": "Websocket server for the llmeditor project",
   "main": "index.ts",
   "private": true,
   "scripts": {

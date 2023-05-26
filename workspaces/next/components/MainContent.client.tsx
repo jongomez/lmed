@@ -1,67 +1,86 @@
 "use client";
 
 import type { MainState, MainStateAction } from "@/types/MainTypes";
+import { useSocket } from "@/utils/hooks";
 import { getInitialState, mainStateReducer } from "@/utils/mainStateUtils";
-import { useEffect, useState } from "react";
-import { Socket, io } from "socket.io-client";
 import { useImmerReducer } from "use-immer";
-import { WEBSOCKET_SERVER_PORT } from "../../../shared/constants";
-import { Editor } from "./Editor.client";
 import { Explorer } from "./Explorer.client";
 import { MainFooter } from "./Footer.server";
 import { Settings } from "./Settings.client";
-import { MainTabHeader } from "./Tabs.server";
+// import { MainTabHeader } from "./Tabs.server";
+import { FileEditor } from "./FileEditor.client";
+import { MainMenu } from "./MainMenu";
+import { EditorFileTabs, MainTabs } from "./Tabs.server";
 import { MyTerminal } from "./Terminal.client";
 
 export const MainContent = () => {
   // Socket is not part of the mainState because I was getting some immer type errors.
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const socket = useSocket();
   const [mainState, mainStateDispatch] = useImmerReducer<
     MainState,
     MainStateAction
   >(mainStateReducer, getInitialState());
 
   const activeMainTab = mainState.mainTab;
-
-  useEffect(() => {
-    // Connect to the websocket server.
-    const ioSocket = io(`http://localhost:${WEBSOCKET_SERVER_PORT}`);
-    setSocket(ioSocket);
-
-    return () => {
-      ioSocket.disconnect();
-    };
-  }, []);
+  const isMainMenuOpen = mainState.isMainMenuOpen;
 
   const explorerVisibility = activeMainTab === 0 ? "" : "hidden";
   const editorVisibility = activeMainTab === 0 ? "" : "hidden";
+  const llmHelperVisibility = activeMainTab === 0 ? "" : "hidden";
   const terminalVisibility = activeMainTab === 1 ? "" : "hidden";
   const settingsVisibility = activeMainTab === 2 ? "" : "hidden";
 
+  const tabGridClasses = [
+    "grid-rows-[42px_7fr_3fr_24px] grid-cols-[minmax(150px,_300px)_1fr]",
+    "grid-rows-[42px_3fr_8fr]",
+    "grid-rows-[42px_auto]",
+  ];
+
   return (
-    <div
-      className={`h-screen w-screen grid grid-cols-12 grid-rows-[42px_auto_24px]`}
-    >
-      <MainTabHeader
-        tabs={["Editor", "Terminal", "Settings"]}
-        onTabClick={(tab: number) => {
-          mainStateDispatch({ type: "SET_MAIN_TAB", payload: tab });
-        }}
-        activeIndex={activeMainTab}
-      />
+    <div className={`h-screen w-screen grid ${tabGridClasses[activeMainTab]}`}>
+      {/* Tabs that show at the top of the screen: */}
+      <div
+        className="col-span-full row-span-1 flex z-30
+      border-b-2 border-innactive-colors bg-white dark:bg-slate-800"
+      >
+        <MainTabs
+          activeIndex={activeMainTab}
+          mainStateDispatch={mainStateDispatch}
+          isMainMenuOpen={isMainMenuOpen}
+        />
+        <EditorFileTabs
+          editorState={mainState.editor}
+          mainStateDispatch={mainStateDispatch}
+        />
+      </div>
+
+      {isMainMenuOpen && (
+        <MainMenu
+          mainStateDispatch={mainStateDispatch}
+          explorerState={mainState.explorer}
+          editorState={mainState.editor}
+        />
+      )}
 
       <Explorer
         explorerState={mainState.explorer}
         editorState={mainState.editor}
         mainStateDispatch={mainStateDispatch}
         parentNode={mainState.explorer.explorerTreeRoot}
-        className={`col-span-4 row-start-2 ${explorerVisibility}`}
+        className={`row-start-2 ${explorerVisibility}`}
       />
-      <Editor
+
+      <FileEditor
         editorState={mainState.editor}
         mainStateDispatch={mainStateDispatch}
         explorerState={mainState.explorer}
-        className={`col-span-8 row-start-2 ${editorVisibility}`}
+        className={`row-start-2 ${editorVisibility}`}
+      />
+
+      <LLMNavigation
+        editorState={mainState.editor}
+        mainStateDispatch={mainStateDispatch}
+        className={`row-start-3 ${llmHelperVisibility}`}
       />
 
       {!!socket && (

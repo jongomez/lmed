@@ -1,5 +1,4 @@
 import type { EditorState } from "@/types/MainTypes";
-import { P } from "./base/Typography.server";
 
 type MainFooterProps = {
   editorState: EditorState;
@@ -7,11 +6,13 @@ type MainFooterProps = {
 };
 
 export const MainFooter = ({ editorState, activeIndex }: MainFooterProps) => {
+  if (activeIndex !== 0) {
+    return null;
+  }
+
   return (
-    <div className="col-span-full row-start-3 flex justify-center">
-      {activeIndex === 0 && (
-        <P className="mt-0">Editor mode: {editorState.currentTab.language}</P>
-      )}
+    <div className="col-span-full row-start-4 flex justify-center main-text-colors">
+      Editor mode: {editorState.currentTab.language}
     </div>
   );
 };
