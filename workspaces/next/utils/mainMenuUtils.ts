@@ -1,6 +1,6 @@
 import type {
-  EditorState,
   ExplorerState,
+  FileEditorState,
   FileNode,
   MainStateDispatch,
 } from "@/types/MainTypes";
@@ -23,7 +23,6 @@ export const openFile = async (
     name: file.name,
     type: "file",
     selected: true,
-    parentNode: explorer.explorerTreeRoot,
     fileHandle,
   };
 
@@ -54,41 +53,41 @@ export const openDirectory = async (
 export const saveFile = async (
   mainStateDispatch: MainStateDispatch,
   explorerState: ExplorerState,
-  editorState: EditorState
+  fileEditorState: FileEditorState
 ) => {
-  if (!editorState.currentTab.fileNode) {
+  if (!fileEditorState.currentTab.fileNode) {
     throw new Error("No currentTab found :(");
   }
 
-  let fileHandle = editorState.currentTab.fileNode.fileHandle;
+  let fileHandle = fileEditorState.currentTab.fileNode.fileHandle;
 
   // If there's no fileHandle, call saveFileAs to save the file with a new name.
   if (!fileHandle) {
-    saveFileAs(mainStateDispatch, explorerState, editorState);
+    saveFileAs(mainStateDispatch, explorerState, fileEditorState);
     return;
   }
 
   const writable = await fileHandle.createWritable();
-  await writable.write(editorState.currentTab.value.join("\n"));
+  await writable.write(fileEditorState.currentTab.value.join("\n"));
   await writable.close();
 };
 
 export const saveFileAs = async (
   mainStateDispatch: MainStateDispatch,
   explorerState: ExplorerState,
-  editorState: EditorState
+  fileEditorState: FileEditorState
 ) => {
-  if (!editorState.currentTab.fileNode) {
+  if (!fileEditorState.currentTab.fileNode) {
     throw new Error("No currentTab found :(");
   }
 
   if (!("showSaveFilePicker" in window)) {
     const a = document.createElement("a");
-    const file = new Blob([editorState.currentTab.value.join("\n")], {
+    const file = new Blob([fileEditorState.currentTab.value.join("\n")], {
       type: "text/plain",
     });
     a.href = URL.createObjectURL(file);
-    a.download = editorState.currentTab.fileNode.name;
+    a.download = fileEditorState.currentTab.fileNode.name;
     a.style.display = "none";
     document.body.appendChild(a);
     a.click();
@@ -100,18 +99,18 @@ export const saveFileAs = async (
   const fileHandle = await window.showSaveFilePicker();
 
   const writable = await fileHandle.createWritable();
-  await writable.write(editorState.currentTab.value.join("\n"));
+  await writable.write(fileEditorState.currentTab.value.join("\n"));
   await writable.close();
 
   // Update state with the new fileHandle.
 
-  editorState.currentTab.fileNode.fileHandle = fileHandle;
+  fileEditorState.currentTab.fileNode.fileHandle = fileHandle;
 };
 
 export const createNewFile = async (
   mainStateDispatch: MainStateDispatch,
   explorerState: ExplorerState,
-  editorState: EditorState
+  fileEditorState: FileEditorState
 ) => {
   const newNodeId = explorerState.explorerTreeRoot.treeLength + 1;
   const newNode = createEmptyFileInMemory(newNodeId);

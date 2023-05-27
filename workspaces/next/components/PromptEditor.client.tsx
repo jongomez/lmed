@@ -14,7 +14,7 @@ import {
   getEditorThemeFromState,
 } from "@/utils/editorUtils";
 
-type FileEditorProps = {
+type PromptEditorProps = {
   fileEditorState: FileEditorState;
   globalEditorSettings: GlobalEditorSettings;
   mainStateDispatch: MainStateDispatch;
@@ -22,13 +22,13 @@ type FileEditorProps = {
   className: string;
 };
 
-export const FileEditor = ({
+export const PromptEditor = ({
   fileEditorState,
   globalEditorSettings,
   mainStateDispatch,
   explorerState,
   className,
-}: FileEditorProps) => {
+}: PromptEditorProps) => {
   // https://github.com/securingsincity/react-ace/issues/27
   // https://github.com/JedWatson/react-codemirror/issues/77
   // useEffect(() => {}, []);

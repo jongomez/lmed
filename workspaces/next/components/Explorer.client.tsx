@@ -2,9 +2,9 @@
 
 import type {
   DirectoryNode,
-  EditorState,
   ExplorerNode,
   ExplorerState,
+  FileEditorState,
   MainStateDispatch,
   RootNode,
 } from "@/types/MainTypes";
@@ -75,7 +75,7 @@ const ExplorerList = ({
 
 type ExplorerProps = {
   explorerState: ExplorerState;
-  editorState: EditorState;
+  fileEditorState: FileEditorState;
   mainStateDispatch: MainStateDispatch;
   parentNode: RootNode | DirectoryNode;
   className: string;
@@ -84,7 +84,7 @@ type ExplorerProps = {
 export const Explorer = ({
   parentNode,
   explorerState,
-  editorState,
+  fileEditorState,
   mainStateDispatch,
   className,
 }: ExplorerProps) => {
@@ -115,7 +115,7 @@ export const Explorer = ({
           </Button>
           {/* <Button
             onClick={() =>
-              createNewFile(mainStateDispatch, explorerState, editorState)
+              createNewFile(mainStateDispatch, explorerState, fileEditorState)
             }
             className={buttonClasses}
           >

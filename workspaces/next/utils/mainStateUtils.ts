@@ -1,10 +1,11 @@
 "use client";
 
 import type {
-  EditorTab,
   ExplorerNode,
+  FileEditorTab,
   MainState,
   MainStateAction,
+  PromptTab,
   RootNode,
 } from "@/types/MainTypes";
 import { createNewTab } from "./editorUtils";
@@ -19,12 +20,28 @@ export const getInitialState = (): MainState => {
     children: [],
   };
 
+  const initialPromptTabs: PromptTab[] = [
+    {
+      selected: true,
+      tabName: "Current Prompt",
+    },
+
+    {
+      selected: false,
+      tabName: "Prompt Source Code",
+    },
+    {
+      selected: false,
+      tabName: "History",
+    },
+  ];
+
   const initialFileId = 1;
   const initialFile = createEmptyFileInMemory(initialFileId);
 
   explorerTreeRoot.children.push(initialFile);
 
-  const initialTab: EditorTab = {
+  const initialTab: FileEditorTab = {
     fileNode: initialFile,
     selected: true,
     value: ["", ""],
@@ -34,20 +51,25 @@ export const getInitialState = (): MainState => {
   };
 
   return {
-    tabIndex: 0,
+    iconTabIndex: 0,
     explorer: {
       explorerTreeRoot,
       selectedNode: initialFile,
       idCounter: 2,
     },
-    editor: {
+    fileEditor: {
       currentTab: initialTab,
       allTabs: [initialTab],
+    },
+    globalEditorSettings: {
       fontSize: 14,
-      diffEditorRef: null,
       theme: "github-dark",
     },
-    mainTab: 0,
+    promptEditor: {
+      currentTab: initialPromptTabs[0],
+      allTabs: initialPromptTabs,
+    },
+    isMainMenuOpen: false,
   };
 };
 
@@ -78,7 +100,7 @@ export const mainStateReducer = (
 ): MainState => {
   switch (action.type) {
     case "SET_ICON_TAB": {
-      draft.mainTab = action.payload;
+      draft.iconTabIndex = action.payload;
       return draft;
     }
 
@@ -139,17 +161,17 @@ export const mainStateReducer = (
       draftNode.selected = true;
 
       // Check to see if a tab is already open for this file.
-      let currentTab = draft.editor.allTabs.find(
+      let currentTab = draft.fileEditor.allTabs.find(
         (tab) => tab.fileNode.id === draftNode.id
       );
 
       // If the tab is not found (i.e. the file is not open in any tab), create a new tab.
       if (!currentTab) {
         currentTab = createNewTab(draftNode, file, contents);
-        draft.editor.allTabs.push(currentTab);
+        draft.fileEditor.allTabs.push(currentTab);
       }
 
-      draft.editor.currentTab = currentTab;
+      draft.fileEditor.currentTab = currentTab;
       draft.explorer.selectedNode = draftNode;
 
       return draft;
@@ -171,14 +193,14 @@ export const mainStateReducer = (
 
       // Handle tabs - create a new tab for the new file, and select that tab.
       const currentTab = createNewTab(newFileNode, newFileNode.file, "");
-      draft.editor.allTabs.push(currentTab);
-      draft.editor.currentTab = currentTab;
+      draft.fileEditor.allTabs.push(currentTab);
+      draft.fileEditor.currentTab = currentTab;
 
       return draft;
     }
 
-    case "SET_CURRENT_TAB": {
-      draft.editor.currentTab = action.payload;
+    case "SET_CURRENT_FILE_TAB": {
+      draft.fileEditor.currentTab = action.payload;
       return draft;
     }
 
@@ -192,4 +214,7 @@ export const mainStateReducer = (
       return draft;
     }
   }
+
+  // Default return value.
+  return draft;
 };

@@ -1,6 +1,6 @@
 import {
-  EditorState,
   ExplorerState,
+  FileEditorState,
   MainStateDispatch,
 } from "@/types/MainTypes";
 import {
@@ -44,13 +44,13 @@ type MainMenuProps = {
   mainStateDispatch: MainStateDispatch;
   className?: string;
   explorerState: ExplorerState;
-  editorState: EditorState;
+  fileEditorState: FileEditorState;
 };
 
 export const MainMenu = ({
   mainStateDispatch,
   explorerState,
-  editorState,
+  fileEditorState,
   className,
 }: MainMenuProps) => {
   const iconSize = 24;
@@ -72,7 +72,7 @@ export const MainMenu = ({
       >
         <MenuItem
           onClick={() => {
-            createNewFile(mainStateDispatch, explorerState, editorState);
+            createNewFile(mainStateDispatch, explorerState, fileEditorState);
             mainStateDispatch({ type: "CLOSE_MAIN_MENU" });
           }}
         >
@@ -99,7 +99,7 @@ export const MainMenu = ({
         </MenuItem>
         <MenuItem
           onClick={() => {
-            saveFile(mainStateDispatch, explorerState, editorState);
+            saveFile(mainStateDispatch, explorerState, fileEditorState);
             mainStateDispatch({ type: "CLOSE_MAIN_MENU" });
           }}
         >
@@ -108,7 +108,7 @@ export const MainMenu = ({
         </MenuItem>
         <MenuItem
           onClick={() =>
-            saveFileAs(mainStateDispatch, explorerState, editorState)
+            saveFileAs(mainStateDispatch, explorerState, fileEditorState)
           }
         >
           <Import size={iconSize} className={iconClasses} />

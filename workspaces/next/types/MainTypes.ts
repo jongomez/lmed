@@ -1,5 +1,5 @@
 import { EditorTheme, Language } from "@/utils/editorUtils";
-import type { Dispatch, Ref } from "react";
+import type { Dispatch } from "react";
 
 export type RootNode = {
   id: 0;
@@ -37,7 +37,7 @@ export type ExplorerState = {
   idCounter: number;
 };
 
-export type EditorTab = {
+export type FileEditorTab = {
   fileNode: FileNode;
   selected: boolean;
   value: string[];
@@ -47,22 +47,36 @@ export type EditorTab = {
   markers: object;
 };
 
-export type EditorState = {
-  currentTab: EditorTab;
-  allTabs: EditorTab[];
-  fontSize: number;
+export type PromptTab = {
+  selected: boolean;
+  tabName: "Current Prompt" | "Prompt Source Code" | "History";
+};
+
+export type FileEditorState = {
+  currentTab: FileEditorTab;
+  allTabs: FileEditorTab[];
   // editorRef: Ref<any>;
-  diffEditorRef: Ref<any>;
-  theme: EditorTheme;
 };
 
 export type SiteTheme = "light" | "dark";
 
+export type PromptEditorState = {
+  currentTab: PromptTab;
+  allTabs: PromptTab[];
+};
+
+// These settings are shared between the file editor and the LLM prompt editor.
+export type GlobalEditorSettings = {
+  theme: EditorTheme;
+  fontSize: number;
+};
+
 export type MainState = {
-  tabIndex: number;
-  editor: EditorState;
+  iconTabIndex: number;
+  globalEditorSettings: GlobalEditorSettings;
+  fileEditor: FileEditorState;
+  promptEditor: PromptEditorState;
   explorer: ExplorerState;
-  mainTab: number;
   isMainMenuOpen: boolean;
 };
 
@@ -76,7 +90,8 @@ export type MainStateAction =
       payload: { fileNode: FileNode; file: File; contents: string };
     }
   | { type: "CREATE_NEW_FILE"; payload: FileNode }
-  | { type: "SET_CURRENT_TAB"; payload: EditorTab }
+  | { type: "SET_CURRENT_FILE_TAB"; payload: FileEditorTab }
+  | { type: "SET_CURRENT_PROMPT_TAB"; payload: PromptTab["tabName"] }
   | { type: "OPEN_MAIN_MENU" }
   | { type: "CLOSE_MAIN_MENU" };
 

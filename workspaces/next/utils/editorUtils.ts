@@ -1,4 +1,9 @@
-import type { EditorState, EditorTab, FileNode } from "@/types/MainTypes";
+import type {
+  FileEditorState,
+  FileEditorTab,
+  FileNode,
+  GlobalEditorSettings,
+} from "@/types/MainTypes";
 import { Extension } from "@codemirror/state";
 import { langs } from "@uiw/codemirror-extensions-langs";
 import * as themes from "@uiw/codemirror-themes-all";
@@ -110,16 +115,16 @@ const getLanguageFromFileName = (fileName: string): Language => {
 };
 
 export const getEditorThemeFromState = (
-  editorState: EditorState
+  globalEditorSettings: GlobalEditorSettings
 ): Extension => {
   for (const themeNameSingleWord of themeNamesSingleWord) {
-    if (themeNameSingleWord === editorState.theme) {
+    if (themeNameSingleWord === globalEditorSettings.theme) {
       return themes[themeNameSingleWord];
     }
   }
 
   // TODO: There are some missing, e.g. gruvbox-light.
-  switch (editorState.theme) {
+  switch (globalEditorSettings.theme) {
     case "duotone-dark":
       return themes.duotoneDark;
     case "duotone-light":
@@ -154,10 +159,10 @@ export const getEditorThemeFromState = (
 };
 
 export const getEditorLanguageFromState = (
-  editorState: EditorState
+  fileEditorState: FileEditorState
 ): Extension => {
   // TODO: Check if there are any missing. Very likely there are.
-  switch (editorState.currentTab.language) {
+  switch (fileEditorState.currentTab.language) {
     case "javascript":
       return langs.javascript({ jsx: true });
     case "ts":
@@ -195,7 +200,7 @@ export const createNewTab = (
   fileNode: FileNode,
   file: File,
   contents: string
-): EditorTab => {
+): FileEditorTab => {
   const fileName = file.name;
 
   return {
