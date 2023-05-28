@@ -1,7 +1,7 @@
 "use client";
 
 import CodeMirror from "@uiw/react-codemirror";
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import {
   ExplorerState,
@@ -13,6 +13,7 @@ import {
   getEditorLanguageFromState,
   getEditorThemeFromState,
 } from "@/utils/editorUtils";
+import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 
 type FileEditorProps = {
   fileEditorState: FileEditorState;
@@ -29,14 +30,15 @@ export const FileEditor = ({
   explorerState,
   className,
 }: FileEditorProps) => {
-  // https://github.com/securingsincity/react-ace/issues/27
-  // https://github.com/JedWatson/react-codemirror/issues/77
-  // useEffect(() => {}, []);
+  const codeMirrorRef = useRef<ReactCodeMirrorRef>();
 
-  const editorProps = {
-    height: "100%",
-    width: "100%",
-  };
+  useEffect(() => {
+    const editor = codeMirrorRef.current?.editor;
+
+    if (!editor) return;
+
+    // editor.setSize("100%", "100%");
+  }, [codeMirrorRef]);
 
   // TODO: serialize editor state and store it in localStorage?
   //  https://github.com/uiwjs/react-codemirror#use-initialstate-to-restore-state-from-json-serialized-representation
@@ -46,13 +48,17 @@ export const FileEditor = ({
   }, []);
 
   return (
-    <div className={className}>
+    <div className={`${className} overflow-auto`}>
       <CodeMirror
         value="console.log('hello world!');"
         theme={getEditorThemeFromState(globalEditorSettings)}
         extensions={[getEditorLanguageFromState(fileEditorState)]}
         onChange={onChange}
-        {...editorProps}
+        // ref={}
+        // Both style={{ height: "100%" }} and height="100%" are necessary.
+        style={{ height: "100%" }}
+        height="100%"
+        width="100%"
       />
     </div>
   );

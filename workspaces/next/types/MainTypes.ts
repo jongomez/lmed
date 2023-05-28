@@ -1,4 +1,5 @@
 import { EditorTheme, Language } from "@/utils/editorUtils";
+import { Delta } from "@/utils/hooks";
 import type { Dispatch } from "react";
 
 export type RootNode = {
@@ -71,12 +72,18 @@ export type GlobalEditorSettings = {
   fontSize: number;
 };
 
+export type LayoutState = {
+  adjustableRowSize: number;
+  verticalHandlePosition: number;
+};
+
 export type MainState = {
   iconTabIndex: number;
   globalEditorSettings: GlobalEditorSettings;
   fileEditor: FileEditorState;
   promptEditor: PromptEditorState;
   explorer: ExplorerState;
+  layout: LayoutState;
   isMainMenuOpen: boolean;
 };
 
@@ -93,7 +100,15 @@ export type MainStateAction =
   | { type: "SET_CURRENT_FILE_TAB"; payload: FileEditorTab }
   | { type: "SET_CURRENT_PROMPT_TAB"; payload: PromptTab["tabName"] }
   | { type: "OPEN_MAIN_MENU" }
-  | { type: "CLOSE_MAIN_MENU" };
+  | { type: "CLOSE_MAIN_MENU" }
+  | {
+      type: "RESIZE_EXPLORER_HORIZONTALLY";
+      payload: { event: PointerEvent; delta: Delta; initialRowSize: number };
+    }
+  | {
+      type: "RESIZE_EXPLORER_VERTICALLY";
+      payload: { event: PointerEvent; delta: Delta; initialRowSize: number };
+    };
 
 export type MainStateDispatch = Dispatch<MainStateAction>;
 

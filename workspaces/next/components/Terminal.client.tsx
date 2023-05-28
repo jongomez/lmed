@@ -21,7 +21,7 @@ let fitAddon: FitAddonType | undefined;
 
 type MyTerminalProps = {
   socket: Socket;
-  className: string;
+  activeTab: number;
 };
 
 const initTerminal = async (xtermElement: HTMLDivElement, socket: Socket) => {
@@ -51,9 +51,10 @@ const initTerminal = async (xtermElement: HTMLDivElement, socket: Socket) => {
   fitAddon.fit();
 };
 
-export const MyTerminal = ({ socket, className }: MyTerminalProps) => {
+export const MyTerminal = ({ socket, activeTab }: MyTerminalProps) => {
   const xtermRef = useRef<HTMLDivElement>(null);
   const hasInitTerminal = useRef(false);
+  const isVisible = activeTab === 1;
 
   useEffect(() => {
     if (!xtermRef.current || hasInitTerminal.current) {
@@ -65,19 +66,14 @@ export const MyTerminal = ({ socket, className }: MyTerminalProps) => {
   }, [xtermRef, socket]);
 
   // If the tab is not visible, and we call fit, the terminal won't show.
-  if (!className.includes("hidden")) {
+  if (isVisible) {
     fitAddon?.fit();
   }
 
   return (
-    <div
-      id="terminal"
-      ref={xtermRef}
-      // style={{
-      //   width: "100%",
-      //   height: "100%",
-      // }}
-      className={className}
-    ></div>
+    <div className={`${isVisible ? "" : "hidden"} h-[calc(100vh_-_42px)]`}>
+      <div id="terminal" ref={xtermRef} className="col-span-full"></div>
+      {/* TODO: Add a terminal prompt editor here. */}
+    </div>
   );
 };

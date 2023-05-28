@@ -9,6 +9,7 @@ import {
   GlobalEditorSettings,
   MainStateDispatch,
 } from "@/types/MainTypes";
+import { PROMPT_EDITOR_ID } from "@/utils/constants";
 import {
   getEditorLanguageFromState,
   getEditorThemeFromState,
@@ -33,11 +34,6 @@ export const PromptEditor = ({
   // https://github.com/JedWatson/react-codemirror/issues/77
   // useEffect(() => {}, []);
 
-  const editorProps = {
-    height: "100%",
-    width: "100%",
-  };
-
   // TODO: serialize editor state and store it in localStorage?
   //  https://github.com/uiwjs/react-codemirror#use-initialstate-to-restore-state-from-json-serialized-representation
   const onChange = useCallback((value: string) => {
@@ -46,13 +42,16 @@ export const PromptEditor = ({
   }, []);
 
   return (
-    <div className={className}>
+    <div className={className} id={PROMPT_EDITOR_ID}>
       <CodeMirror
         value="console.log('hello world!');"
         theme={getEditorThemeFromState(globalEditorSettings)}
         extensions={[getEditorLanguageFromState(fileEditorState)]}
         onChange={onChange}
-        {...editorProps}
+        // Both style={{ height: "100%" }} and height="100%" are necessary.
+        style={{ height: "100%" }}
+        height="100%"
+        width="100%"
       />
     </div>
   );

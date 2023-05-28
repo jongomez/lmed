@@ -8,6 +8,7 @@ import type {
   PromptTab,
   RootNode,
 } from "@/types/MainTypes";
+import { HEADER_SIZE_PX, RESIZE_HANDLE_SIZE_PX } from "./constants";
 import { createNewTab } from "./editorUtils";
 import { createEmptyFileInMemory } from "./fileUtils";
 
@@ -68,6 +69,10 @@ export const getInitialState = (): MainState => {
     promptEditor: {
       currentTab: initialPromptTabs[0],
       allTabs: initialPromptTabs,
+    },
+    layout: {
+      adjustableRowSize: 200,
+      verticalHandlePosition: 0,
     },
     isMainMenuOpen: false,
   };
@@ -213,6 +218,35 @@ export const mainStateReducer = (
       draft.isMainMenuOpen = false;
       return draft;
     }
+
+    case "RESIZE_EXPLORER_HORIZONTALLY": {
+      const deltaY = action.payload.delta.y;
+      const initialRowSize = action.payload.initialRowSize;
+      // Row size (height) can't be smaller than 0.
+      let adjustableRowSize = Math.max(0, initialRowSize - deltaY);
+      // Row size (height) can't be greater than 100vh - HEADER_SIZE_PX*2 - RESIZE_HANDLE_SIZE_PX:
+      // The *2 is because there will be 2 headers above the row - the top header, and the prompt header.
+      // TODO: In mobile, window.innerHeight likely won't correspond to 100vh all the time. Not sure though.
+      adjustableRowSize = Math.min(
+        window.innerHeight - HEADER_SIZE_PX * 2 - RESIZE_HANDLE_SIZE_PX,
+        adjustableRowSize
+      );
+
+      draft.layout.adjustableRowSize = adjustableRowSize;
+
+      console.log("adjustableRowSize", adjustableRowSize);
+      console.log("deltaY", deltaY);
+
+      return draft;
+    }
+
+    // case "RESIZE_EXPLORER_VERTICALLY": {
+    //   const { clientY } = action.payload;
+    //   const containerHeight = document.documentElement.clientHeight;
+    //   const newPosition = (clientY / containerHeight) * 100;
+    //   draft.layout.verticalHandlePosition = newPosition;
+    //   return draft;
+    // }
   }
 
   // Default return value.
