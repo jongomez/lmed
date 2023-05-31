@@ -1,7 +1,7 @@
 "use client";
 
 import CodeMirror from "@uiw/react-codemirror";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 
 import {
   ExplorerState,
@@ -32,13 +32,22 @@ export const FileEditor = ({
 }: FileEditorProps) => {
   const codeMirrorRef = useRef<ReactCodeMirrorRef>();
 
-  useEffect(() => {
-    const editor = codeMirrorRef.current?.editor;
-
-    if (!editor) return;
-
-    // editor.setSize("100%", "100%");
-  }, [codeMirrorRef]);
+  // Gotta use a ref callback:
+  // https://github.com/uiwjs/react-codemirror/issues/314
+  function refCallack(editor: ReactCodeMirrorRef) {
+    if (
+      !codeMirrorRef.current?.editor &&
+      editor?.editor &&
+      editor?.state &&
+      editor?.view
+    ) {
+      codeMirrorRef.current = editor;
+      mainStateDispatch({
+        type: "SET_FILE_EDITOR_REF",
+        payload: editor,
+      });
+    }
+  }
 
   // TODO: serialize editor state and store it in localStorage?
   //  https://github.com/uiwjs/react-codemirror#use-initialstate-to-restore-state-from-json-serialized-representation
@@ -50,11 +59,11 @@ export const FileEditor = ({
   return (
     <div className={`${className} overflow-auto`}>
       <CodeMirror
+        ref={refCallack}
         value="console.log('hello world!');"
         theme={getEditorThemeFromState(globalEditorSettings)}
         extensions={[getEditorLanguageFromState(fileEditorState)]}
         onChange={onChange}
-        // ref={}
         // Both style={{ height: "100%" }} and height="100%" are necessary.
         style={{ height: "100%" }}
         height="100%"

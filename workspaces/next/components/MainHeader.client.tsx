@@ -25,6 +25,7 @@ export const MainHeader = ({
         isMainMenuOpen={isMainMenuOpen}
       />
       <FileEditorTabs
+        activeIndex={activeMainTab}
         fileEditorState={fileEditorState}
         mainStateDispatch={mainStateDispatch}
       />

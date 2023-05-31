@@ -11,8 +11,12 @@ import type {
 import { handleDirectoryClick, handleFileClick } from "@/utils/explorerUtils";
 import { openDirectory, openFile } from "@/utils/mainMenuUtils";
 import { ChevronDown, ChevronUp, File, FolderOpen } from "lucide-react";
+import { SideTab } from "./Tabs.server";
 import { Button } from "./base/Button.server";
-import { Li, Ul } from "./base/Typography.server";
+
+const isExplorerNodeSelected = (node: ExplorerNode): boolean => {
+  return node.type === "file" && node.selected;
+};
 
 type ExplorerListProps = {
   explorerState: ExplorerState;
@@ -26,50 +30,46 @@ const ExplorerList = ({
   explorerState,
   mainStateDispatch,
 }: ExplorerListProps) => {
-  const renderNode = (node: ExplorerNode) => {
-    switch (node.type) {
-      case "directory":
-        return (
-          <div>
-            <button
-              onClick={() => handleDirectoryClick(node, mainStateDispatch)}
-            >
-              {node.expanded ? <ChevronDown /> : <ChevronUp />}
-              {node.name}
-            </button>
-            {node.expanded && (
-              <ExplorerList
-                parentNode={node}
-                explorerState={explorerState}
-                mainStateDispatch={mainStateDispatch}
-              />
-            )}
-          </div>
-        );
-
-      case "file":
-        return (
-          <div
-            key={node.id}
-            onClick={() => handleFileClick(node, mainStateDispatch)}
-            className="flex"
-          >
-            <File />
-            {node.name}
-          </div>
-        );
-
-      case "root":
-        return null;
-    }
-  };
+  const iconSize = 18;
 
   return (
-    <Ul className="overflow-auto">
-      {parentNode.children.map((node, index) => (
-        <Li key={index}>{renderNode(node)}</Li>
+    <div className="overflow-auto">
+      {parentNode.children.map((node) => (
+        <SideTab key={node.id} isActive={isExplorerNodeSelected(node)}>
+          {node.type === "directory" && (
+            <div>
+              <button
+                onClick={() => handleDirectoryClick(node, mainStateDispatch)}
+              >
+                {node.expanded ? (
+                  <ChevronDown size={iconSize} />
+                ) : (
+                  <ChevronUp size={iconSize} />
+                )}
+                {node.name}
+              </button>
+              {node.expanded && (
+                <ExplorerList
+                  parentNode={node}
+                  explorerState={explorerState}
+                  mainStateDispatch={mainStateDispatch}
+                />
+              )}
+            </div>
+          )}
+
+          {node.type === "file" && (
+            <div
+              onClick={() => handleFileClick(node, mainStateDispatch)}
+              className="flex items-center"
+            >
+              <File size={iconSize} className="mr-1" />
+              {node.name}
+            </div>
+          )}
+        </SideTab>
       ))}
-    </Ul>
+    </div>
   );
 };
 
@@ -94,7 +94,7 @@ export const Explorer = ({
 
   return (
     <div
-      className={`${className} flex flex-col justify-between overflow-hidden max-w-[300px]`}
+      className={`${className} flex flex-col justify-between overflow-hidden`}
     >
       <ExplorerList {...{ parentNode, explorerState, mainStateDispatch }} />
       <div className="w-90 flex flex-col items-center">

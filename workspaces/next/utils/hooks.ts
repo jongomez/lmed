@@ -1,4 +1,4 @@
-import { ResizeCursor } from "@/components/ResizeHandle.server";
+import { ResizeCursor } from "@/components/ResizeHandle.client";
 import {
   SettingsContext,
   SettingsContextType,
@@ -67,6 +67,11 @@ export const useDrag = (
 
   const handlePointerMove = useCallback(
     (event: PointerEvent) => {
+      // console.log(
+      //   "handlePointerMove - isDraggingRef.current: ",
+      //   isDraggingRef.current
+      // );
+
       if (isDraggingRef.current) {
         const deltaX = event.clientX - initialXRef.current;
         const deltaY = event.clientY - initialYRef.current;
@@ -81,10 +86,10 @@ export const useDrag = (
 
   const handlePointerUp = useCallback(
     (event: PointerEvent) => {
-      console.log(
-        "handlePointerUp - isDraggingRef.current: ",
-        isDraggingRef.current
-      );
+      // console.log(
+      //   "handlePointerUp - isDraggingRef.current: ",
+      //   isDraggingRef.current
+      // );
 
       if (isDraggingRef.current) {
         isDraggingRef.current = false;
@@ -97,10 +102,15 @@ export const useDrag = (
 
   const handlePointerDown = useCallback(
     (event: PointerEvent) => {
-      console.log(
-        "handlePointerDown - isDraggingRef.current",
-        isDraggingRef.current
-      );
+      // console.log(
+      //   "handlePointerDown - isDraggingRef.current",
+      //   isDraggingRef.current
+      // );
+
+      // Prevent default helps in the following scenario:
+      // 1. The user has some text selected, and tries to drag the resize handle. The default
+      //    browser behavior is to drag the text, not the handler. preventDefault() prevents this.
+      event.preventDefault();
 
       isDraggingRef.current = true;
       setIsDraggingState(true);
@@ -117,9 +127,10 @@ export const useDrag = (
   useEffect(() => {
     if (!refElement) return;
 
-    console.log("useDrag: adding event listeners");
+    // console.log("useDrag: adding event listeners");
 
-    // Just as a sanity check - always remove existing event listeners (if any) before adding new ones.
+    // TODO (maybe): handle touch events as well? These pointer events are not working great on mobile.
+    // Just as a sanity check - always remove existing (if any) event listeners before adding new ones.
     refElement.removeEventListener("pointerdown", handlePointerDown);
     refElement.addEventListener("pointerdown", handlePointerDown);
 

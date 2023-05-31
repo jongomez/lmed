@@ -1,5 +1,6 @@
 import type {
   DirectoryNode,
+  ExplorerNode,
   FileNode,
   MainStateDispatch,
   RootNode,
@@ -98,8 +99,8 @@ export const handleFileClick = async (
   let file: File;
   if (fileNode.fileHandle) {
     file = await fileNode.fileHandle.getFile();
-  } else if (fileNode.file) {
-    file = fileNode.file;
+  } else if (fileNode.memoryOnlyFile) {
+    file = fileNode.memoryOnlyFile;
   } else {
     throw new Error("No fileHandle or fileNode.file found :(");
   }
@@ -108,8 +109,8 @@ export const handleFileClick = async (
 
   // Update state in a function to access prevState
   mainStateDispatch({
-    type: "EXPLORER_FILE_CLICK",
-    payload: { fileNode, file, contents },
+    type: "SWITCH_FILE",
+    payload: { fileNode },
   });
 };
 
@@ -122,3 +123,21 @@ export const handleDirectoryClick = async (
     payload: directoryNode,
   });
 };
+
+export function printTree(node: ExplorerNode, indent: number = 0): string {
+  let output = "";
+
+  // Add indentation
+  const indents = " ".repeat(indent * 2);
+
+  if (node.type === "file") {
+    output += `${indents}- [File] ${node.name} - is selected - ${node.selected}\n`;
+  } else {
+    output += `${indents}- [Directory] ${node.name}\n`;
+    for (let child of node.children) {
+      output += printTree(child, indent + 1);
+    }
+  }
+
+  return output;
+}

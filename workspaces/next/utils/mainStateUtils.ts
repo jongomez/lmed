@@ -1,7 +1,6 @@
 "use client";
 
 import type {
-  ExplorerNode,
   FileEditorTab,
   MainState,
   MainStateAction,
@@ -10,7 +9,12 @@ import type {
 } from "@/types/MainTypes";
 import { HEADER_SIZE_PX, RESIZE_HANDLE_SIZE_PX } from "./constants";
 import { createNewTab } from "./editorUtils";
-import { createEmptyFileInMemory } from "./fileUtils";
+import {
+  createEmptyFileInMemory,
+  deselectAllFilesInTree,
+  findNodeInTree,
+  switchSelectedFile,
+} from "./fileTreeUtils";
 
 export const getInitialState = (): MainState => {
   const explorerTreeRoot: RootNode = {
@@ -44,22 +48,16 @@ export const getInitialState = (): MainState => {
 
   const initialTab: FileEditorTab = {
     fileNode: initialFile,
-    selected: true,
-    value: ["", ""],
-    language: "markdown",
-    hasDiff: false,
-    markers: {},
   };
 
   return {
     iconTabIndex: 0,
     explorer: {
       explorerTreeRoot,
-      selectedNode: initialFile,
       idCounter: 2,
     },
     fileEditor: {
-      currentTab: initialTab,
+      fileEditorRef: null,
       allTabs: [initialTab],
     },
     globalEditorSettings: {
@@ -67,36 +65,14 @@ export const getInitialState = (): MainState => {
       theme: "github-dark",
     },
     promptEditor: {
-      currentTab: initialPromptTabs[0],
       allTabs: initialPromptTabs,
     },
     layout: {
-      adjustableRowSize: 200,
-      verticalHandlePosition: 0,
+      resizableRowSize: 200,
+      resizableColSize: 200,
     },
     isMainMenuOpen: false,
   };
-};
-
-const findNodeInTree = (
-  node: ExplorerNode,
-  nodeId: number
-): ExplorerNode | null => {
-  if (node.id === nodeId) {
-    return node;
-  }
-
-  if (node.type === "directory" || node.type === "root") {
-    for (let child of node.children) {
-      let found = findNodeInTree(child, nodeId);
-
-      if (found) {
-        return found;
-      }
-    }
-  }
-
-  return null;
 };
 
 export const mainStateReducer = (
@@ -110,7 +86,6 @@ export const mainStateReducer = (
     }
 
     case "OPEN_FILE": {
-      draft.explorer.selectedNode = action.payload;
       draft.explorer.explorerTreeRoot.children.push(action.payload);
       return draft;
     }
@@ -141,8 +116,10 @@ export const mainStateReducer = (
       return draft;
     }
 
-    case "EXPLORER_FILE_CLICK": {
-      const { fileNode, file, contents } = action.payload;
+    // The SWITCH_FILE action assumes the new file to switch to exists in the tree.
+    // However, the file may not have an associated tab yet.
+    case "SWITCH_FILE": {
+      const { fileNode } = action.payload;
 
       const draftNode = findNodeInTree(
         draft.explorer.explorerTreeRoot,
@@ -156,11 +133,11 @@ export const mainStateReducer = (
       debugger;
 
       if (!draftNode) {
-        throw new Error("Could not find file node in tree");
+        throw new Error("SWITCH_FILE - Could not find file node in tree");
       }
 
       if (draftNode.type !== "file") {
-        throw new Error("Node is not a file");
+        throw new Error("SWITCH_FILE - Node is not a file");
       }
 
       draftNode.selected = true;
@@ -170,14 +147,19 @@ export const mainStateReducer = (
         (tab) => tab.fileNode.id === draftNode.id
       );
 
-      // If the tab is not found (i.e. the file is not open in any tab), create a new tab.
+      // If the tab is not found (i.e. the file is not open in any tab) it means:
+      // - the file is in the file explorer tree, but it is not open in any tab.
       if (!currentTab) {
-        currentTab = createNewTab(draftNode, file, contents);
-        draft.fileEditor.allTabs.push(currentTab);
+        const newTab = createNewTab(draftNode);
+        draft.fileEditor.allTabs.push(newTab);
       }
 
-      draft.fileEditor.currentTab = currentTab;
-      draft.explorer.selectedNode = draftNode;
+      switchSelectedFile(
+        draft.fileEditor.allTabs,
+        fileNode,
+        // original(draft.fileEditor.fileEditorRef)
+        draft.fileEditor.fileEditorRef
+      );
 
       return draft;
     }
@@ -187,25 +169,30 @@ export const mainStateReducer = (
       return draft;
     }
 
+    // The CREATE_NEW_FILE action will:
+    // - Add the passed in fileNode as a child of the root node.
+    // - Create a new tab for the file.
     case "CREATE_NEW_FILE": {
       const newFileNode = action.payload;
-      draft.explorer.selectedNode = newFileNode;
-      draft.explorer.explorerTreeRoot.children.push(newFileNode);
 
-      if (!newFileNode.file) {
-        throw new Error("CREATE_NEW_FILE - file is undefined");
+      if (!newFileNode.memoryOnlyFile) {
+        throw new Error("CREATE_NEW_FILE - memoryOnlyFile is undefined");
       }
 
-      // Handle tabs - create a new tab for the new file, and select that tab.
-      const currentTab = createNewTab(newFileNode, newFileNode.file, "");
-      draft.fileEditor.allTabs.push(currentTab);
-      draft.fileEditor.currentTab = currentTab;
+      deselectAllFilesInTree(draft.explorer.explorerTreeRoot);
+      draft.explorer.explorerTreeRoot.children.push(newFileNode);
 
-      return draft;
-    }
+      const newTab = createNewTab(newFileNode);
+      draft.fileEditor.allTabs.push(newTab);
 
-    case "SET_CURRENT_FILE_TAB": {
-      draft.fileEditor.currentTab = action.payload;
+      debugger;
+      switchSelectedFile(
+        draft.fileEditor.allTabs,
+        newFileNode,
+        // original(draft.fileEditor.fileEditorRef)
+        draft.fileEditor.fileEditorRef
+      );
+
       return draft;
     }
 
@@ -219,34 +206,49 @@ export const mainStateReducer = (
       return draft;
     }
 
-    case "RESIZE_EXPLORER_HORIZONTALLY": {
+    case "RESIZE_EDITORS_HORIZONTALLY": {
       const deltaY = action.payload.delta.y;
       const initialRowSize = action.payload.initialRowSize;
       // Row size (height) can't be smaller than 0.
-      let adjustableRowSize = Math.max(0, initialRowSize - deltaY);
+      let resizableRowSize = Math.max(0, initialRowSize - deltaY);
       // Row size (height) can't be greater than 100vh - HEADER_SIZE_PX*2 - RESIZE_HANDLE_SIZE_PX:
       // The *2 is because there will be 2 headers above the row - the top header, and the prompt header.
-      // TODO: In mobile, window.innerHeight likely won't correspond to 100vh all the time. Not sure though.
-      adjustableRowSize = Math.min(
+      // FIXME: In mobile, window.innerHeight likely won't correspond to 100vh all the time. Not sure though.
+      resizableRowSize = Math.min(
         window.innerHeight - HEADER_SIZE_PX * 2 - RESIZE_HANDLE_SIZE_PX,
-        adjustableRowSize
+        resizableRowSize
       );
 
-      draft.layout.adjustableRowSize = adjustableRowSize;
+      draft.layout.resizableRowSize = resizableRowSize;
 
-      console.log("adjustableRowSize", adjustableRowSize);
-      console.log("deltaY", deltaY);
+      // console.log("resizableRowSize", resizableRowSize);
+      // console.log("deltaY", deltaY);
 
       return draft;
     }
 
-    // case "RESIZE_EXPLORER_VERTICALLY": {
-    //   const { clientY } = action.payload;
-    //   const containerHeight = document.documentElement.clientHeight;
-    //   const newPosition = (clientY / containerHeight) * 100;
-    //   draft.layout.verticalHandlePosition = newPosition;
-    //   return draft;
-    // }
+    case "RESIZE_EDITORS_VERTICALLY": {
+      const deltaX = action.payload.delta.x;
+      const initialColSize = action.payload.initialColSize;
+      // Col size (width) can't be smaller than 0.
+      let resizableColSize = Math.max(0, initialColSize + deltaX);
+      // Col size (width) can't be greater than 100vh.
+      resizableColSize = Math.min(window.innerHeight, resizableColSize);
+
+      draft.layout.resizableColSize = resizableColSize;
+
+      // console.log("resizableColSize", resizableColSize);
+      // console.log("deltaX", deltaX);
+
+      return draft;
+    }
+
+    case "SET_FILE_EDITOR_REF": {
+      debugger;
+      draft.fileEditor.fileEditorRef = action.payload;
+
+      return draft;
+    }
   }
 
   // Default return value.

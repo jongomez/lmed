@@ -1,4 +1,5 @@
 import { MainState, MainStateDispatch } from "@/types/MainTypes";
+import { RESIZE_HANDLE_SIZE_PX } from "@/utils/constants";
 import { Delta } from "@/utils/hooks";
 import { Explorer } from "./Explorer.client";
 import { FileEditor } from "./FileEditor.client";
@@ -23,15 +24,23 @@ export const FileAndPromptEditors = ({
   // 3rd row: prompt header.
   // 4th row: prompt explorer and prompt editor.
   // There will also be a resize handle column to resize the explorers vertically.
-  const adjustableRowSize = mainState.layout.adjustableRowSize;
+  const resizableRowSize = mainState.layout.resizableRowSize;
+  const resizableColSize = mainState.layout.resizableColSize;
 
   return (
     <div
       // Use style={{}} for the grid layout values - because tailwind is not great with dynamic values.
       // (the grid is dynamic because users can resize it)
       style={{
-        gridTemplateRows: "1fr 4px 42px " + adjustableRowSize + "px",
-        gridTemplateColumns: "minmax(150px, 250px) 1fr",
+        gridTemplateRows:
+          "1fr " +
+          RESIZE_HANDLE_SIZE_PX +
+          "px " +
+          "42px " +
+          resizableRowSize +
+          "px",
+        gridTemplateColumns:
+          resizableColSize + "px " + RESIZE_HANDLE_SIZE_PX + "px 1fr",
       }}
       className={`${isVisible ? "grid" : "hidden"} h-[calc(100vh_-_42px)]`}
     >
@@ -43,24 +52,41 @@ export const FileAndPromptEditors = ({
         className="row-start-1"
       />
 
-      <FileEditor
-        fileEditorState={mainState.fileEditor}
-        globalEditorSettings={mainState.globalEditorSettings}
-        mainStateDispatch={mainStateDispatch}
-        explorerState={mainState.explorer}
-        className="row-start-1"
-      />
-
       <ResizeHandle
-        className="row-start-2 col-span-full"
-        cursor="cursor-row-resize"
-        initialSize={adjustableRowSize}
+        className="row-start-1 row-span-full col-start-2"
+        cursor="cursor-col-resize"
+        invisiblePaddingPosition="left"
+        initialSize={resizableColSize}
         onDrag={(delta: Delta, initialSize: number, event: PointerEvent) => {
           // console.log("delta", delta);
           // console.log("initialSize", initialSize);
 
           mainStateDispatch({
-            type: "RESIZE_EXPLORER_HORIZONTALLY",
+            type: "RESIZE_EDITORS_VERTICALLY",
+            payload: { delta, event, initialColSize: initialSize },
+          });
+        }}
+      />
+
+      <FileEditor
+        fileEditorState={mainState.fileEditor}
+        globalEditorSettings={mainState.globalEditorSettings}
+        mainStateDispatch={mainStateDispatch}
+        explorerState={mainState.explorer}
+        className="row-start-1 col-start-3"
+      />
+
+      <ResizeHandle
+        className="row-start-2 col-span-full"
+        cursor="cursor-row-resize"
+        invisiblePaddingPosition="bottom"
+        initialSize={resizableRowSize}
+        onDrag={(delta: Delta, initialSize: number, event: PointerEvent) => {
+          // console.log("delta", delta);
+          // console.log("initialSize", initialSize);
+
+          mainStateDispatch({
+            type: "RESIZE_EDITORS_HORIZONTALLY",
             payload: { delta, event, initialRowSize: initialSize },
           });
         }}
@@ -69,7 +95,7 @@ export const FileAndPromptEditors = ({
       <PromptTabs
         promptEditorState={mainState.promptEditor}
         mainStateDispatch={mainStateDispatch}
-        className="row-start-4 flex flex-col overflow-auto"
+        className="row-start-4 col-start-1 flex flex-col overflow-auto"
       />
 
       <PromptEditor
@@ -77,7 +103,7 @@ export const FileAndPromptEditors = ({
         globalEditorSettings={mainState.globalEditorSettings}
         mainStateDispatch={mainStateDispatch}
         explorerState={mainState.explorer}
-        className="row-start-4"
+        className="row-start-4 col-start-3"
       />
     </div>
   );

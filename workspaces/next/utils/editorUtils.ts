@@ -4,9 +4,11 @@ import type {
   FileNode,
   GlobalEditorSettings,
 } from "@/types/MainTypes";
-import { Extension } from "@codemirror/state";
+import { EditorState, Extension } from "@codemirror/state";
 import { langs } from "@uiw/codemirror-extensions-langs";
 import * as themes from "@uiw/codemirror-themes-all";
+import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
+import { getSelectedFile } from "./fileTreeUtils";
 
 /*
 
@@ -77,7 +79,7 @@ export type EditorTheme = (typeof allThemeNames)[number];
 export const keyboardHandlers = ["emacs", "vim", "vscode", "default"] as const;
 export type KeyboardHandler = (typeof keyboardHandlers)[number];
 
-const getLanguageFromFileName = (fileName: string): Language => {
+export const getLanguageFromFileName = (fileName: string): Language => {
   const extension = fileName.split(".").pop();
 
   switch (extension) {
@@ -161,8 +163,10 @@ export const getEditorThemeFromState = (
 export const getEditorLanguageFromState = (
   fileEditorState: FileEditorState
 ): Extension => {
+  const selectedFileNode = getSelectedFile(fileEditorState.allTabs);
+
   // TODO: Check if there are any missing. Very likely there are.
-  switch (fileEditorState.currentTab.language) {
+  switch (selectedFileNode.language) {
     case "javascript":
       return langs.javascript({ jsx: true });
     case "ts":
@@ -196,19 +200,24 @@ export const getEditorLanguageFromState = (
   }
 };
 
-export const createNewTab = (
-  fileNode: FileNode,
-  file: File,
-  contents: string
-): FileEditorTab => {
-  const fileName = file.name;
-
+export const createNewTab = (fileNode: FileNode): FileEditorTab => {
   return {
     fileNode,
-    selected: true,
-    value: [contents],
-    language: getLanguageFromFileName(fileName),
-    hasDiff: false,
-    markers: {},
   };
 };
+
+export const setNewEditorState = (
+  fileEditorRef: ReactCodeMirrorRef,
+  newEditorState: EditorState
+) => {
+  if (!fileEditorRef.view) {
+    throw new Error("File editor ref has no view.");
+  }
+
+  fileEditorRef.view.setState(newEditorState);
+};
+
+export const createNewEditorState = (
+  fileEditorRef: ReactCodeMirrorRef,
+  newEditorState: EditorState
+) => {};

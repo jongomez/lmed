@@ -4,8 +4,14 @@ import type {
   FileNode,
   MainStateDispatch,
 } from "@/types/MainTypes";
+import { EditorState } from "@codemirror/state";
+import { getLanguageFromFileName } from "./editorUtils";
 import { createExplorerTree } from "./explorerUtils";
-import { createEmptyFileInMemory } from "./fileUtils";
+import {
+  createEmptyFileInMemory,
+  getCurrentEditorViewState,
+  getSelectedFile,
+} from "./fileTreeUtils";
 
 // XXX: Move the below functions to a separate file.
 
@@ -15,6 +21,8 @@ export const openFile = async (
 ) => {
   const [fileHandle] = await window.showOpenFilePicker();
   const file = await fileHandle.getFile();
+  const fileContent = await file.text();
+  const editorStateForFile = EditorState.create({ doc: fileContent });
 
   // XXX: Check if file is already open. If yes, show a message.
 
@@ -23,6 +31,8 @@ export const openFile = async (
     name: file.name,
     type: "file",
     selected: true,
+    language: getLanguageFromFileName(file.name),
+    editorState: editorStateForFile,
     fileHandle,
   };
 
@@ -55,11 +65,13 @@ export const saveFile = async (
   explorerState: ExplorerState,
   fileEditorState: FileEditorState
 ) => {
-  if (!fileEditorState.currentTab.fileNode) {
-    throw new Error("No currentTab found :(");
-  }
+  const selectedFileNode = getSelectedFile(fileEditorState.allTabs);
 
-  let fileHandle = fileEditorState.currentTab.fileNode.fileHandle;
+  const currentEditorViewState = getCurrentEditorViewState(
+    fileEditorState.fileEditorRef
+  );
+
+  const fileHandle = selectedFileNode.fileHandle;
 
   // If there's no fileHandle, call saveFileAs to save the file with a new name.
   if (!fileHandle) {
@@ -68,7 +80,7 @@ export const saveFile = async (
   }
 
   const writable = await fileHandle.createWritable();
-  await writable.write(fileEditorState.currentTab.value.join("\n"));
+  await writable.write(currentEditorViewState.doc.toString());
   await writable.close();
 };
 
@@ -77,17 +89,19 @@ export const saveFileAs = async (
   explorerState: ExplorerState,
   fileEditorState: FileEditorState
 ) => {
-  if (!fileEditorState.currentTab.fileNode) {
-    throw new Error("No currentTab found :(");
-  }
+  const selectedFileNode = getSelectedFile(fileEditorState.allTabs);
+
+  const currentEditorViewState = getCurrentEditorViewState(
+    fileEditorState.fileEditorRef
+  );
 
   if (!("showSaveFilePicker" in window)) {
     const a = document.createElement("a");
-    const file = new Blob([fileEditorState.currentTab.value.join("\n")], {
+    const file = new Blob([currentEditorViewState.doc.toString()], {
       type: "text/plain",
     });
     a.href = URL.createObjectURL(file);
-    a.download = fileEditorState.currentTab.fileNode.name;
+    a.download = selectedFileNode.name;
     a.style.display = "none";
     document.body.appendChild(a);
     a.click();
@@ -99,12 +113,12 @@ export const saveFileAs = async (
   const fileHandle = await window.showSaveFilePicker();
 
   const writable = await fileHandle.createWritable();
-  await writable.write(fileEditorState.currentTab.value.join("\n"));
+  await writable.write(currentEditorViewState.doc.toString());
   await writable.close();
 
   // Update state with the new fileHandle.
 
-  fileEditorState.currentTab.fileNode.fileHandle = fileHandle;
+  selectedFileNode.fileHandle = fileHandle;
 };
 
 export const createNewFile = async (

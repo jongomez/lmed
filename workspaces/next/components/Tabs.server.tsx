@@ -23,7 +23,7 @@ import { ReactNode } from "react";
 // export const MAIN_TAB_PANEL_HEIGHT = "h-[calc(100vh_-_64px)]";
 
 type TabProps = {
-  onTabClick: () => void;
+  onTabClick?: () => void;
   isActive?: boolean;
   className?: string;
   children: ReactNode;
@@ -39,12 +39,12 @@ export const Tab = ({
   return (
     <div
       // key={key}
-      onClick={() => onTabClick()}
+      onClick={() => onTabClick?.()}
       className={`${className}
         cursor-pointer py-2 px-4 inline-block shadow-[0px_2px_0px_0px]
         ${
           isActive
-            ? "text-blue-600 dark:text-blue-300 shadow-active-colors"
+            ? "active-main-text-colors shadow-active-colors"
             : "main-text-colors hover-main-text-colors shadow-innactive-colors"
         }`}
       {...props}
@@ -62,14 +62,13 @@ export const SideTab = ({
 }: TabProps) => {
   return (
     <div
-      onClick={() => onTabClick()}
-      className={`
-        cursor-pointer py-2 px-4 inline-block
+      onClick={() => onTabClick?.()}
+      className={`cursor-pointer py-2 px-4 inline-block w-full
         ${
           isActive
-            ? `text-blue-600 dark:text-blue-300 
+            ? `active-main-text-colors 
             border-l-4 border-active-colors
-            bg-blue-50 dark:bg-slate-700`
+            bg-active-colors`
             : `main-text-colors hover-main-text-colors ml-1`
         }`}
       {...props}
@@ -107,6 +106,7 @@ export const MainTabs = ({
           }
         }}
         isActive={isMainMenuOpen}
+        // className={`${isMainMenuOpen ? "z-50" : ""}`}
       >
         <MenuIcon size={iconSize} />
       </Tab>
@@ -133,21 +133,31 @@ export const MainTabs = ({
 type EditorFileTabsProps = {
   fileEditorState: FileEditorState;
   mainStateDispatch: MainStateDispatch;
+  activeIndex: number;
 };
 
 export const FileEditorTabs = ({
   fileEditorState,
   mainStateDispatch,
+  activeIndex,
 }: EditorFileTabsProps) => {
+  console.log("All tabs:", fileEditorState.allTabs);
+
   return (
     <>
       {fileEditorState.allTabs.map((tab, index) => (
         <Tab
           onTabClick={() =>
-            mainStateDispatch({ type: "SET_CURRENT_FILE_TAB", payload: tab })
+            mainStateDispatch({
+              type: "SWITCH_FILE",
+              payload: {
+                fileNode: tab.fileNode,
+              },
+            })
           }
           key={index}
-          isActive={tab.selected}
+          isActive={tab.fileNode.selected}
+          className={`${activeIndex === 0 ? "" : "hidden"}`}
         >
           {tab.fileNode.name}
         </Tab>

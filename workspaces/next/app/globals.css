@@ -10,6 +10,10 @@
   @apply hover:text-slate-700 hover:dark:text-slate-200;
 }
 
+.active-main-text-colors {
+  @apply text-blue-600 dark:text-blue-300;
+}
+
 .border-innactive-colors {
   @apply border-gray-200 dark:border-gray-700;
 }
@@ -24,4 +28,12 @@
 
 .shadow-innactive-colors {
   @apply shadow-gray-200 dark:shadow-gray-700;
+}
+
+.bg-main-colors {
+  @apply bg-white dark:bg-gray-800;
+}
+
+.bg-active-colors {
+  @apply bg-blue-50 dark:bg-slate-700;
 }
