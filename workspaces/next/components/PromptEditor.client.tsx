@@ -46,7 +46,7 @@ export const PromptEditor = ({
       <CodeMirror
         value="console.log('hello world!');"
         theme={getEditorThemeFromState(globalEditorSettings)}
-        extensions={[getEditorLanguageFromState(fileEditorState)]}
+        extensions={[getEditorLanguageFromState(explorerState)]}
         onChange={onChange}
         // Both style={{ height: "100%" }} and height="100%" are necessary.
         style={{ height: "100%" }}

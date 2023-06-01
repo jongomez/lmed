@@ -1,4 +1,8 @@
-import { FileEditorState, MainStateDispatch } from "@/types/MainTypes";
+import {
+  ExplorerState,
+  FileEditorState,
+  MainStateDispatch,
+} from "@/types/MainTypes";
 import { FileEditorTabs, MainTabs } from "./Tabs.server";
 
 type MainHeaderProps = {
@@ -6,6 +10,7 @@ type MainHeaderProps = {
   isMainMenuOpen: boolean;
   mainStateDispatch: MainStateDispatch;
   fileEditorState: FileEditorState;
+  explorerState: ExplorerState;
 };
 
 export const MainHeader = ({
@@ -13,6 +18,7 @@ export const MainHeader = ({
   isMainMenuOpen,
   mainStateDispatch,
   fileEditorState,
+  explorerState,
 }: MainHeaderProps) => {
   return (
     <div
@@ -27,6 +33,7 @@ export const MainHeader = ({
       <FileEditorTabs
         activeIndex={activeMainTab}
         fileEditorState={fileEditorState}
+        explorerState={explorerState}
         mainStateDispatch={mainStateDispatch}
       />
     </div>

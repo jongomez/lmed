@@ -5,26 +5,20 @@ import type {
   MainState,
   MainStateAction,
   PromptTab,
-  RootNode,
 } from "@/types/MainTypes";
 import { HEADER_SIZE_PX, RESIZE_HANDLE_SIZE_PX } from "./constants";
-import { createNewTab } from "./editorUtils";
+import {
+  addToExplorerNodeMap,
+  getDirectoryNode,
+  getFileNode,
+} from "./explorerUtils";
 import {
   createEmptyFileInMemory,
-  deselectAllFilesInTree,
-  findNodeInTree,
+  getCurrentlySelectedFile,
   switchSelectedFile,
-} from "./fileTreeUtils";
+} from "./fileUtils";
 
 export const getInitialState = (): MainState => {
-  const explorerTreeRoot: RootNode = {
-    id: 0,
-    treeLength: 1,
-    name: "root",
-    type: "root",
-    children: [],
-  };
-
   const initialPromptTabs: PromptTab[] = [
     {
       selected: true,
@@ -41,10 +35,7 @@ export const getInitialState = (): MainState => {
     },
   ];
 
-  const initialFileId = 1;
-  const initialFile = createEmptyFileInMemory(initialFileId);
-
-  explorerTreeRoot.children.push(initialFile);
+  const initialFile = createEmptyFileInMemory();
 
   const initialTab: FileEditorTab = {
     fileNode: initialFile,
@@ -53,12 +44,14 @@ export const getInitialState = (): MainState => {
   return {
     iconTabIndex: 0,
     explorer: {
-      explorerTreeRoot,
+      explorerNodeMap: {
+        [initialFile.path]: initialFile,
+      },
       idCounter: 2,
     },
     fileEditor: {
       fileEditorRef: null,
-      allTabs: [initialTab],
+      openFilePaths: [initialFile.path],
     },
     globalEditorSettings: {
       fontSize: 14,
@@ -86,44 +79,47 @@ export const mainStateReducer = (
     }
 
     case "OPEN_FILE": {
-      draft.explorer.explorerTreeRoot.children.push(action.payload);
+      const newFileNode = action.payload;
+      addToExplorerNodeMap(draft.explorer.explorerNodeMap, newFileNode);
+
       return draft;
     }
 
     case "EXPLORER_DIRECTORY_CLICK": {
-      // TODO: Check if the action.payload object is the same as the one fetched from the draft tree root.
-      const draftNode = findNodeInTree(
-        draft.explorer.explorerTreeRoot,
-        action.payload.id
+      const { nodesInDirectory, directoryClicked } = action.payload;
+
+      for (const node of nodesInDirectory) {
+        if (node.path in draft.explorer.explorerNodeMap) {
+          console.log("node.path already in explorer node map:", node.path);
+          continue;
+        }
+
+        draft.explorer.explorerNodeMap[node.path] = node;
+      }
+
+      const draftDirectoryClicked = getDirectoryNode(
+        draft.explorer,
+        directoryClicked.path
       );
 
-      if (!draftNode) {
-        throw new Error("Could not find directory node in tree");
-      }
+      draftDirectoryClicked.expanded = !draftDirectoryClicked.expanded;
 
-      if (draftNode.type !== "directory") {
-        throw new Error("Node is not a directory");
-      }
-
-      // TODO: Check immer patches for this.
-      console.log("draftNode === action.payload", draftNode === action.payload);
-      console.log("draftNode", draftNode);
-      console.log("action.payload", action.payload);
-      debugger;
-
-      draftNode.expanded = !draftNode.expanded;
-      // draft.explorer.selectedNode = action.payload;
       return draft;
     }
 
-    // The SWITCH_FILE action assumes the new file to switch to exists in the tree.
+    // The SWITCH_FILE action assumes the new file to switch to exists in the explorerNodeMap.
     // However, the file may not have an associated tab yet.
     case "SWITCH_FILE": {
       const { fileNode } = action.payload;
 
-      const draftNode = findNodeInTree(
-        draft.explorer.explorerTreeRoot,
-        fileNode.id
+      if (fileNode.selected && fileNode.openInTab) {
+        console.log("fileNode already selected and open in tab");
+        return draft;
+      }
+
+      const draftNode = getFileNode(draft.explorer, fileNode.path);
+      const currentlySelectedFile = getCurrentlySelectedFile(
+        draft.explorer.explorerNodeMap
       );
 
       // TODO: Check immer patches for this.
@@ -132,46 +128,30 @@ export const mainStateReducer = (
       console.log("fileNode", fileNode);
       debugger;
 
-      if (!draftNode) {
-        throw new Error("SWITCH_FILE - Could not find file node in tree");
-      }
-
-      if (draftNode.type !== "file") {
-        throw new Error("SWITCH_FILE - Node is not a file");
-      }
-
-      draftNode.selected = true;
-
-      // Check to see if a tab is already open for this file.
-      let currentTab = draft.fileEditor.allTabs.find(
-        (tab) => tab.fileNode.id === draftNode.id
-      );
-
-      // If the tab is not found (i.e. the file is not open in any tab) it means:
-      // - the file is in the file explorer tree, but it is not open in any tab.
-      if (!currentTab) {
-        const newTab = createNewTab(draftNode);
-        draft.fileEditor.allTabs.push(newTab);
-      }
-
       switchSelectedFile(
-        draft.fileEditor.allTabs,
+        currentlySelectedFile,
         fileNode,
         // original(draft.fileEditor.fileEditorRef)
         draft.fileEditor.fileEditorRef
       );
 
+      if (!draftNode.openInTab) {
+        draft.fileEditor.openFilePaths.push(draftNode.path);
+      }
+
       return draft;
     }
 
     case "OPEN_DIRECTORY": {
-      draft.explorer.explorerTreeRoot = action.payload;
+      const nodesInDirectory = action.payload;
+
+      for (const node of nodesInDirectory) {
+        addToExplorerNodeMap(draft.explorer.explorerNodeMap, node);
+      }
+
       return draft;
     }
 
-    // The CREATE_NEW_FILE action will:
-    // - Add the passed in fileNode as a child of the root node.
-    // - Create a new tab for the file.
     case "CREATE_NEW_FILE": {
       const newFileNode = action.payload;
 
@@ -179,15 +159,13 @@ export const mainStateReducer = (
         throw new Error("CREATE_NEW_FILE - memoryOnlyFile is undefined");
       }
 
-      deselectAllFilesInTree(draft.explorer.explorerTreeRoot);
-      draft.explorer.explorerTreeRoot.children.push(newFileNode);
+      const currentlySelectedFile = getCurrentlySelectedFile(
+        draft.explorer.explorerNodeMap
+      );
+      addToExplorerNodeMap(draft.explorer.explorerNodeMap, newFileNode);
 
-      const newTab = createNewTab(newFileNode);
-      draft.fileEditor.allTabs.push(newTab);
-
-      debugger;
       switchSelectedFile(
-        draft.fileEditor.allTabs,
+        currentlySelectedFile,
         newFileNode,
         // original(draft.fileEditor.fileEditorRef)
         draft.fileEditor.fileEditorRef

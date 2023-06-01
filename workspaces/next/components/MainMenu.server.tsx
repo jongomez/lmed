@@ -83,7 +83,7 @@ export const MainMenu = ({
         </MenuItem>
         <MenuItem
           onClick={() => {
-            openFile(mainStateDispatch, explorerState);
+            openFile(mainStateDispatch);
             mainStateDispatch({ type: "CLOSE_MAIN_MENU" });
           }}
         >
@@ -92,7 +92,7 @@ export const MainMenu = ({
         </MenuItem>
         <MenuItem
           onClick={() => {
-            openDirectory(mainStateDispatch, explorerState);
+            openDirectory(mainStateDispatch, explorerState.explorerNodeMap);
             mainStateDispatch({ type: "CLOSE_MAIN_MENU" });
           }}
         >

@@ -1,5 +1,4 @@
 import type { FileEditorState } from "@/types/MainTypes";
-import { getSelectedTab } from "@/utils/tabUtils";
 
 type MainFooterProps = {
   fileEditorState: FileEditorState;
@@ -16,7 +15,7 @@ export const MainFooter = ({
 
   return (
     <div className="col-span-full row-start-5 flex justify-center main-text-colors">
-      File editor mode: {getSelectedTab(fileEditorState.allTabs).language}
+      {/* File editor mode: {getCurrentlySelectedFile(fileEditorState.allTabs).language} */}
     </div>
   );
 };

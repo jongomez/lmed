@@ -6,7 +6,6 @@ import { getInitialState, mainStateReducer } from "@/utils/mainStateUtils";
 import { useImmerReducer } from "use-immer";
 import { Settings } from "./Settings.client";
 // import { MainTabHeader } from "./Tabs.server";
-import { printTree } from "@/utils/explorerUtils";
 import { FileAndPromptEditors } from "./FileAndPromptEditors.client";
 import { MainHeader } from "./MainHeader.client";
 import { MainMenu } from "./MainMenu.server";
@@ -23,8 +22,6 @@ export const MainContent = () => {
   const activeMainTab = mainState.iconTabIndex;
   const isMainMenuOpen = mainState.isMainMenuOpen;
 
-  console.log(printTree(mainState.explorer.explorerTreeRoot, 0));
-
   return (
     // <div className={`h-screen w-screen grid ${tabGridClasses[activeMainTab]}`}>
     <div>
@@ -33,6 +30,7 @@ export const MainContent = () => {
         isMainMenuOpen={isMainMenuOpen}
         mainStateDispatch={mainStateDispatch}
         fileEditorState={mainState.fileEditor}
+        explorerState={mainState.explorer}
       />
 
       {/* Main menu. This is a pop-up menu that will be accessible in all tabs. */}

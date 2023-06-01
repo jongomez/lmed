@@ -3,10 +3,12 @@
 // const MAIN_TAB_PANEL_HEIGHT = `h-[calc(100%-${MAIN_TAB_HEADER_HEIGHT})]`;
 
 import {
+  ExplorerState,
   FileEditorState,
   MainStateDispatch,
   PromptEditorState,
 } from "@/types/MainTypes";
+import { getFileNode } from "@/utils/explorerUtils";
 import {
   ChevronsRightLeft,
   Code,
@@ -132,36 +134,42 @@ export const MainTabs = ({
 
 type EditorFileTabsProps = {
   fileEditorState: FileEditorState;
+  explorerState: ExplorerState;
   mainStateDispatch: MainStateDispatch;
   activeIndex: number;
 };
 
 export const FileEditorTabs = ({
   fileEditorState,
+  explorerState,
   mainStateDispatch,
   activeIndex,
 }: EditorFileTabsProps) => {
-  console.log("All tabs:", fileEditorState.allTabs);
+  console.log("Open files:", fileEditorState.openFilePaths);
 
   return (
     <>
-      {fileEditorState.allTabs.map((tab, index) => (
-        <Tab
-          onTabClick={() =>
-            mainStateDispatch({
-              type: "SWITCH_FILE",
-              payload: {
-                fileNode: tab.fileNode,
-              },
-            })
-          }
-          key={index}
-          isActive={tab.fileNode.selected}
-          className={`${activeIndex === 0 ? "" : "hidden"}`}
-        >
-          {tab.fileNode.name}
-        </Tab>
-      ))}
+      {fileEditorState.openFilePaths.map((filePath, index) => {
+        const fileNode = getFileNode(explorerState, filePath);
+
+        return (
+          <Tab
+            onTabClick={() =>
+              mainStateDispatch({
+                type: "SWITCH_FILE",
+                payload: {
+                  fileNode: fileNode,
+                },
+              })
+            }
+            key={index}
+            isActive={fileNode.selected}
+            className={`${activeIndex === 0 ? "" : "hidden"}`}
+          >
+            {fileNode.name}
+          </Tab>
+        );
+      })}
     </>
   );
 };

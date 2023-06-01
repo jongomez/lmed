@@ -48,7 +48,6 @@ export const FileAndPromptEditors = ({
         explorerState={mainState.explorer}
         fileEditorState={mainState.fileEditor}
         mainStateDispatch={mainStateDispatch}
-        parentNode={mainState.explorer.explorerTreeRoot}
         className="row-start-1"
       />
 

@@ -1,12 +1,11 @@
 "use client";
 
-import type {
+import {
   DirectoryNode,
   ExplorerNode,
   ExplorerState,
   FileEditorState,
   MainStateDispatch,
-  RootNode,
 } from "@/types/MainTypes";
 import { handleDirectoryClick, handleFileClick } from "@/utils/explorerUtils";
 import { openDirectory, openFile } from "@/utils/mainMenuUtils";
@@ -14,14 +13,18 @@ import { ChevronDown, ChevronUp, File, FolderOpen } from "lucide-react";
 import { SideTab } from "./Tabs.server";
 import { Button } from "./base/Button.server";
 
-const isExplorerNodeSelected = (node: ExplorerNode): boolean => {
-  return node.type === "file" && node.selected;
+const isExplorerNodeSelected = (
+  node: ExplorerNode,
+  explorerState: ExplorerState
+): boolean => {
+  const selectedNode = explorerState.explorerNodeMap.get(node.path);
+  return selectedNode?.type === "file" && selectedNode.selected;
 };
 
 type ExplorerListProps = {
   explorerState: ExplorerState;
   mainStateDispatch: MainStateDispatch;
-  parentNode: RootNode | DirectoryNode;
+  parentNode?: DirectoryNode;
 };
 
 // Recursive function.
@@ -31,11 +34,17 @@ const ExplorerList = ({
   mainStateDispatch,
 }: ExplorerListProps) => {
   const iconSize = 18;
+  const childNodes = Array.from(explorerState.explorerNodeMap.values()).filter(
+    (node) => node.parentDirectory?.path === parentNode?.path
+  );
 
   return (
     <div className="overflow-auto">
-      {parentNode.children.map((node) => (
-        <SideTab key={node.id} isActive={isExplorerNodeSelected(node)}>
+      {childNodes.map((node) => (
+        <SideTab
+          key={node.path}
+          isActive={isExplorerNodeSelected(node, explorerState)}
+        >
           {node.type === "directory" && (
             <div>
               <button
@@ -72,17 +81,14 @@ const ExplorerList = ({
     </div>
   );
 };
-
 type ExplorerProps = {
   explorerState: ExplorerState;
   fileEditorState: FileEditorState;
   mainStateDispatch: MainStateDispatch;
-  parentNode: RootNode | DirectoryNode;
   className: string;
 };
 
 export const Explorer = ({
-  parentNode,
   explorerState,
   fileEditorState,
   mainStateDispatch,
@@ -96,18 +102,23 @@ export const Explorer = ({
     <div
       className={`${className} flex flex-col justify-between overflow-hidden`}
     >
-      <ExplorerList {...{ parentNode, explorerState, mainStateDispatch }} />
+      <ExplorerList
+        explorerState={explorerState}
+        mainStateDispatch={mainStateDispatch}
+      />
       <div className="w-90 flex flex-col items-center">
         <div className="flex justify-center flex-wrap">
           <Button
-            onClick={() => openFile(mainStateDispatch, explorerState)}
+            onClick={() => openFile(mainStateDispatch)}
             className={buttonClasses}
           >
             <File size={iconSize} className={iconClasses} />
             Open File
           </Button>
           <Button
-            onClick={() => openDirectory(mainStateDispatch, explorerState)}
+            onClick={() =>
+              openDirectory(mainStateDispatch, explorerState.explorerNodeMap)
+            }
             className={buttonClasses}
           >
             <FolderOpen size={iconSize} className={iconClasses} />

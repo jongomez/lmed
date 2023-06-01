@@ -1,14 +1,9 @@
-import type {
-  FileEditorState,
-  FileEditorTab,
-  FileNode,
-  GlobalEditorSettings,
-} from "@/types/MainTypes";
+import type { ExplorerState, GlobalEditorSettings } from "@/types/MainTypes";
 import { EditorState, Extension } from "@codemirror/state";
 import { langs } from "@uiw/codemirror-extensions-langs";
 import * as themes from "@uiw/codemirror-themes-all";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
-import { getSelectedFile } from "./fileTreeUtils";
+import { getCurrentlySelectedFile } from "./fileUtils";
 
 /*
 
@@ -161,9 +156,11 @@ export const getEditorThemeFromState = (
 };
 
 export const getEditorLanguageFromState = (
-  fileEditorState: FileEditorState
+  explorerState: ExplorerState
 ): Extension => {
-  const selectedFileNode = getSelectedFile(fileEditorState.allTabs);
+  const selectedFileNode = getCurrentlySelectedFile(
+    explorerState.explorerNodeMap
+  );
 
   // TODO: Check if there are any missing. Very likely there are.
   switch (selectedFileNode.language) {
@@ -198,12 +195,6 @@ export const getEditorLanguageFromState = (
     default:
       return langs.markdown();
   }
-};
-
-export const createNewTab = (fileNode: FileNode): FileEditorTab => {
-  return {
-    fileNode,
-  };
 };
 
 export const setNewEditorState = (

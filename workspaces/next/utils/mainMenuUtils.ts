@@ -1,4 +1,5 @@
 import type {
+  ExplorerNode,
   ExplorerState,
   FileEditorState,
   FileNode,
@@ -6,19 +7,16 @@ import type {
 } from "@/types/MainTypes";
 import { EditorState } from "@codemirror/state";
 import { getLanguageFromFileName } from "./editorUtils";
-import { createExplorerTree } from "./explorerUtils";
+import { createDirectoryNode, createFileNode, getPath } from "./explorerUtils";
 import {
   createEmptyFileInMemory,
   getCurrentEditorViewState,
-  getSelectedFile,
-} from "./fileTreeUtils";
+  getCurrentlySelectedFile,
+} from "./fileUtils";
 
 // XXX: Move the below functions to a separate file.
 
-export const openFile = async (
-  mainStateDispatch: MainStateDispatch,
-  explorer: ExplorerState
-) => {
+export const openFile = async (mainStateDispatch: MainStateDispatch) => {
   const [fileHandle] = await window.showOpenFilePicker();
   const file = await fileHandle.getFile();
   const fileContent = await file.text();
@@ -27,12 +25,13 @@ export const openFile = async (
   // XXX: Check if file is already open. If yes, show a message.
 
   const newNode: FileNode = {
-    id: explorer.explorerTreeRoot.treeLength + 1, // use treeLength to determine id
     name: file.name,
     type: "file",
     selected: true,
     language: getLanguageFromFileName(file.name),
     editorState: editorStateForFile,
+    openInTab: false,
+    path: getPath(file.name),
     fileHandle,
   };
 
@@ -45,19 +44,23 @@ export const openFile = async (
 // 2. Creates an explorer tree from the selected directory
 export const openDirectory = async (
   mainStateDispatch: MainStateDispatch,
-  explorerState: ExplorerState
+  explorerNodeMap: ExplorerState["explorerNodeMap"]
 ) => {
   const dirHandle = await window.showDirectoryPicker();
+  const parentDirectoryNode = createDirectoryNode(dirHandle);
+  const nodesToCreate: ExplorerNode[] = [parentDirectoryNode];
 
-  // XXX: Check if folder is already open. If yes, show a message.
+  for await (const entry of dirHandle.values()) {
+    if (entry.kind === "directory") {
+      const directoryNode = createDirectoryNode(entry);
+      nodesToCreate.push(directoryNode);
+    } else {
+      const fileNode = createFileNode(entry, parentDirectoryNode);
+      nodesToCreate.push(fileNode);
+    }
+  }
 
-  const explorerTreeRoot = await createExplorerTree(
-    explorerState.explorerTreeRoot,
-    explorerState.explorerTreeRoot,
-    dirHandle
-  );
-
-  mainStateDispatch({ type: "OPEN_DIRECTORY", payload: explorerTreeRoot });
+  mainStateDispatch({ type: "OPEN_DIRECTORY", payload: nodesToCreate });
 };
 
 export const saveFile = async (
@@ -65,7 +68,9 @@ export const saveFile = async (
   explorerState: ExplorerState,
   fileEditorState: FileEditorState
 ) => {
-  const selectedFileNode = getSelectedFile(fileEditorState.allTabs);
+  const selectedFileNode = getCurrentlySelectedFile(
+    explorerState.explorerNodeMap
+  );
 
   const currentEditorViewState = getCurrentEditorViewState(
     fileEditorState.fileEditorRef
@@ -89,7 +94,9 @@ export const saveFileAs = async (
   explorerState: ExplorerState,
   fileEditorState: FileEditorState
 ) => {
-  const selectedFileNode = getSelectedFile(fileEditorState.allTabs);
+  const selectedFileNode = getCurrentlySelectedFile(
+    explorerState.explorerNodeMap
+  );
 
   const currentEditorViewState = getCurrentEditorViewState(
     fileEditorState.fileEditorRef
@@ -126,7 +133,6 @@ export const createNewFile = async (
   explorerState: ExplorerState,
   fileEditorState: FileEditorState
 ) => {
-  const newNodeId = explorerState.explorerTreeRoot.treeLength + 1;
-  const newNode = createEmptyFileInMemory(newNodeId);
+  const newNode = createEmptyFileInMemory();
   mainStateDispatch({ type: "CREATE_NEW_FILE", payload: newNode });
 };

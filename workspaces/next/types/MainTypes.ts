@@ -1,56 +1,39 @@
 import type { EditorTheme, Language } from "@/utils/editorUtils";
 import type { Delta } from "@/utils/hooks";
-import type { EditorState } from "@codemirror/state";
 import type { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import type { Dispatch } from "react";
 
-export type RootNode = {
-  id: 0;
-  name: "root";
-  type: "root";
-  treeLength: number;
-  children: ExplorerNode[];
-};
-
-export type FileNode = ExplorerNodeBase & {
+export type FileNode = {
+  path: string;
   type: "file";
+  name: string;
   selected: boolean;
+  openInTab: boolean;
   language: Language;
   fileHandle?: FileSystemFileHandle; // for files that exist on disk.
   memoryOnlyFile?: File; // for files that exist only in memory, not on disk. e.g. if a user creates a new file.
-  editorState: EditorState;
+  serializedEditorState?: string; // if the file has not been selected yet, no editorState will be present.
+  parentDirectory?: DirectoryNode; // if a user created a new file, it won't have a parent directory.
 };
 
-export type DirectoryNode = ExplorerNodeBase & {
+export type DirectoryNode = {
+  path: string; // will work as a unique identifier for the directory.
   type: "directory";
-  directoryHandle: FileSystemDirectoryHandle;
-  children: RootNode["children"];
-  expanded: boolean;
-};
-
-export type ExplorerNodeBase = {
-  id: number;
   name: string;
-  type: "file" | "directory" | "root";
+  directoryHandle: FileSystemDirectoryHandle;
+  expanded: boolean;
+  parentDirectory?: DirectoryNode; // the root directory will not have a parent directory.
 };
 
-export type ExplorerNode = RootNode | FileNode | DirectoryNode;
+export type ExplorerNode = FileNode | DirectoryNode;
 
 export type ExplorerState = {
-  explorerTreeRoot: RootNode;
+  explorerNodeMap: Map<string, ExplorerNode>;
   idCounter: number;
 };
 
 export type FileEditorTab = {
   fileNode: FileNode;
-  /*
-  
-  value: string[];
-  hasDiff: boolean;
-  // Not sure what this is:
-  markers: object;
-
-  */
 };
 
 export type PromptTab = {
@@ -59,8 +42,7 @@ export type PromptTab = {
 };
 
 export type FileEditorState = {
-  allTabs: FileEditorTab[];
-  fileEditorRef: ReactCodeMirrorRef | null;
+  openFilePaths: string[];
 };
 
 export type SiteTheme = "light" | "dark";
@@ -93,8 +75,14 @@ export type MainState = {
 export type MainStateAction =
   | { type: "SET_ICON_TAB"; payload: number }
   | { type: "OPEN_FILE"; payload: FileNode }
-  | { type: "OPEN_DIRECTORY"; payload: RootNode }
-  | { type: "EXPLORER_DIRECTORY_CLICK"; payload: DirectoryNode }
+  | { type: "OPEN_DIRECTORY"; payload: ExplorerNode[] }
+  | {
+      type: "EXPLORER_DIRECTORY_CLICK";
+      payload: {
+        nodesInDirectory: ExplorerNode[];
+        directoryClicked: DirectoryNode;
+      };
+    }
   | {
       type: "SWITCH_FILE";
       payload: { fileNode: FileNode };
