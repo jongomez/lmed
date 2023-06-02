@@ -1,11 +1,10 @@
 "use client";
 
 import CodeMirror from "@uiw/react-codemirror";
-import { useCallback, useRef } from "react";
+import { MutableRefObject, useCallback } from "react";
 
 import {
   ExplorerState,
-  FileEditorState,
   GlobalEditorSettings,
   MainStateDispatch,
 } from "@/types/MainTypes";
@@ -16,7 +15,7 @@ import {
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 
 type FileEditorProps = {
-  fileEditorState: FileEditorState;
+  fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
   globalEditorSettings: GlobalEditorSettings;
   mainStateDispatch: MainStateDispatch;
   explorerState: ExplorerState;
@@ -24,28 +23,24 @@ type FileEditorProps = {
 };
 
 export const FileEditor = ({
-  fileEditorState,
+  fileEditorRef,
   globalEditorSettings,
   mainStateDispatch,
   explorerState,
   className,
 }: FileEditorProps) => {
-  const codeMirrorRef = useRef<ReactCodeMirrorRef>();
-
   // Gotta use a ref callback:
   // https://github.com/uiwjs/react-codemirror/issues/314
   function refCallack(editor: ReactCodeMirrorRef) {
     if (
-      !codeMirrorRef.current?.editor &&
+      !fileEditorRef.current?.editor &&
       editor?.editor &&
       editor?.state &&
       editor?.view
     ) {
-      codeMirrorRef.current = editor;
-      mainStateDispatch({
-        type: "SET_FILE_EDITOR_REF",
-        payload: editor,
-      });
+      console.log("\n\neditor:", editor);
+      // WARNING: This is a mutation. Refs are mutable.
+      fileEditorRef.current = editor;
     }
   }
 
@@ -62,7 +57,7 @@ export const FileEditor = ({
         ref={refCallack}
         value="console.log('hello world!');"
         theme={getEditorThemeFromState(globalEditorSettings)}
-        extensions={[getEditorLanguageFromState(fileEditorState)]}
+        extensions={[getEditorLanguageFromState(explorerState)]}
         onChange={onChange}
         // Both style={{ height: "100%" }} and height="100%" are necessary.
         style={{ height: "100%" }}

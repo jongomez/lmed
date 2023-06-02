@@ -1,6 +1,8 @@
 import { MainState, MainStateDispatch } from "@/types/MainTypes";
 import { RESIZE_HANDLE_SIZE_PX } from "@/utils/constants";
 import { Delta } from "@/utils/hooks";
+import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
+import { MutableRefObject } from "react";
 import { Explorer } from "./Explorer.client";
 import { FileEditor } from "./FileEditor.client";
 import { PromptEditor } from "./PromptEditor.client";
@@ -11,12 +13,14 @@ type FileAndPromptEditorsProps = {
   mainState: MainState;
   mainStateDispatch: MainStateDispatch;
   activeTab: number;
+  fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
 };
 
 export const FileAndPromptEditors = ({
   mainState,
   mainStateDispatch,
   activeTab,
+  fileEditorRef,
 }: FileAndPromptEditorsProps) => {
   const isVisible = activeTab === 0;
   // 1st row: file explorer and file editor.
@@ -46,7 +50,7 @@ export const FileAndPromptEditors = ({
     >
       <Explorer
         explorerState={mainState.explorer}
-        fileEditorState={mainState.fileEditor}
+        fileEditorRef={fileEditorRef}
         mainStateDispatch={mainStateDispatch}
         className="row-start-1"
       />
@@ -68,7 +72,7 @@ export const FileAndPromptEditors = ({
       />
 
       <FileEditor
-        fileEditorState={mainState.fileEditor}
+        fileEditorRef={fileEditorRef}
         globalEditorSettings={mainState.globalEditorSettings}
         mainStateDispatch={mainStateDispatch}
         explorerState={mainState.explorer}

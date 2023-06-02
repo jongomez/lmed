@@ -1,5 +1,5 @@
 import { FileEditorState, MainStateDispatch } from "@/types/MainTypes";
-import { useSettings } from "@/utils/hooks";
+import { useTheme } from "@/utils/hooks";
 import { Moon, Sun } from "lucide-react";
 
 /*
@@ -20,21 +20,20 @@ export const Settings = ({
   mainStateDispatch,
   activeTab,
 }: SettingsProps) => {
-  const settings = useSettings();
-  const currentSiteTheme = settings.siteTheme;
+  const { siteTheme, toggleSiteTheme } = useTheme();
   const isVisible = activeTab === 2;
 
   const onThemeSwitchClick = () => {
-    settings.toggleSiteTheme();
+    toggleSiteTheme();
   };
 
   return (
     <div className={`${isVisible ? "" : "hidden"} h-[calc(100vh_-_42px)]`}>
       <button
         onClick={onThemeSwitchClick}
-        title={`Enable ${currentSiteTheme === "dark" ? "light" : "dark"} mode`}
+        title={`Enable ${siteTheme === "dark" ? "light" : "dark"} mode`}
       >
-        {currentSiteTheme === "dark" ? (
+        {siteTheme === "dark" ? (
           <Sun className="text-dark dark:text-white" />
         ) : (
           <Moon className="text-dark dark:text-white" />

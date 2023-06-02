@@ -1,4 +1,4 @@
-import { SettingsProvider } from "@/components/SettingsProvider.client";
+import { MainProvider } from "@/components/MainProvider.client";
 import "xterm/css/xterm.css";
 import "./globals.css";
 
@@ -16,7 +16,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       {/* h-screen w-screen overflow-auto */}
       <body className="bg-dark dark:bg-slate-800 ">
-        <SettingsProvider>{children}</SettingsProvider>
+        <MainProvider>{children}</MainProvider>
       </body>
     </html>
   );

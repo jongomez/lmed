@@ -1,19 +1,22 @@
 "use client";
 
 import type { MainState, MainStateAction } from "@/types/MainTypes";
-import { useSocket } from "@/utils/hooks";
 import { getInitialState, mainStateReducer } from "@/utils/mainStateUtils";
 import { useImmerReducer } from "use-immer";
 import { Settings } from "./Settings.client";
 // import { MainTabHeader } from "./Tabs.server";
+import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
+import { useRef } from "react";
 import { FileAndPromptEditors } from "./FileAndPromptEditors.client";
 import { MainHeader } from "./MainHeader.client";
 import { MainMenu } from "./MainMenu.server";
 import { MyTerminal } from "./Terminal.client";
 
 export const MainContent = () => {
-  // Socket is not part of the mainState because I was getting some immer type errors.
-  const socket = useSocket();
+  // The following refs contain fairly complex objects. I think immer doesn't like them.
+  // The refs are also mutable, so putting them in state or context is probably not a great idea.
+  const fileEditorRef = useRef<ReactCodeMirrorRef>({});
+  const promptEditorRef = useRef<ReactCodeMirrorRef>({});
   const [mainState, mainStateDispatch] = useImmerReducer<
     MainState,
     MainStateAction
@@ -31,6 +34,7 @@ export const MainContent = () => {
         mainStateDispatch={mainStateDispatch}
         fileEditorState={mainState.fileEditor}
         explorerState={mainState.explorer}
+        fileEditorRef={fileEditorRef}
       />
 
       {/* Main menu. This is a pop-up menu that will be accessible in all tabs. */}
@@ -39,6 +43,7 @@ export const MainContent = () => {
           mainStateDispatch={mainStateDispatch}
           explorerState={mainState.explorer}
           fileEditorState={mainState.fileEditor}
+          fileEditorRef={fileEditorRef}
         />
       )}
 
@@ -47,10 +52,11 @@ export const MainContent = () => {
         mainState={mainState}
         mainStateDispatch={mainStateDispatch}
         activeTab={activeMainTab}
+        fileEditorRef={fileEditorRef}
       />
 
       {/* 2nd tab - Will contain the file explorer and the file editor. */}
-      {!!socket && <MyTerminal socket={socket} activeTab={activeMainTab} />}
+      <MyTerminal activeTab={activeMainTab} />
 
       {/* 3rd tab - Will contain the file explorer and the file editor. */}
       <Settings

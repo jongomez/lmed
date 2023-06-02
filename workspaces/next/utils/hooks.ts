@@ -1,8 +1,6 @@
+import { MainContext } from "@/components/MainProvider.client";
 import { ResizeCursor } from "@/components/ResizeHandle.client";
-import {
-  SettingsContext,
-  SettingsContextType,
-} from "@/components/SettingsProvider.client";
+import { SiteTheme } from "@/types/MainTypes";
 import {
   RefObject,
   useCallback,
@@ -14,14 +12,35 @@ import {
 import { Socket, io } from "socket.io-client";
 import { WEBSOCKET_SERVER_PORT } from "../../../shared/constants";
 
-export const useSettings = (): SettingsContextType => {
-  const context = useContext(SettingsContext);
+type UseThemeReturnType = {
+  siteTheme: SiteTheme;
+  toggleSiteTheme: () => void;
+};
+
+export const useTheme = (): UseThemeReturnType => {
+  const context = useContext(MainContext);
 
   if (context === undefined) {
-    throw new Error("useSettings must be used within a SettingsProvider");
+    throw new Error("useToggleSiteTheme must be used within a MainProvider");
   }
 
-  return context;
+  return {
+    siteTheme: context.siteTheme,
+    toggleSiteTheme: context.toggleSiteTheme,
+  };
+};
+
+export const useFileEditorRef = (): UseThemeReturnType => {
+  const context = useContext(MainContext);
+
+  if (context === undefined) {
+    throw new Error("useToggleSiteTheme must be used within a MainProvider");
+  }
+
+  return {
+    siteTheme: context.siteTheme,
+    toggleSiteTheme: context.toggleSiteTheme,
+  };
 };
 
 export const useSocket = (): Socket | null => {
@@ -63,7 +82,6 @@ export const useDrag = (
   const initialXRef = useRef<number>(0);
   const initialSizeRef = useRef<number>(initialSize);
   const [isDraggingState, setIsDraggingState] = useState(false);
-  const refElement = ref.current;
 
   const handlePointerMove = useCallback(
     (event: PointerEvent) => {
@@ -125,14 +143,14 @@ export const useDrag = (
   );
 
   useEffect(() => {
-    if (!refElement) return;
+    if (!ref.current) return;
 
     // console.log("useDrag: adding event listeners");
 
     // TODO (maybe): handle touch events as well? These pointer events are not working great on mobile.
     // Just as a sanity check - always remove existing (if any) event listeners before adding new ones.
-    refElement.removeEventListener("pointerdown", handlePointerDown);
-    refElement.addEventListener("pointerdown", handlePointerDown);
+    ref.current.removeEventListener("pointerdown", handlePointerDown);
+    ref.current.addEventListener("pointerdown", handlePointerDown);
 
     document.removeEventListener("pointerup", handlePointerUp);
     document.addEventListener("pointerup", handlePointerUp);
@@ -141,11 +159,11 @@ export const useDrag = (
     document.addEventListener("pointermove", handlePointerMove);
 
     return () => {
-      refElement.removeEventListener("pointerdown", handlePointerDown);
+      ref.current?.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("pointerup", handlePointerUp);
       document.removeEventListener("pointermove", handlePointerMove);
     };
-  }, [handlePointerDown, handlePointerMove, handlePointerUp, refElement]);
+  }, [handlePointerDown, handlePointerMove, handlePointerUp, ref]);
 
   return isDraggingState;
 };

@@ -10,6 +10,7 @@ import {
   saveFile,
   saveFileAs,
 } from "@/utils/mainMenuUtils";
+import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import {
   File,
   FilePlus,
@@ -19,7 +20,7 @@ import {
   Save,
   X,
 } from "lucide-react";
-import { ReactNode } from "react";
+import { MutableRefObject, ReactNode } from "react";
 
 type MenuItemProps = {
   onClick: () => void;
@@ -45,6 +46,7 @@ type MainMenuProps = {
   className?: string;
   explorerState: ExplorerState;
   fileEditorState: FileEditorState;
+  fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
 };
 
 export const MainMenu = ({
@@ -52,9 +54,11 @@ export const MainMenu = ({
   explorerState,
   fileEditorState,
   className,
+  fileEditorRef,
 }: MainMenuProps) => {
   const iconSize = 24;
   const iconClasses = "inline mr-2";
+
   return (
     <>
       {/* Menu overlay - when clicked, it closes the menu. */}
@@ -74,7 +78,7 @@ export const MainMenu = ({
       >
         <MenuItem
           onClick={() => {
-            createNewFile(mainStateDispatch, explorerState, fileEditorState);
+            createNewFile(mainStateDispatch, explorerState, fileEditorRef);
             mainStateDispatch({ type: "CLOSE_MAIN_MENU" });
           }}
         >
@@ -83,7 +87,7 @@ export const MainMenu = ({
         </MenuItem>
         <MenuItem
           onClick={() => {
-            openFile(mainStateDispatch);
+            openFile(mainStateDispatch, fileEditorRef);
             mainStateDispatch({ type: "CLOSE_MAIN_MENU" });
           }}
         >
@@ -101,7 +105,12 @@ export const MainMenu = ({
         </MenuItem>
         <MenuItem
           onClick={() => {
-            saveFile(mainStateDispatch, explorerState, fileEditorState);
+            saveFile(
+              mainStateDispatch,
+              explorerState,
+              fileEditorState,
+              fileEditorRef
+            );
             mainStateDispatch({ type: "CLOSE_MAIN_MENU" });
           }}
         >
@@ -110,7 +119,12 @@ export const MainMenu = ({
         </MenuItem>
         <MenuItem
           onClick={() =>
-            saveFileAs(mainStateDispatch, explorerState, fileEditorState)
+            saveFileAs(
+              mainStateDispatch,
+              explorerState,
+              fileEditorState,
+              fileEditorRef
+            )
           }
         >
           <Import size={iconSize} className={iconClasses} />

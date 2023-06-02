@@ -3,6 +3,8 @@ import {
   FileEditorState,
   MainStateDispatch,
 } from "@/types/MainTypes";
+import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
+import { MutableRefObject } from "react";
 import { FileEditorTabs, MainTabs } from "./Tabs.server";
 
 type MainHeaderProps = {
@@ -11,6 +13,7 @@ type MainHeaderProps = {
   mainStateDispatch: MainStateDispatch;
   fileEditorState: FileEditorState;
   explorerState: ExplorerState;
+  fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
 };
 
 export const MainHeader = ({
@@ -19,6 +22,7 @@ export const MainHeader = ({
   mainStateDispatch,
   fileEditorState,
   explorerState,
+  fileEditorRef,
 }: MainHeaderProps) => {
   return (
     <div
@@ -35,6 +39,7 @@ export const MainHeader = ({
         fileEditorState={fileEditorState}
         explorerState={explorerState}
         mainStateDispatch={mainStateDispatch}
+        fileEditorRef={fileEditorRef}
       />
     </div>
   );

@@ -3,26 +3,37 @@
 import type { ExplorerState, FileNode } from "@/types/MainTypes";
 import { EditorState } from "@codemirror/state";
 import type { ReactCodeMirrorRef } from "@uiw/react-codemirror";
-import { getPath } from "./explorerUtils";
+import { getFileNode } from "./explorerUtils";
 
-export const createEmptyFileInMemory = (fileName = "New File"): FileNode => {
+export const createEmptyFileInMemory = (
+  explorerNodeMap: ExplorerState["explorerNodeMap"]
+): FileNode => {
   const hasWindow = typeof window !== "undefined";
   const emptyFileContent = "hello world";
   const emptyFileEditorState = EditorState.create({ doc: emptyFileContent });
+  // Get unique new file name.
+  let newFileNameIndex = 1;
+  let fileName = `New File ${newFileNameIndex}`;
+
+  // Here, we're assuming an in-memory file won't have a parent directory. So the path is just the file name.
+  while (explorerNodeMap.has(fileName)) {
+    newFileNameIndex += 1;
+    fileName = `New File ${newFileNameIndex}`;
+  }
 
   const emptyFile: FileNode = {
     name: fileName,
     type: "file",
-    selected: true,
+    selected: false,
     memoryOnlyFile: hasWindow
       ? new File([emptyFileContent], fileName, {
           type: "text/plain",
         })
       : undefined,
-    editorState: emptyFileEditorState,
+    serializedEditorState: emptyFileEditorState.toJSON(),
     language: "markdown",
     openInTab: true,
-    path: getPath(fileName),
+    path: fileName,
   };
 
   return emptyFile;
@@ -31,7 +42,7 @@ export const createEmptyFileInMemory = (fileName = "New File"): FileNode => {
 export const deselectAllFiles = (
   explorerNodeMap: ExplorerState["explorerNodeMap"]
 ): void => {
-  for (const node of Object.values(explorerNodeMap)) {
+  for (const [nodeKey, node] of explorerNodeMap) {
     if (node.type === "file") {
       node.selected = false;
     }
@@ -42,42 +53,52 @@ export const deselectAllFiles = (
 // 1. Before switching files, it stores the current editor state for the currently open file.
 // 2. It then updates the file editor's state with the new file's contents.
 export const switchSelectedFile = (
-  currentlySelectedFile: FileNode,
-  newFileToSelect: FileNode,
-  fileEditorRef: ReactCodeMirrorRef | null | undefined
+  explorerNodeMap: ExplorerState["explorerNodeMap"],
+  switchToFilePath: string,
+  fileEditor: ReactCodeMirrorRef | null | undefined
 ) => {
-  debugger;
-  if (!fileEditorRef) {
-    throw new Error("switchSelectedFile - fileEditorRef is null");
+  if (!fileEditor) {
+    throw new Error("switchSelectedFile - fileEditor is null");
   }
 
-  if (!fileEditorRef.view) {
-    throw new Error("switchSelectedFile - fileEditorRef.view is null");
+  if (!fileEditor.view) {
+    throw new Error("switchSelectedFile - fileEditor.view is null");
   }
 
-  if (!newFileToSelect.editorState) {
-    throw new Error("switchSelectedFile - newFileToSelect.editorState is null");
+  const switchFromFile = getCurrentlySelectedFile(explorerNodeMap);
+  const switchToFile = getFileNode(explorerNodeMap, switchToFilePath);
+
+  if (!switchToFile.serializedEditorState) {
+    throw new Error(
+      "switchSelectedFile - switchToFile.serializedEditorState is null"
+    );
   }
 
-  currentlySelectedFile.selected = false;
-  newFileToSelect.selected = true;
+  switchFromFile.selected = false;
+  switchToFile.selected = true;
 
   // Store the current editor state for the currently open file.
   // This way, when users switch tabs back to this file, they'll see the same editor state.
-  const currentlySelectedFileEditorState = fileEditorRef.view.state;
-  currentlySelectedFile.editorState = currentlySelectedFileEditorState;
+  const currentlySelectedFileEditorState = fileEditor.view.state;
+  switchFromFile.serializedEditorState =
+    currentlySelectedFileEditorState.toJSON();
 
   // Update the file editor's state with the new file's contents.
-  fileEditorRef.view.setState(newFileToSelect.editorState);
+  fileEditor.view.setState(
+    EditorState.fromJSON(switchToFile.serializedEditorState)
+  );
+
+  // console.log(current(explorerNodeMap));
+  // debugger;
 };
 
 export const getCurrentEditorViewState = (
-  fileEditorRef: ReactCodeMirrorRef | null
+  fileEditor: ReactCodeMirrorRef | null
 ): EditorState => {
-  const currentEditorState = fileEditorRef?.view?.state;
+  const currentEditorState = fileEditor?.view?.state;
 
   if (!currentEditorState) {
-    throw new Error("Could not get fileEditorRef?.view?.state");
+    throw new Error("Could not get fileEditor?.view?.state");
   }
 
   return currentEditorState;
@@ -87,18 +108,23 @@ export const getCurrentlySelectedFile = (
   explorerNodeMap: ExplorerState["explorerNodeMap"]
 ): FileNode => {
   let currentlySelectedFile: FileNode | undefined;
+  let numberOrFilesSelected = 0;
 
-  console.log("HELLO!!");
-  console.log("explorerNodeMap", explorerNodeMap);
-
-  for (const node of Object.values(explorerNodeMap)) {
+  for (const [nodeKey, node] of explorerNodeMap) {
     if (node.type === "file" && node.selected) {
+      numberOrFilesSelected++;
       currentlySelectedFile = node;
     }
   }
 
+  if (numberOrFilesSelected != 1) {
+    throw new Error(
+      `Expected 1 file to be selected, but ${numberOrFilesSelected} were selected`
+    );
+  }
+
   if (!currentlySelectedFile) {
-    throw new Error("No currently selected file found");
+    throw new Error("currentlySelectedFile is falsy");
   }
 
   return currentlySelectedFile;

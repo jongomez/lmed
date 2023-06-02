@@ -5,6 +5,7 @@ import type {
   FileNode,
   MainStateDispatch,
 } from "@/types/MainTypes";
+import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { getLanguageFromFileName } from "./editorUtils";
 
 export const createFileNode = (
@@ -19,36 +20,43 @@ export const createFileNode = (
     selected: false,
     language: getLanguageFromFileName(fileHandle.name),
     openInTab: false,
-    path: getPath(fileHandle.name),
+    path: getPath(fileHandle.name, parentDirectory),
   };
 };
 
 export const createDirectoryNode = (
   directoryHandle: FileSystemDirectoryHandle,
-  parentDirectory?: DirectoryNode
+  parentDirectory: DirectoryNode | undefined
 ): DirectoryNode => {
   return {
     directoryHandle,
     parentDirectory,
-    path: getPath(directoryHandle.name),
+    path: getPath(directoryHandle.name, parentDirectory),
     name: directoryHandle.name,
     type: "directory",
     expanded: false,
+    hasCreatedChildren: false,
   };
 };
 
 export const getPath = (
   currentName: string,
-  parentDirectoryNode?: DirectoryNode
+  parentDirectoryNode: DirectoryNode | undefined
 ): string => {
-  // TODO:
+  if (parentDirectoryNode) {
+    return `${getPath(
+      parentDirectoryNode.name,
+      parentDirectoryNode.parentDirectory
+    )}/${currentName}`;
+  }
 
   return currentName;
 };
 
 export const handleFileClick = async (
   fileNode: FileNode,
-  mainStateDispatch: MainStateDispatch
+  mainStateDispatch: MainStateDispatch,
+  fileEditor: ReactCodeMirrorRef
 ) => {
   let file: File;
   if (fileNode.fileHandle) {
@@ -64,7 +72,7 @@ export const handleFileClick = async (
   // Update state in a function to access prevState
   mainStateDispatch({
     type: "SWITCH_FILE",
-    payload: { fileNode },
+    payload: { fileNode, fileEditor },
   });
 };
 
@@ -72,28 +80,30 @@ export const handleDirectoryClick = async (
   directoryClicked: DirectoryNode,
   mainStateDispatch: MainStateDispatch
 ) => {
-  const nodesInDirectory: ExplorerNode[] = [];
+  const directoryChildrenToCreate: ExplorerNode[] = [];
 
-  if (directoryClicked.expanded) {
+  if (directoryClicked.hasCreatedChildren) {
     mainStateDispatch({
-      type: "EXPLORER_DIRECTORY_CLICK",
-      payload: { nodesInDirectory, directoryClicked },
+      type: "DIRECTORY_TOGGLE_EXPANDED",
+      payload: { directoryClicked },
     });
+
+    return;
   }
 
   for await (const entry of directoryClicked.directoryHandle.values()) {
     if (entry.kind === "directory") {
-      const directoryNode = createDirectoryNode(entry);
-      nodesInDirectory.push(directoryNode);
+      const directoryNode = createDirectoryNode(entry, directoryClicked);
+      directoryChildrenToCreate.push(directoryNode);
     } else {
       const fileNode = createFileNode(entry, directoryClicked);
-      nodesInDirectory.push(fileNode);
+      directoryChildrenToCreate.push(fileNode);
     }
   }
 
   mainStateDispatch({
-    type: "EXPLORER_DIRECTORY_CLICK",
-    payload: { nodesInDirectory, directoryClicked },
+    type: "DIRECTORY_CREATE_CHILDREN",
+    payload: { directoryChildrenToCreate, directoryClicked },
   });
 };
 
@@ -101,20 +111,20 @@ export const addToExplorerNodeMap = (
   explorerNodeMap: ExplorerState["explorerNodeMap"],
   node: ExplorerNode
 ) => {
-  if (node.name in explorerNodeMap) {
+  if (explorerNodeMap.has(node.path)) {
     throw new Error(
-      "Node already exists in explorerNodeMap. Node name: " + node.name
+      "Node already exists in explorerNodeMap. Node path: " + node.path
     );
   }
 
-  explorerNodeMap[node.name] = node;
+  explorerNodeMap.set(node.path, node);
 };
 
 export const getDirectoryNode = (
   explorerState: ExplorerState,
   directoryPath: string
 ): DirectoryNode => {
-  const directoryNode = explorerState.explorerNodeMap[directoryPath];
+  const directoryNode = explorerState.explorerNodeMap.get(directoryPath);
 
   if (!directoryNode) {
     throw new Error("Directory node not found in explorerNodeMap");
@@ -122,7 +132,7 @@ export const getDirectoryNode = (
 
   if (directoryNode.type !== "directory") {
     throw new Error(
-      "Node is not a directory. Node name: " + directoryNode.name
+      "Node is not a directory. Node path: " + directoryNode.path
     );
   }
 
@@ -130,17 +140,17 @@ export const getDirectoryNode = (
 };
 
 export const getFileNode = (
-  explorerState: ExplorerState,
+  explorerNodeMap: ExplorerState["explorerNodeMap"],
   filePath: string
 ): FileNode => {
-  const fileNode = explorerState.explorerNodeMap[filePath];
+  const fileNode = explorerNodeMap.get(filePath);
 
   if (!fileNode) {
     throw new Error("File node not found in explorerNodeMap");
   }
 
   if (fileNode.type !== "file") {
-    throw new Error("Node is not a file. Node name: " + fileNode.name);
+    throw new Error("Node is not a file. Node path: " + fileNode.path);
   }
 
   return fileNode;

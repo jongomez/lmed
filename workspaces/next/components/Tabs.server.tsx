@@ -9,6 +9,7 @@ import {
   PromptEditorState,
 } from "@/types/MainTypes";
 import { getFileNode } from "@/utils/explorerUtils";
+import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import {
   ChevronsRightLeft,
   Code,
@@ -18,7 +19,7 @@ import {
   Settings,
   Terminal,
 } from "lucide-react";
-import { ReactNode } from "react";
+import { MutableRefObject, ReactNode } from "react";
 
 // Assuming main tab header height is 40px, and footer height is 20px.
 // Add 2 pixels for header boder, and 2 pixels for footer margin. We have: 40px+20px+2px+2px=64px
@@ -65,13 +66,14 @@ export const SideTab = ({
   return (
     <div
       onClick={() => onTabClick?.()}
+      // the default x padding is 16px. When innactive, we add 4 px to the left to emulate an innactive border.
       className={`cursor-pointer py-2 px-4 inline-block w-full
         ${
           isActive
             ? `active-main-text-colors 
             border-l-4 border-active-colors
             bg-active-colors`
-            : `main-text-colors hover-main-text-colors ml-1`
+            : `main-text-colors hover-main-text-colors pl-5`
         }`}
       {...props}
     >
@@ -136,6 +138,7 @@ type EditorFileTabsProps = {
   fileEditorState: FileEditorState;
   explorerState: ExplorerState;
   mainStateDispatch: MainStateDispatch;
+  fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
   activeIndex: number;
 };
 
@@ -143,14 +146,13 @@ export const FileEditorTabs = ({
   fileEditorState,
   explorerState,
   mainStateDispatch,
+  fileEditorRef,
   activeIndex,
 }: EditorFileTabsProps) => {
-  console.log("Open files:", fileEditorState.openFilePaths);
-
   return (
     <>
       {fileEditorState.openFilePaths.map((filePath, index) => {
-        const fileNode = getFileNode(explorerState, filePath);
+        const fileNode = getFileNode(explorerState.explorerNodeMap, filePath);
 
         return (
           <Tab
@@ -159,6 +161,7 @@ export const FileEditorTabs = ({
                 type: "SWITCH_FILE",
                 payload: {
                   fileNode: fileNode,
+                  fileEditor: fileEditorRef.current,
                 },
               })
             }

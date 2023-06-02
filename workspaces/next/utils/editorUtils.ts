@@ -198,17 +198,17 @@ export const getEditorLanguageFromState = (
 };
 
 export const setNewEditorState = (
-  fileEditorRef: ReactCodeMirrorRef,
+  fileEditor: ReactCodeMirrorRef,
   newEditorState: EditorState
 ) => {
-  if (!fileEditorRef.view) {
+  if (!fileEditor.view) {
     throw new Error("File editor ref has no view.");
   }
 
-  fileEditorRef.view.setState(newEditorState);
+  fileEditor.view.setState(newEditorState);
 };
 
 export const createNewEditorState = (
-  fileEditorRef: ReactCodeMirrorRef,
+  fileEditor: ReactCodeMirrorRef,
   newEditorState: EditorState
 ) => {};

@@ -1,6 +1,6 @@
 import type { EditorTheme, Language } from "@/utils/editorUtils";
 import type { Delta } from "@/utils/hooks";
-import type { ReactCodeMirrorRef } from "@uiw/react-codemirror";
+import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import type { Dispatch } from "react";
 
 export type FileNode = {
@@ -22,6 +22,7 @@ export type DirectoryNode = {
   name: string;
   directoryHandle: FileSystemDirectoryHandle;
   expanded: boolean;
+  hasCreatedChildren: boolean;
   parentDirectory?: DirectoryNode; // the root directory will not have a parent directory.
 };
 
@@ -29,7 +30,6 @@ export type ExplorerNode = FileNode | DirectoryNode;
 
 export type ExplorerState = {
   explorerNodeMap: Map<string, ExplorerNode>;
-  idCounter: number;
 };
 
 export type FileEditorTab = {
@@ -74,20 +74,25 @@ export type MainState = {
 
 export type MainStateAction =
   | { type: "SET_ICON_TAB"; payload: number }
-  | { type: "OPEN_FILE"; payload: FileNode }
+  | {
+      type: "OPEN_FILE";
+      payload: { newNode: FileNode; fileEditor: ReactCodeMirrorRef };
+    }
   | { type: "OPEN_DIRECTORY"; payload: ExplorerNode[] }
   | {
-      type: "EXPLORER_DIRECTORY_CLICK";
+      type: "DIRECTORY_TOGGLE_EXPANDED";
       payload: {
-        nodesInDirectory: ExplorerNode[];
         directoryClicked: DirectoryNode;
       };
     }
   | {
       type: "SWITCH_FILE";
-      payload: { fileNode: FileNode };
+      payload: { fileNode: FileNode; fileEditor: ReactCodeMirrorRef };
     }
-  | { type: "CREATE_NEW_FILE"; payload: FileNode }
+  | {
+      type: "CREATE_NEW_FILE";
+      payload: { newNode: FileNode; fileEditor: ReactCodeMirrorRef };
+    }
   | { type: "SET_CURRENT_PROMPT_TAB"; payload: PromptTab["tabName"] }
   | { type: "OPEN_MAIN_MENU" }
   | { type: "CLOSE_MAIN_MENU" }
@@ -99,7 +104,17 @@ export type MainStateAction =
       type: "RESIZE_EDITORS_VERTICALLY";
       payload: { event: PointerEvent; delta: Delta; initialColSize: number };
     }
-  | { type: "SET_FILE_EDITOR_REF"; payload: ReactCodeMirrorRef };
+  | {
+      type: "CREATE_NEW_FILE";
+      payload: { newNode: FileNode; fileEditor: ReactCodeMirrorRef };
+    }
+  | {
+      type: "DIRECTORY_CREATE_CHILDREN";
+      payload: {
+        directoryChildrenToCreate: ExplorerNode[];
+        directoryClicked: DirectoryNode;
+      };
+    };
 
 export type MainStateDispatch = Dispatch<MainStateAction>;
 

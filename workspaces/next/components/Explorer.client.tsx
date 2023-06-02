@@ -4,14 +4,76 @@ import {
   DirectoryNode,
   ExplorerNode,
   ExplorerState,
-  FileEditorState,
+  FileNode,
   MainStateDispatch,
 } from "@/types/MainTypes";
 import { handleDirectoryClick, handleFileClick } from "@/utils/explorerUtils";
 import { openDirectory, openFile } from "@/utils/mainMenuUtils";
-import { ChevronDown, ChevronUp, File, FolderOpen } from "lucide-react";
+import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
+import { ChevronDown, ChevronRight, File, FolderOpen } from "lucide-react";
+import { MutableRefObject } from "react";
 import { SideTab } from "./Tabs.server";
 import { Button } from "./base/Button.server";
+
+const ICON_SIZE = 18;
+
+type FileNodeTabProps = {
+  fileNode: FileNode;
+  explorerState: ExplorerState;
+  mainStateDispatch: MainStateDispatch;
+  fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
+};
+
+const FileNodeTab = ({
+  fileNode,
+  explorerState,
+  mainStateDispatch,
+  fileEditorRef,
+}: FileNodeTabProps) => {
+  return (
+    <SideTab isActive={isExplorerNodeSelected(fileNode, explorerState)}>
+      <div
+        onClick={() =>
+          handleFileClick(fileNode, mainStateDispatch, fileEditorRef.current)
+        }
+        className="flex items-center"
+      >
+        <File size={ICON_SIZE} className="mr-1 flex-shrink-0" />
+        <span className="overflow-hidden whitespace-nowrap overflow-ellipsis">
+          {fileNode.name}
+        </span>
+      </div>
+    </SideTab>
+  );
+};
+
+type DirectoryNodeTabProps = {
+  directoryNode: DirectoryNode;
+  mainStateDispatch: MainStateDispatch;
+};
+
+const DirectoryNodeTab = ({
+  directoryNode,
+  mainStateDispatch,
+}: DirectoryNodeTabProps) => {
+  return (
+    <SideTab isActive={false}>
+      <div
+        onClick={() => handleDirectoryClick(directoryNode, mainStateDispatch)}
+        className="flex items-center pointer-cursor"
+      >
+        {directoryNode.expanded ? (
+          <ChevronDown size={ICON_SIZE} className="mr-1 flex-shrink-0" />
+        ) : (
+          <ChevronRight size={ICON_SIZE} className="mr-1 flex-shrink-0" />
+        )}
+        <span className="overflow-hidden whitespace-nowrap overflow-ellipsis">
+          {directoryNode.name}
+        </span>
+      </div>
+    </SideTab>
+  );
+};
 
 const isExplorerNodeSelected = (
   node: ExplorerNode,
@@ -24,6 +86,8 @@ const isExplorerNodeSelected = (
 type ExplorerListProps = {
   explorerState: ExplorerState;
   mainStateDispatch: MainStateDispatch;
+  fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
+  indentationLevel: number;
   parentNode?: DirectoryNode;
 };
 
@@ -32,65 +96,63 @@ const ExplorerList = ({
   parentNode,
   explorerState,
   mainStateDispatch,
+  indentationLevel,
+  fileEditorRef,
 }: ExplorerListProps) => {
-  const iconSize = 18;
-  const childNodes = Array.from(explorerState.explorerNodeMap.values()).filter(
+  const childNodes = [...explorerState.explorerNodeMap.values()].filter(
     (node) => node.parentDirectory?.path === parentNode?.path
   );
 
   return (
-    <div className="overflow-auto">
+    <div
+      className="overflow-auto"
+      style={{ paddingLeft: `${indentationLevel ? 20 : 0}px` }}
+    >
       {childNodes.map((node) => (
-        <SideTab
-          key={node.path}
-          isActive={isExplorerNodeSelected(node, explorerState)}
-        >
+        <div key={node.path}>
           {node.type === "directory" && (
-            <div>
-              <button
-                onClick={() => handleDirectoryClick(node, mainStateDispatch)}
-              >
-                {node.expanded ? (
-                  <ChevronDown size={iconSize} />
-                ) : (
-                  <ChevronUp size={iconSize} />
-                )}
-                {node.name}
-              </button>
+            <>
+              <DirectoryNodeTab
+                directoryNode={node}
+                mainStateDispatch={mainStateDispatch}
+              />
+
               {node.expanded && (
                 <ExplorerList
                   parentNode={node}
                   explorerState={explorerState}
                   mainStateDispatch={mainStateDispatch}
+                  fileEditorRef={fileEditorRef}
+                  indentationLevel={indentationLevel + 1}
                 />
               )}
-            </div>
+            </>
           )}
 
           {node.type === "file" && (
-            <div
-              onClick={() => handleFileClick(node, mainStateDispatch)}
-              className="flex items-center"
-            >
-              <File size={iconSize} className="mr-1" />
-              {node.name}
-            </div>
+            <FileNodeTab
+              fileNode={node}
+              explorerState={explorerState}
+              mainStateDispatch={mainStateDispatch}
+              fileEditorRef={fileEditorRef}
+            />
           )}
-        </SideTab>
+        </div>
       ))}
     </div>
   );
 };
+
 type ExplorerProps = {
   explorerState: ExplorerState;
-  fileEditorState: FileEditorState;
+  fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
   mainStateDispatch: MainStateDispatch;
   className: string;
 };
 
 export const Explorer = ({
   explorerState,
-  fileEditorState,
+  fileEditorRef,
   mainStateDispatch,
   className,
 }: ExplorerProps) => {
@@ -104,12 +166,14 @@ export const Explorer = ({
     >
       <ExplorerList
         explorerState={explorerState}
+        fileEditorRef={fileEditorRef}
         mainStateDispatch={mainStateDispatch}
+        indentationLevel={0}
       />
       <div className="w-90 flex flex-col items-center">
         <div className="flex justify-center flex-wrap">
           <Button
-            onClick={() => openFile(mainStateDispatch)}
+            onClick={() => openFile(mainStateDispatch, fileEditorRef)}
             className={buttonClasses}
           >
             <File size={iconSize} className={iconClasses} />

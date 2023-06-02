@@ -3,20 +3,20 @@ import React, { createContext, useEffect, useState } from "react";
 
 export type SiteTheme = "light" | "dark";
 
-export type SettingsContextType = {
+export type MainContextType = {
   siteTheme: SiteTheme;
   toggleSiteTheme: () => void;
 };
 
-export const SettingsContext = createContext<SettingsContextType | undefined>(
+export const MainContext = createContext<MainContextType | undefined>(
   undefined
 );
 
-type SettingsProviderProps = {
+type MainProviderProps = {
   children: React.ReactNode;
 };
 
-export const SettingsProvider = ({ children }: SettingsProviderProps) => {
+export const MainProvider = ({ children }: MainProviderProps) => {
   const [siteTheme, setSiteTheme] = useState<SiteTheme>("light");
 
   const toggleSiteTheme = () => {
@@ -59,8 +59,8 @@ export const SettingsProvider = ({ children }: SettingsProviderProps) => {
   }, [siteTheme]);
 
   return (
-    <SettingsContext.Provider value={{ siteTheme, toggleSiteTheme }}>
+    <MainContext.Provider value={{ siteTheme, toggleSiteTheme }}>
       {children}
-    </SettingsContext.Provider>
+    </MainContext.Provider>
   );
 };

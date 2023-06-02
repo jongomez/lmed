@@ -1,5 +1,6 @@
 "use client";
 
+import { useSocket } from "@/utils/hooks";
 import { useEffect, useRef } from "react";
 import { Socket } from "socket.io-client";
 import type { Terminal as TerminalType } from "xterm";
@@ -20,7 +21,6 @@ if (typeof window !== "undefined") {
 let fitAddon: FitAddonType | undefined;
 
 type MyTerminalProps = {
-  socket: Socket;
   activeTab: number;
 };
 
@@ -51,13 +51,15 @@ const initTerminal = async (xtermElement: HTMLDivElement, socket: Socket) => {
   fitAddon.fit();
 };
 
-export const MyTerminal = ({ socket, activeTab }: MyTerminalProps) => {
+export const MyTerminal = ({ activeTab }: MyTerminalProps) => {
+  // Socket is not part of the mainState because I was getting some immer type errors.
+  const socket = useSocket();
   const xtermRef = useRef<HTMLDivElement>(null);
   const hasInitTerminal = useRef(false);
   const isVisible = activeTab === 1;
 
   useEffect(() => {
-    if (!xtermRef.current || hasInitTerminal.current) {
+    if (!xtermRef.current || hasInitTerminal.current || !socket) {
       return;
     }
 
