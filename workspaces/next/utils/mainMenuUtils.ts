@@ -38,6 +38,7 @@ export const openFile = async (
     openInTab: true,
     path: getPath(file.name, undefined),
     fileHandle,
+    isDirty: false,
   };
 
   // File will be inserted as a child of the root.
@@ -64,8 +65,8 @@ export const openDirectory = async (
   const nodesToCreate: ExplorerNode[] = [parentDirectoryNode];
 
   for await (const entry of dirHandle.values()) {
-    console.log("entry.name", entry.name);
-    console.log("dirHandle.name", dirHandle.name);
+    // console.log("entry.name", entry.name);
+    // console.log("dirHandle.name", dirHandle.name);
     if (entry.kind === "directory") {
       const directoryNode = createDirectoryNode(entry, parentDirectoryNode);
       nodesToCreate.push(directoryNode);

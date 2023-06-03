@@ -22,6 +22,7 @@ type FileNodeTabProps = {
   explorerState: ExplorerState;
   mainStateDispatch: MainStateDispatch;
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
+  indentationLevel: number;
 };
 
 const FileNodeTab = ({
@@ -29,6 +30,7 @@ const FileNodeTab = ({
   explorerState,
   mainStateDispatch,
   fileEditorRef,
+  indentationLevel,
 }: FileNodeTabProps) => {
   return (
     <SideTab isActive={isExplorerNodeSelected(fileNode, explorerState)}>
@@ -37,6 +39,9 @@ const FileNodeTab = ({
           handleFileClick(fileNode, mainStateDispatch, fileEditorRef.current)
         }
         className="flex items-center"
+        style={{
+          paddingLeft: `${indentationLevel * 20}px`,
+        }}
       >
         <File size={ICON_SIZE} className="mr-1 flex-shrink-0" />
         <span className="overflow-hidden whitespace-nowrap overflow-ellipsis">
@@ -50,17 +55,22 @@ const FileNodeTab = ({
 type DirectoryNodeTabProps = {
   directoryNode: DirectoryNode;
   mainStateDispatch: MainStateDispatch;
+  indentationLevel: number;
 };
 
 const DirectoryNodeTab = ({
   directoryNode,
   mainStateDispatch,
+  indentationLevel,
 }: DirectoryNodeTabProps) => {
   return (
     <SideTab isActive={false}>
       <div
         onClick={() => handleDirectoryClick(directoryNode, mainStateDispatch)}
         className="flex items-center pointer-cursor"
+        style={{
+          paddingLeft: `${indentationLevel * 20}px`,
+        }}
       >
         {directoryNode.expanded ? (
           <ChevronDown size={ICON_SIZE} className="mr-1 flex-shrink-0" />
@@ -104,10 +114,7 @@ const ExplorerList = ({
   );
 
   return (
-    <div
-      className="overflow-auto"
-      style={{ paddingLeft: `${indentationLevel ? 20 : 0}px` }}
-    >
+    <div className="overflow-auto">
       {childNodes.map((node) => (
         <div key={node.path}>
           {node.type === "directory" && (
@@ -115,6 +122,7 @@ const ExplorerList = ({
               <DirectoryNodeTab
                 directoryNode={node}
                 mainStateDispatch={mainStateDispatch}
+                indentationLevel={indentationLevel}
               />
 
               {node.expanded && (
@@ -135,6 +143,7 @@ const ExplorerList = ({
               explorerState={explorerState}
               mainStateDispatch={mainStateDispatch}
               fileEditorRef={fileEditorRef}
+              indentationLevel={indentationLevel}
             />
           )}
         </div>

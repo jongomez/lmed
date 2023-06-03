@@ -49,9 +49,7 @@ export const deselectAllFiles = (
   }
 };
 
-// switchSelectedFile does the following:
-// 1. Before switching files, it stores the current editor state for the currently open file.
-// 2. It then updates the file editor's state with the new file's contents.
+// WARNING: This function mutates stuff. Should only be called with immer drafts.
 export const switchSelectedFile = (
   explorerNodeMap: ExplorerState["explorerNodeMap"],
   switchToFilePath: string,
@@ -68,28 +66,43 @@ export const switchSelectedFile = (
   const switchFromFile = getCurrentlySelectedFile(explorerNodeMap);
   const switchToFile = getFileNode(explorerNodeMap, switchToFilePath);
 
-  if (!switchToFile.serializedEditorState) {
-    throw new Error(
-      "switchSelectedFile - switchToFile.serializedEditorState is null"
-    );
-  }
-
   switchFromFile.selected = false;
   switchToFile.selected = true;
 
   // Store the current editor state for the currently open file.
-  // This way, when users switch tabs back to this file, they'll see the same editor state.
+  // This way, when you switch tabs back to this file, you'll see the same editor state.
   const currentlySelectedFileEditorState = fileEditor.view.state;
   switchFromFile.serializedEditorState =
     currentlySelectedFileEditorState.toJSON();
 
-  // Update the file editor's state with the new file's contents.
-  fileEditor.view.setState(
-    EditorState.fromJSON(switchToFile.serializedEditorState)
-  );
+  if (!switchToFile.serializedEditorState) {
+    if (!switchToFile.fileHandle) {
+      // This should never happen - fileNodes without fileHandles should be in-memory files.
+      // And in-memory files should always have serializedEditorState.
+      throw new Error("switchSelectedFile - switchToFile.fileHandle is null");
+    }
 
-  // console.log(current(explorerNodeMap));
-  // debugger;
+    // XXX: WARNING: This is an async operation. In a non async function. damn.
+    switchToFile.fileHandle.getFile().then((file) => {
+      file.text().then((contents) => {
+        // The following breaks codemirror for some reason. will use .dispatch() instead.
+        // const newState = EditorState.create({ doc: contents });
+        // fileEditor.view!.setState(newState);
+
+        const currentDocLength = fileEditor.view!.state.doc.length;
+        let transaction = {
+          changes: { from: 0, to: currentDocLength, insert: contents },
+        };
+        fileEditor.view!.dispatch(transaction);
+      });
+    });
+  } else {
+    // If the file already has a serializedEditorState, use that.
+    // No need to fetch the file contents asynchronously.
+    fileEditor.view.setState(
+      EditorState.fromJSON(switchToFile.serializedEditorState)
+    );
+  }
 };
 
 export const getCurrentEditorViewState = (

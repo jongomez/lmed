@@ -21,6 +21,7 @@ export const createFileNode = (
     language: getLanguageFromFileName(fileHandle.name),
     openInTab: false,
     path: getPath(fileHandle.name, parentDirectory),
+    isDirty: false,
   };
 };
 

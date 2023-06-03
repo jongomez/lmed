@@ -3,34 +3,30 @@ import type { Delta } from "@/utils/hooks";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import type { Dispatch } from "react";
 
-export type FileNode = {
+type NodeBase = {
   path: string;
-  type: "file";
   name: string;
+  type: "file" | "directory";
+  parentDirectoryPath?: string;
+};
+
+export type FileNode = NodeBase & {
   selected: boolean;
   openInTab: boolean;
   language: Language;
+  isDirty: boolean;
   fileHandle?: FileSystemFileHandle; // for files that exist on disk.
   memoryOnlyFile?: File; // for files that exist only in memory, not on disk. e.g. if a user creates a new file.
   serializedEditorState?: string; // if the file has not been selected yet, no editorState will be present.
-  parentDirectory?: DirectoryNode; // if a user created a new file, it won't have a parent directory.
 };
 
-export type DirectoryNode = {
-  path: string; // will work as a unique identifier for the directory.
-  type: "directory";
-  name: string;
+export type DirectoryNode = NodeBase & {
   directoryHandle: FileSystemDirectoryHandle;
   expanded: boolean;
   hasCreatedChildren: boolean;
-  parentDirectory?: DirectoryNode; // the root directory will not have a parent directory.
 };
 
 export type ExplorerNode = FileNode | DirectoryNode;
-
-export type ExplorerState = {
-  explorerNodeMap: Map<string, ExplorerNode>;
-};
 
 export type FileEditorTab = {
   fileNode: FileNode;
@@ -67,9 +63,10 @@ export type MainState = {
   globalEditorSettings: GlobalEditorSettings;
   fileEditor: FileEditorState;
   promptEditor: PromptEditorState;
-  explorer: ExplorerState;
   layout: LayoutState;
   isMainMenuOpen: boolean;
+  explorerNodeMap: Map<string, ExplorerNode>;
+  selectedFileNodePath: string;
 };
 
 export type MainStateAction =
@@ -113,6 +110,20 @@ export type MainStateAction =
       payload: {
         directoryChildrenToCreate: ExplorerNode[];
         directoryClicked: DirectoryNode;
+      };
+    }
+  | {
+      type: "CLOSE_FILE";
+      payload: {
+        fileNode: FileNode;
+        fileEditor: ReactCodeMirrorRef;
+      };
+    }
+  | {
+      type: "UPDATE_FILE_IS_DIRTY";
+      payload: {
+        fileNode: FileNode;
+        isDirty: boolean;
       };
     };
 

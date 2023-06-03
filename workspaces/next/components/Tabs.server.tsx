@@ -18,6 +18,7 @@ import {
   MenuIcon,
   Settings,
   Terminal,
+  X,
 } from "lucide-react";
 import { MutableRefObject, ReactNode } from "react";
 
@@ -44,7 +45,7 @@ export const Tab = ({
       // key={key}
       onClick={() => onTabClick?.()}
       className={`${className}
-        cursor-pointer py-2 px-4 inline-block shadow-[0px_2px_0px_0px]
+        cursor-pointer py-2 px-3 inline-block shadow-[0px_2px_0px_0px]
         ${
           isActive
             ? "active-main-text-colors shadow-active-colors"
@@ -167,9 +168,25 @@ export const FileEditorTabs = ({
             }
             key={index}
             isActive={fileNode.selected}
-            className={`${activeIndex === 0 ? "" : "hidden"}`}
+            className={`${
+              activeIndex === 0 ? "" : "hidden"
+            } flex justify-center items-center`}
           >
             {fileNode.name}
+            <X
+              size={16}
+              className="ml-2 hover-main-text-colors hover:stroke-[3px]"
+              onClick={(e) => {
+                e.stopPropagation();
+                mainStateDispatch({
+                  type: "CLOSE_FILE",
+                  payload: {
+                    fileNode: fileNode,
+                    fileEditor: fileEditorRef.current,
+                  },
+                });
+              }}
+            />
           </Tab>
         );
       })}

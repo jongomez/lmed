@@ -6,7 +6,7 @@ import type {
   MainStateAction,
   PromptTab,
 } from "@/types/MainTypes";
-import { enableMapSet, original } from "immer";
+import { enableMapSet } from "immer";
 import { HEADER_SIZE_PX, RESIZE_HANDLE_SIZE_PX } from "./constants";
 import {
   addToExplorerNodeMap,
@@ -86,11 +86,11 @@ export const mainStateReducer = (
     case "DIRECTORY_CREATE_CHILDREN": {
       const { directoryChildrenToCreate, directoryClicked } = action.payload;
 
-      console.log(
-        "original(draft.explorer.explorerNodeMap)",
-        original(draft.explorer.explorerNodeMap)
-      );
-      debugger;
+      // console.log(
+      //   "original(draft.explorer.explorerNodeMap)",
+      //   original(draft.explorer.explorerNodeMap)
+      // );
+      // debugger;
 
       for (const node of directoryChildrenToCreate) {
         if (draft.explorer.explorerNodeMap.has(node.path)) {
@@ -130,6 +130,7 @@ export const mainStateReducer = (
     case "SWITCH_FILE": {
       const { fileNode, fileEditor } = action.payload;
 
+      debugger;
       if (fileNode.selected && fileNode.openInTab) {
         console.log("fileNode already selected and open in tab");
         return draft;
@@ -148,6 +149,7 @@ export const mainStateReducer = (
 
       if (!draftFileNode.openInTab) {
         draft.fileEditor.openFilePaths.push(draftFileNode.path);
+        draftFileNode.openInTab = true;
       }
 
       return draft;
@@ -179,6 +181,7 @@ export const mainStateReducer = (
       );
 
       draft.fileEditor.openFilePaths.push(newNode.path);
+      newNode.openInTab = true;
 
       return draft;
     }
@@ -226,6 +229,24 @@ export const mainStateReducer = (
 
       // console.log("resizableColSize", resizableColSize);
       // console.log("deltaX", deltaX);
+
+      return draft;
+    }
+
+    case "CLOSE_FILE": {
+      const { fileNode, fileEditor } = action.payload;
+
+      // TODO:
+
+      // Gotta check if file is dirty. Maybe check befor dispatching this action?
+
+      return draft;
+    }
+
+    case "UPDATE_FILE_IS_DIRTY": {
+      const { fileNode, isDirty } = action.payload;
+
+      fileNode.isDirty = isDirty;
 
       return draft;
     }
