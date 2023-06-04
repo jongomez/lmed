@@ -38,7 +38,7 @@ export const ResizeHandle = ({
       <div
         className={`${
           isDragging ? "" : "hidden"
-        } z-40 fixed top-0 left-0 w-screen h-screen`}
+        } z-30 fixed top-0 left-0 w-screen h-screen`}
       ></div>
 
       {/* The following div is the handle itself. */}
@@ -46,15 +46,15 @@ export const ResizeHandle = ({
         ref={resizeHandleRef}
         className={`${className} ${cursor} ${
           isDragging
-            ? "z-50 bg-blue-600 dark:bg-blue-300"
+            ? "z-40 bg-blue-600 dark:bg-blue-300"
             : "bg-gray-200 dark:bg-gray-700"
         } `}
       >
         {/* The following divs add invisible 'padding' to facilitate picking up the handle. */}
         {invisiblePaddingPosition === "left" ? (
-          <div className="relative left-[-4px] w-[500%] h-[100%] z-50"></div>
+          <div className="relative left-[-4px] w-[500%] h-[100%] z-40"></div>
         ) : (
-          <div className="relative top-[-4px] w-[100%] h-[500%] z-50"></div>
+          <div className="relative top-[-4px] w-[100%] h-[500%] z-40"></div>
         )}
       </div>
     </>

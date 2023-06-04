@@ -33,7 +33,7 @@ export const MainContent = () => {
         isMainMenuOpen={isMainMenuOpen}
         mainStateDispatch={mainStateDispatch}
         fileEditorState={mainState.fileEditor}
-        explorerState={mainState.explorer}
+        explorerNodeMap={mainState.explorerNodeMap}
         fileEditorRef={fileEditorRef}
       />
 
@@ -41,7 +41,7 @@ export const MainContent = () => {
       {isMainMenuOpen && (
         <MainMenu
           mainStateDispatch={mainStateDispatch}
-          explorerState={mainState.explorer}
+          explorerNodeMap={mainState.explorerNodeMap}
           fileEditorState={mainState.fileEditor}
           fileEditorRef={fileEditorRef}
         />

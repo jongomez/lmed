@@ -1,4 +1,4 @@
-import type { ExplorerState, GlobalEditorSettings } from "@/types/MainTypes";
+import type { GlobalEditorSettings, MainState } from "@/types/MainTypes";
 import { EditorState, Extension } from "@codemirror/state";
 import { langs } from "@uiw/codemirror-extensions-langs";
 import * as themes from "@uiw/codemirror-themes-all";
@@ -156,11 +156,9 @@ export const getEditorThemeFromState = (
 };
 
 export const getEditorLanguageFromState = (
-  explorerState: ExplorerState
+  explorerNodeMap: MainState["explorerNodeMap"]
 ): Extension => {
-  const selectedFileNode = getCurrentlySelectedFile(
-    explorerState.explorerNodeMap
-  );
+  const selectedFileNode = getCurrentlySelectedFile(explorerNodeMap);
 
   // TODO: Check if there are any missing. Very likely there are.
   switch (selectedFileNode.language) {

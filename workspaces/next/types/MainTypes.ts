@@ -11,6 +11,7 @@ type NodeBase = {
 };
 
 export type FileNode = NodeBase & {
+  type: "file";
   selected: boolean;
   openInTab: boolean;
   language: Language;
@@ -21,6 +22,7 @@ export type FileNode = NodeBase & {
 };
 
 export type DirectoryNode = NodeBase & {
+  type: "directory";
   directoryHandle: FileSystemDirectoryHandle;
   expanded: boolean;
   hasCreatedChildren: boolean;
@@ -66,7 +68,7 @@ export type MainState = {
   layout: LayoutState;
   isMainMenuOpen: boolean;
   explorerNodeMap: Map<string, ExplorerNode>;
-  selectedFileNodePath: string;
+  // selectedFileNodePath: string;
 };
 
 export type MainStateAction =

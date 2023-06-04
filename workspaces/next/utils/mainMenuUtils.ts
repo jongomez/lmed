@@ -1,15 +1,19 @@
 import type {
   ExplorerNode,
-  ExplorerState,
   FileEditorState,
   FileNode,
+  MainState,
   MainStateDispatch,
 } from "@/types/MainTypes";
 import { EditorState } from "@codemirror/state";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { MutableRefObject } from "react";
 import { getLanguageFromFileName } from "./editorUtils";
-import { createDirectoryNode, createFileNode, getPath } from "./explorerUtils";
+import {
+  createDirectoryNode,
+  createFileNode,
+  createPath,
+} from "./explorerUtils";
 import {
   createEmptyFileInMemory,
   getCurrentEditorViewState,
@@ -20,7 +24,8 @@ import {
 
 export const openFile = async (
   mainStateDispatch: MainStateDispatch,
-  fileEditorRef: MutableRefObject<ReactCodeMirrorRef>
+  fileEditorRef: MutableRefObject<ReactCodeMirrorRef>,
+  explorerNodeMap: MainState["explorerNodeMap"]
 ) => {
   const [fileHandle] = await window.showOpenFilePicker();
   const file = await fileHandle.getFile();
@@ -36,7 +41,7 @@ export const openFile = async (
     language: getLanguageFromFileName(file.name),
     serializedEditorState: editorStateForFile.toJSON(),
     openInTab: true,
-    path: getPath(file.name, undefined),
+    path: createPath(file.name, undefined, explorerNodeMap),
     fileHandle,
     isDirty: false,
   };
@@ -53,10 +58,14 @@ export const openFile = async (
 // 2. Creates an explorer tree from the selected directory
 export const openDirectory = async (
   mainStateDispatch: MainStateDispatch,
-  explorerNodeMap: ExplorerState["explorerNodeMap"]
+  explorerNodeMap: MainState["explorerNodeMap"]
 ) => {
   const dirHandle = await window.showDirectoryPicker();
-  const parentDirectoryNode = createDirectoryNode(dirHandle, undefined);
+  const parentDirectoryNode = createDirectoryNode(
+    dirHandle,
+    undefined,
+    explorerNodeMap
+  );
   parentDirectoryNode.expanded = true;
   // If the code is working correctly, having hasCreatedChildren to false should
   // not cause any issues - like creating the same files / directories multiple times.
@@ -68,10 +77,18 @@ export const openDirectory = async (
     // console.log("entry.name", entry.name);
     // console.log("dirHandle.name", dirHandle.name);
     if (entry.kind === "directory") {
-      const directoryNode = createDirectoryNode(entry, parentDirectoryNode);
+      const directoryNode = createDirectoryNode(
+        entry,
+        parentDirectoryNode.path,
+        explorerNodeMap
+      );
       nodesToCreate.push(directoryNode);
     } else {
-      const fileNode = createFileNode(entry, parentDirectoryNode);
+      const fileNode = createFileNode(
+        entry,
+        parentDirectoryNode.path,
+        explorerNodeMap
+      );
       nodesToCreate.push(fileNode);
     }
   }
@@ -81,13 +98,11 @@ export const openDirectory = async (
 
 export const saveFile = async (
   mainStateDispatch: MainStateDispatch,
-  explorerState: ExplorerState,
+  explorerNodeMap: MainState["explorerNodeMap"],
   fileEditorState: FileEditorState,
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>
 ) => {
-  const selectedFileNode = getCurrentlySelectedFile(
-    explorerState.explorerNodeMap
-  );
+  const selectedFileNode = getCurrentlySelectedFile(explorerNodeMap);
 
   const currentEditorViewState = getCurrentEditorViewState(
     fileEditorRef.current
@@ -99,7 +114,7 @@ export const saveFile = async (
   if (!fileHandle) {
     saveFileAs(
       mainStateDispatch,
-      explorerState,
+      explorerNodeMap,
       fileEditorState,
       fileEditorRef
     );
@@ -113,13 +128,11 @@ export const saveFile = async (
 
 export const saveFileAs = async (
   mainStateDispatch: MainStateDispatch,
-  explorerState: ExplorerState,
+  explorerNodeMap: MainState["explorerNodeMap"],
   fileEditorState: FileEditorState,
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>
 ) => {
-  const selectedFileNode = getCurrentlySelectedFile(
-    explorerState.explorerNodeMap
-  );
+  const selectedFileNode = getCurrentlySelectedFile(explorerNodeMap);
 
   const currentEditorViewState = getCurrentEditorViewState(
     fileEditorRef.current
@@ -153,10 +166,10 @@ export const saveFileAs = async (
 
 export const createNewFile = async (
   mainStateDispatch: MainStateDispatch,
-  explorerState: ExplorerState,
+  explorerNodeMap: MainState["explorerNodeMap"],
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>
 ) => {
-  const newNode = createEmptyFileInMemory(explorerState.explorerNodeMap);
+  const newNode = createEmptyFileInMemory(explorerNodeMap);
 
   mainStateDispatch({
     type: "CREATE_NEW_FILE",

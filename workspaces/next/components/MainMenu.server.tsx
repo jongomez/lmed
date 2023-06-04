@@ -1,6 +1,6 @@
 import {
-  ExplorerState,
   FileEditorState,
+  MainState,
   MainStateDispatch,
 } from "@/types/MainTypes";
 import {
@@ -44,14 +44,14 @@ const MenuItem = ({ onClick, children, className }: MenuItemProps) => {
 type MainMenuProps = {
   mainStateDispatch: MainStateDispatch;
   className?: string;
-  explorerState: ExplorerState;
+  explorerNodeMap: MainState["explorerNodeMap"];
   fileEditorState: FileEditorState;
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
 };
 
 export const MainMenu = ({
   mainStateDispatch,
-  explorerState,
+  explorerNodeMap,
   fileEditorState,
   className,
   fileEditorRef,
@@ -64,9 +64,9 @@ export const MainMenu = ({
       {/* Menu overlay - when clicked, it closes the menu. */}
       <div
         onClick={() => mainStateDispatch({ type: "CLOSE_MAIN_MENU" })}
-        className="fixed top-[42px] left-0 w-full h-[calc(100vh_-_42px)] z-10 bg-black bg-opacity-50"
+        // className="fixed top-[42px] left-0 w-full h-[calc(100vh_-_42px)] z-10 bg-black bg-opacity-50"
         // className="fixed top-0 left-0 w-full h-full z-10 bg-black bg-opacity-50"
-        // className="fixed top-0 left-0 w-full h-full z-10"
+        className="fixed top-0 left-0 w-full h-full z-40"
       ></div>
 
       {/* Main menu container and items.
@@ -74,11 +74,11 @@ export const MainMenu = ({
       <div
         className={`top-[42px] w-[200px] absolute p-3
       border-r-2 border-b-2 border-innactive-colors 
-       z-10 bg-white dark:bg-slate-800 ${className || ""} `}
+       z-50 bg-white dark:bg-slate-800 ${className || ""} `}
       >
         <MenuItem
           onClick={() => {
-            createNewFile(mainStateDispatch, explorerState, fileEditorRef);
+            createNewFile(mainStateDispatch, explorerNodeMap, fileEditorRef);
             mainStateDispatch({ type: "CLOSE_MAIN_MENU" });
           }}
         >
@@ -87,7 +87,7 @@ export const MainMenu = ({
         </MenuItem>
         <MenuItem
           onClick={() => {
-            openFile(mainStateDispatch, fileEditorRef);
+            openFile(mainStateDispatch, fileEditorRef, explorerNodeMap);
             mainStateDispatch({ type: "CLOSE_MAIN_MENU" });
           }}
         >
@@ -96,7 +96,7 @@ export const MainMenu = ({
         </MenuItem>
         <MenuItem
           onClick={() => {
-            openDirectory(mainStateDispatch, explorerState.explorerNodeMap);
+            openDirectory(mainStateDispatch, explorerNodeMap);
             mainStateDispatch({ type: "CLOSE_MAIN_MENU" });
           }}
         >
@@ -107,7 +107,7 @@ export const MainMenu = ({
           onClick={() => {
             saveFile(
               mainStateDispatch,
-              explorerState,
+              explorerNodeMap,
               fileEditorState,
               fileEditorRef
             );
@@ -121,7 +121,7 @@ export const MainMenu = ({
           onClick={() =>
             saveFileAs(
               mainStateDispatch,
-              explorerState,
+              explorerNodeMap,
               fileEditorState,
               fileEditorRef
             )

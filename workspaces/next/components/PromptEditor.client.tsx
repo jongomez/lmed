@@ -4,9 +4,9 @@ import CodeMirror from "@uiw/react-codemirror";
 import { useCallback } from "react";
 
 import {
-  ExplorerState,
   FileEditorState,
   GlobalEditorSettings,
+  MainState,
   MainStateDispatch,
 } from "@/types/MainTypes";
 import { PROMPT_EDITOR_ID } from "@/utils/constants";
@@ -19,7 +19,7 @@ type PromptEditorProps = {
   fileEditorState: FileEditorState;
   globalEditorSettings: GlobalEditorSettings;
   mainStateDispatch: MainStateDispatch;
-  explorerState: ExplorerState;
+  explorerNodeMap: MainState["explorerNodeMap"];
   className: string;
 };
 
@@ -27,7 +27,7 @@ export const PromptEditor = ({
   fileEditorState,
   globalEditorSettings,
   mainStateDispatch,
-  explorerState,
+  explorerNodeMap,
   className,
 }: PromptEditorProps) => {
   // https://github.com/securingsincity/react-ace/issues/27
@@ -46,7 +46,7 @@ export const PromptEditor = ({
       <CodeMirror
         value="console.log('hello world!');"
         theme={getEditorThemeFromState(globalEditorSettings)}
-        extensions={[getEditorLanguageFromState(explorerState)]}
+        extensions={[getEditorLanguageFromState(explorerNodeMap)]}
         onChange={onChange}
         // Both style={{ height: "100%" }} and height="100%" are necessary.
         style={{ height: "100%" }}

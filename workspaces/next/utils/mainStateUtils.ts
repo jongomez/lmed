@@ -38,14 +38,14 @@ export const getInitialState = (): MainState => {
   ];
 
   const initialFile = createEmptyFileInMemory(explorerNodeMap);
+  // const selectedFileNodePath = initialFile.path;
   initialFile.selected = true; // exceptional case: the initial file is selected manually here.
   explorerNodeMap.set(initialFile.path, initialFile);
 
   return {
     iconTabIndex: 0,
-    explorer: {
-      explorerNodeMap,
-    },
+    explorerNodeMap,
+    // selectedFileNodePath,
     fileEditor: {
       openFilePaths: [initialFile.path],
     },
@@ -76,7 +76,7 @@ export const mainStateReducer = (
 
     case "OPEN_FILE": {
       const { newNode, fileEditor } = action.payload;
-      addToExplorerNodeMap(draft.explorer.explorerNodeMap, newNode);
+      addToExplorerNodeMap(draft.explorerNodeMap, newNode);
 
       // TODO: Save current tab's editor state to the fileNode.
 
@@ -93,16 +93,16 @@ export const mainStateReducer = (
       // debugger;
 
       for (const node of directoryChildrenToCreate) {
-        if (draft.explorer.explorerNodeMap.has(node.path)) {
+        if (draft.explorerNodeMap.has(node.path)) {
           console.log("node.path already in explorer node map:", node.path);
           continue;
         }
 
-        draft.explorer.explorerNodeMap.set(node.path, node);
+        draft.explorerNodeMap.set(node.path, node);
       }
 
       const draftDirectoryClicked = getDirectoryNode(
-        draft.explorer,
+        draft.explorerNodeMap,
         directoryClicked.path
       );
 
@@ -116,7 +116,7 @@ export const mainStateReducer = (
       const { directoryClicked } = action.payload;
 
       const draftDirectoryClicked = getDirectoryNode(
-        draft.explorer,
+        draft.explorerNodeMap,
         directoryClicked.path
       );
 
@@ -136,16 +136,9 @@ export const mainStateReducer = (
         return draft;
       }
 
-      const draftFileNode = getFileNode(
-        draft.explorer.explorerNodeMap,
-        fileNode.path
-      );
+      const draftFileNode = getFileNode(draft.explorerNodeMap, fileNode.path);
 
-      switchSelectedFile(
-        draft.explorer.explorerNodeMap,
-        draftFileNode.path,
-        fileEditor
-      );
+      switchSelectedFile(draft.explorerNodeMap, draftFileNode.path, fileEditor);
 
       if (!draftFileNode.openInTab) {
         draft.fileEditor.openFilePaths.push(draftFileNode.path);
@@ -159,7 +152,7 @@ export const mainStateReducer = (
       const nodesInDirectory = action.payload;
 
       for (const node of nodesInDirectory) {
-        addToExplorerNodeMap(draft.explorer.explorerNodeMap, node);
+        addToExplorerNodeMap(draft.explorerNodeMap, node);
       }
 
       return draft;
@@ -172,13 +165,9 @@ export const mainStateReducer = (
         throw new Error("CREATE_NEW_FILE - memoryOnlyFile is undefined");
       }
 
-      addToExplorerNodeMap(draft.explorer.explorerNodeMap, newNode);
+      addToExplorerNodeMap(draft.explorerNodeMap, newNode);
 
-      switchSelectedFile(
-        draft.explorer.explorerNodeMap,
-        newNode.path,
-        fileEditor
-      );
+      switchSelectedFile(draft.explorerNodeMap, newNode.path, fileEditor);
 
       draft.fileEditor.openFilePaths.push(newNode.path);
       newNode.openInTab = true;
@@ -246,7 +235,9 @@ export const mainStateReducer = (
     case "UPDATE_FILE_IS_DIRTY": {
       const { fileNode, isDirty } = action.payload;
 
-      fileNode.isDirty = isDirty;
+      const draftFileNode = getFileNode(draft.explorerNodeMap, fileNode.path);
+
+      draftFileNode.isDirty = isDirty;
 
       return draft;
     }

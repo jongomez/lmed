@@ -1,6 +1,6 @@
 import {
-  ExplorerState,
   FileEditorState,
+  MainState,
   MainStateDispatch,
 } from "@/types/MainTypes";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
@@ -12,7 +12,7 @@ type MainHeaderProps = {
   isMainMenuOpen: boolean;
   mainStateDispatch: MainStateDispatch;
   fileEditorState: FileEditorState;
-  explorerState: ExplorerState;
+  explorerNodeMap: MainState["explorerNodeMap"];
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
 };
 
@@ -21,7 +21,7 @@ export const MainHeader = ({
   isMainMenuOpen,
   mainStateDispatch,
   fileEditorState,
-  explorerState,
+  explorerNodeMap,
   fileEditorRef,
 }: MainHeaderProps) => {
   return (
@@ -35,9 +35,9 @@ export const MainHeader = ({
         isMainMenuOpen={isMainMenuOpen}
       />
       <FileEditorTabs
-        activeIndex={activeMainTab}
+        activeMainTab={activeMainTab}
         fileEditorState={fileEditorState}
-        explorerState={explorerState}
+        explorerNodeMap={explorerNodeMap}
         mainStateDispatch={mainStateDispatch}
         fileEditorRef={fileEditorRef}
       />

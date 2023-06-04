@@ -3,8 +3,8 @@
 import {
   DirectoryNode,
   ExplorerNode,
-  ExplorerState,
   FileNode,
+  MainState,
   MainStateDispatch,
 } from "@/types/MainTypes";
 import { handleDirectoryClick, handleFileClick } from "@/utils/explorerUtils";
@@ -19,7 +19,7 @@ const ICON_SIZE = 18;
 
 type FileNodeTabProps = {
   fileNode: FileNode;
-  explorerState: ExplorerState;
+  explorerNodeMap: MainState["explorerNodeMap"];
   mainStateDispatch: MainStateDispatch;
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
   indentationLevel: number;
@@ -27,13 +27,13 @@ type FileNodeTabProps = {
 
 const FileNodeTab = ({
   fileNode,
-  explorerState,
+  explorerNodeMap,
   mainStateDispatch,
   fileEditorRef,
   indentationLevel,
 }: FileNodeTabProps) => {
   return (
-    <SideTab isActive={isExplorerNodeSelected(fileNode, explorerState)}>
+    <SideTab isActive={isExplorerNodeSelected(fileNode, explorerNodeMap)}>
       <div
         onClick={() =>
           handleFileClick(fileNode, mainStateDispatch, fileEditorRef.current)
@@ -55,18 +55,26 @@ const FileNodeTab = ({
 type DirectoryNodeTabProps = {
   directoryNode: DirectoryNode;
   mainStateDispatch: MainStateDispatch;
+  explorerNodeMap: MainState["explorerNodeMap"];
   indentationLevel: number;
 };
 
 const DirectoryNodeTab = ({
   directoryNode,
   mainStateDispatch,
+  explorerNodeMap,
   indentationLevel,
 }: DirectoryNodeTabProps) => {
   return (
     <SideTab isActive={false}>
       <div
-        onClick={() => handleDirectoryClick(directoryNode, mainStateDispatch)}
+        onClick={() =>
+          handleDirectoryClick(
+            directoryNode,
+            mainStateDispatch,
+            explorerNodeMap
+          )
+        }
         className="flex items-center pointer-cursor"
         style={{
           paddingLeft: `${indentationLevel * 20}px`,
@@ -87,14 +95,14 @@ const DirectoryNodeTab = ({
 
 const isExplorerNodeSelected = (
   node: ExplorerNode,
-  explorerState: ExplorerState
+  explorerNodeMap: MainState["explorerNodeMap"]
 ): boolean => {
-  const selectedNode = explorerState.explorerNodeMap.get(node.path);
+  const selectedNode = explorerNodeMap.get(node.path);
   return selectedNode?.type === "file" && selectedNode.selected;
 };
 
 type ExplorerListProps = {
-  explorerState: ExplorerState;
+  explorerNodeMap: MainState["explorerNodeMap"];
   mainStateDispatch: MainStateDispatch;
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
   indentationLevel: number;
@@ -104,13 +112,13 @@ type ExplorerListProps = {
 // Recursive function.
 const ExplorerList = ({
   parentNode,
-  explorerState,
+  explorerNodeMap,
   mainStateDispatch,
   indentationLevel,
   fileEditorRef,
 }: ExplorerListProps) => {
-  const childNodes = [...explorerState.explorerNodeMap.values()].filter(
-    (node) => node.parentDirectory?.path === parentNode?.path
+  const childNodes = [...explorerNodeMap.values()].filter(
+    (node) => node.parentDirectoryPath === parentNode?.path
   );
 
   return (
@@ -123,12 +131,13 @@ const ExplorerList = ({
                 directoryNode={node}
                 mainStateDispatch={mainStateDispatch}
                 indentationLevel={indentationLevel}
+                explorerNodeMap={explorerNodeMap}
               />
 
               {node.expanded && (
                 <ExplorerList
                   parentNode={node}
-                  explorerState={explorerState}
+                  explorerNodeMap={explorerNodeMap}
                   mainStateDispatch={mainStateDispatch}
                   fileEditorRef={fileEditorRef}
                   indentationLevel={indentationLevel + 1}
@@ -140,7 +149,7 @@ const ExplorerList = ({
           {node.type === "file" && (
             <FileNodeTab
               fileNode={node}
-              explorerState={explorerState}
+              explorerNodeMap={explorerNodeMap}
               mainStateDispatch={mainStateDispatch}
               fileEditorRef={fileEditorRef}
               indentationLevel={indentationLevel}
@@ -153,14 +162,14 @@ const ExplorerList = ({
 };
 
 type ExplorerProps = {
-  explorerState: ExplorerState;
+  explorerNodeMap: MainState["explorerNodeMap"];
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
   mainStateDispatch: MainStateDispatch;
   className: string;
 };
 
 export const Explorer = ({
-  explorerState,
+  explorerNodeMap,
   fileEditorRef,
   mainStateDispatch,
   className,
@@ -174,7 +183,7 @@ export const Explorer = ({
       className={`${className} flex flex-col justify-between overflow-hidden`}
     >
       <ExplorerList
-        explorerState={explorerState}
+        explorerNodeMap={explorerNodeMap}
         fileEditorRef={fileEditorRef}
         mainStateDispatch={mainStateDispatch}
         indentationLevel={0}
@@ -182,16 +191,16 @@ export const Explorer = ({
       <div className="w-90 flex flex-col items-center">
         <div className="flex justify-center flex-wrap">
           <Button
-            onClick={() => openFile(mainStateDispatch, fileEditorRef)}
+            onClick={() =>
+              openFile(mainStateDispatch, fileEditorRef, explorerNodeMap)
+            }
             className={buttonClasses}
           >
             <File size={iconSize} className={iconClasses} />
             Open File
           </Button>
           <Button
-            onClick={() =>
-              openDirectory(mainStateDispatch, explorerState.explorerNodeMap)
-            }
+            onClick={() => openDirectory(mainStateDispatch, explorerNodeMap)}
             className={buttonClasses}
           >
             <FolderOpen size={iconSize} className={iconClasses} />

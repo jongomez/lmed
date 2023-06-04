@@ -1,10 +1,6 @@
-// This doesn't work :( https://tailwindcss.com/docs/content-configuration#dynamic-class-names
-// const MAIN_TAB_HEADER_HEIGHT = "40px";
-// const MAIN_TAB_PANEL_HEIGHT = `h-[calc(100%-${MAIN_TAB_HEADER_HEIGHT})]`;
-
 import {
-  ExplorerState,
   FileEditorState,
+  MainState,
   MainStateDispatch,
   PromptEditorState,
 } from "@/types/MainTypes";
@@ -135,25 +131,25 @@ export const MainTabs = ({
   );
 };
 
-type EditorFileTabsProps = {
+type FileEditorTabsProps = {
   fileEditorState: FileEditorState;
-  explorerState: ExplorerState;
+  explorerNodeMap: MainState["explorerNodeMap"];
   mainStateDispatch: MainStateDispatch;
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
-  activeIndex: number;
+  activeMainTab: number;
 };
 
 export const FileEditorTabs = ({
   fileEditorState,
-  explorerState,
+  explorerNodeMap,
   mainStateDispatch,
   fileEditorRef,
-  activeIndex,
-}: EditorFileTabsProps) => {
+  activeMainTab,
+}: FileEditorTabsProps) => {
   return (
     <>
       {fileEditorState.openFilePaths.map((filePath, index) => {
-        const fileNode = getFileNode(explorerState.explorerNodeMap, filePath);
+        const fileNode = getFileNode(explorerNodeMap, filePath);
 
         return (
           <Tab
@@ -169,8 +165,10 @@ export const FileEditorTabs = ({
             key={index}
             isActive={fileNode.selected}
             className={`${
-              activeIndex === 0 ? "" : "hidden"
-            } flex justify-center items-center`}
+              activeMainTab === 0 ? "" : "hidden"
+            } flex justify-center items-center ${
+              fileNode.isDirty ? "font-bold italic" : ""
+            }`}
           >
             {fileNode.name}
             <X

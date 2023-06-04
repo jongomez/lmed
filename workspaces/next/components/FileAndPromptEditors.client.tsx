@@ -49,7 +49,7 @@ export const FileAndPromptEditors = ({
       className={`${isVisible ? "grid" : "hidden"} h-[calc(100vh_-_42px)]`}
     >
       <Explorer
-        explorerState={mainState.explorer}
+        explorerNodeMap={mainState.explorerNodeMap}
         fileEditorRef={fileEditorRef}
         mainStateDispatch={mainStateDispatch}
         className="row-start-1"
@@ -75,7 +75,7 @@ export const FileAndPromptEditors = ({
         fileEditorRef={fileEditorRef}
         globalEditorSettings={mainState.globalEditorSettings}
         mainStateDispatch={mainStateDispatch}
-        explorerState={mainState.explorer}
+        explorerNodeMap={mainState.explorerNodeMap}
         className="row-start-1 col-start-3"
       />
 
@@ -105,7 +105,7 @@ export const FileAndPromptEditors = ({
         fileEditorState={mainState.fileEditor}
         globalEditorSettings={mainState.globalEditorSettings}
         mainStateDispatch={mainStateDispatch}
-        explorerState={mainState.explorer}
+        explorerNodeMap={mainState.explorerNodeMap}
         className="row-start-4 col-start-3"
       />
     </div>

@@ -1,12 +1,12 @@
 // Creating an "in-memory" file. This file won't exist on the disk until it's saved.
 
-import type { ExplorerState, FileNode } from "@/types/MainTypes";
-import { EditorState } from "@codemirror/state";
+import type { FileNode, MainState } from "@/types/MainTypes";
+import { Annotation, EditorState, TransactionSpec } from "@codemirror/state";
 import type { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { getFileNode } from "./explorerUtils";
 
 export const createEmptyFileInMemory = (
-  explorerNodeMap: ExplorerState["explorerNodeMap"]
+  explorerNodeMap: MainState["explorerNodeMap"]
 ): FileNode => {
   const hasWindow = typeof window !== "undefined";
   const emptyFileContent = "hello world";
@@ -34,13 +34,14 @@ export const createEmptyFileInMemory = (
     language: "markdown",
     openInTab: true,
     path: fileName,
+    isDirty: false,
   };
 
   return emptyFile;
 };
 
 export const deselectAllFiles = (
-  explorerNodeMap: ExplorerState["explorerNodeMap"]
+  explorerNodeMap: MainState["explorerNodeMap"]
 ): void => {
   for (const [nodeKey, node] of explorerNodeMap) {
     if (node.type === "file") {
@@ -49,9 +50,11 @@ export const deselectAllFiles = (
   }
 };
 
+export const SwitchToNewFileAnnotation = Annotation.define<string>();
+
 // WARNING: This function mutates stuff. Should only be called with immer drafts.
 export const switchSelectedFile = (
-  explorerNodeMap: ExplorerState["explorerNodeMap"],
+  explorerNodeMap: MainState["explorerNodeMap"],
   switchToFilePath: string,
   fileEditor: ReactCodeMirrorRef | null | undefined
 ) => {
@@ -90,9 +93,11 @@ export const switchSelectedFile = (
         // fileEditor.view!.setState(newState);
 
         const currentDocLength = fileEditor.view!.state.doc.length;
-        let transaction = {
+        let transaction: TransactionSpec = {
           changes: { from: 0, to: currentDocLength, insert: contents },
+          annotations: SwitchToNewFileAnnotation.of("FIRST_TIME_OPENING_FILE"),
         };
+
         fileEditor.view!.dispatch(transaction);
       });
     });
@@ -118,7 +123,7 @@ export const getCurrentEditorViewState = (
 };
 
 export const getCurrentlySelectedFile = (
-  explorerNodeMap: ExplorerState["explorerNodeMap"]
+  explorerNodeMap: MainState["explorerNodeMap"]
 ): FileNode => {
   let currentlySelectedFile: FileNode | undefined;
   let numberOrFilesSelected = 0;
@@ -141,4 +146,11 @@ export const getCurrentlySelectedFile = (
   }
 
   return currentlySelectedFile;
+};
+
+export const getCurrentlySelectedFilePath = (
+  explorerNodeMap: MainState["explorerNodeMap"]
+): string => {
+  const currentlySelectedFile = getCurrentlySelectedFile(explorerNodeMap);
+  return currentlySelectedFile.path;
 };
