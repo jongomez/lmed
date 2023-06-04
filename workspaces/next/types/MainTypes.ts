@@ -127,6 +127,13 @@ export type MainStateAction =
         fileNode: FileNode;
         isDirty: boolean;
       };
+    }
+  | {
+      type: "SAVE_AS";
+      payload: {
+        fileNode: FileNode;
+        fileHandle: FileSystemFileHandle;
+      };
     };
 
 export type MainStateDispatch = Dispatch<MainStateAction>;

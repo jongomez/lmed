@@ -118,12 +118,20 @@ export const saveFile = async (
       fileEditorState,
       fileEditorRef
     );
+
     return;
   }
 
   const writable = await fileHandle.createWritable();
   await writable.write(currentEditorViewState.doc.toString());
   await writable.close();
+
+  if (selectedFileNode.isDirty) {
+    mainStateDispatch({
+      type: "UPDATE_FILE_IS_DIRTY",
+      payload: { fileNode: selectedFileNode, isDirty: false },
+    });
+  }
 };
 
 export const saveFileAs = async (
@@ -149,6 +157,14 @@ export const saveFileAs = async (
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+
+    if (selectedFileNode.isDirty) {
+      mainStateDispatch({
+        type: "UPDATE_FILE_IS_DIRTY",
+        payload: { fileNode: selectedFileNode, isDirty: false },
+      });
+    }
+
     return;
   }
 
@@ -160,8 +176,10 @@ export const saveFileAs = async (
   await writable.close();
 
   // Update state with the new fileHandle.
-
-  selectedFileNode.fileHandle = fileHandle;
+  mainStateDispatch({
+    type: "SAVE_AS",
+    payload: { fileNode: selectedFileNode, fileHandle },
+  });
 };
 
 export const createNewFile = async (

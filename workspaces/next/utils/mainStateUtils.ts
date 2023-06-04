@@ -10,6 +10,7 @@ import { enableMapSet } from "immer";
 import { HEADER_SIZE_PX, RESIZE_HANDLE_SIZE_PX } from "./constants";
 import {
   addToExplorerNodeMap,
+  createPath,
   getDirectoryNode,
   getFileNode,
 } from "./explorerUtils";
@@ -240,6 +241,23 @@ export const mainStateReducer = (
       draftFileNode.isDirty = isDirty;
 
       return draft;
+    }
+
+    case "SAVE_AS": {
+      const { fileNode, fileHandle } = action.payload;
+
+      const draftFileNode = getFileNode(draft.explorerNodeMap, fileNode.path);
+
+      draftFileNode.fileHandle = fileHandle;
+      draftFileNode.name = fileHandle.name;
+
+      // FIXME: This won't work if users save file in a new directory.
+      // A possible solution would be to refresh the explorer nodes.
+      draftFileNode.path = createPath(
+        fileHandle.name,
+        draftFileNode.parentDirectoryPath,
+        draft.explorerNodeMap
+      );
     }
   }
 
