@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useEffect, useState } from "react";
+import { ReactNode, createContext, useEffect, useState } from "react";
 
 export type SiteTheme = "light" | "dark";
 
@@ -13,7 +13,7 @@ export const MainContext = createContext<MainContextType | undefined>(
 );
 
 type MainProviderProps = {
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 export const MainProvider = ({ children }: MainProviderProps) => {

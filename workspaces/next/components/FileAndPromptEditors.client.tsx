@@ -1,22 +1,19 @@
 import { MainState, MainStateDispatch } from "@/types/MainTypes";
 import { RESIZE_HANDLE_SIZE_PX } from "@/utils/constants";
-import { Delta } from "@/utils/hooks";
+import { Delta } from "@/utils/hooks/useDrag";
 import { getCurrentlySelectedPromptTab } from "@/utils/promptUtils";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { MutableRefObject } from "react";
+import { Chat } from "./Chat.client";
 import { Explorer } from "./Explorer.client";
 import { FileEditor } from "./FileEditor.client";
-import { PromptEditor } from "./PromptEditor.client";
-import { PromptUI } from "./PromptUI.client";
 import { ResizeHandle } from "./ResizeHandle.client";
-import { PromptTabs } from "./Tabs.server";
 
 type FileAndPromptEditorsProps = {
   mainState: MainState;
   mainStateDispatch: MainStateDispatch;
   activeTab: number;
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
-  promptEditorRef: MutableRefObject<ReactCodeMirrorRef>;
 };
 
 export const FileAndPromptEditors = ({
@@ -24,7 +21,6 @@ export const FileAndPromptEditors = ({
   mainStateDispatch,
   activeTab,
   fileEditorRef,
-  promptEditorRef,
 }: FileAndPromptEditorsProps) => {
   const isVisible = activeTab === 0;
   // 1st row: file explorer and file editor.
@@ -37,7 +33,7 @@ export const FileAndPromptEditors = ({
   const currentlySelectedPromptTab = getCurrentlySelectedPromptTab(
     mainState.promptEditor.allTabs
   );
-  const isChatVisible = currentlySelectedPromptTab.tabName === "Chat"  
+  const isChatVisible = currentlySelectedPromptTab.tabName === "Chat";
 
   return (
     <div
@@ -81,12 +77,10 @@ export const FileAndPromptEditors = ({
 
       <FileEditor
         fileEditorRef={fileEditorRef}
-        promptEditorRef={promptEditorRef}
         globalEditorSettings={mainState.globalEditorSettings}
         mainStateDispatch={mainStateDispatch}
         explorerNodeMap={mainState.explorerNodeMap}
         promptTemplateMap={mainState.promptTemplateMap}
-        promptEditorRefSet={mainState.promptEditorRefSet}
         className="row-start-1 col-start-3"
       />
 
@@ -106,34 +100,10 @@ export const FileAndPromptEditors = ({
         }}
       />
 
-      <PromptUI
-        promptTemplateMap={mainState.promptTemplateMap}
-        mainStateDispatch={mainStateDispatch}
-        className="row-start-3 col-start-3 flex overflow-auto"
-      />
-
-      <PromptTabs
-        promptEditorState={mainState.promptEditor}
-        mainStateDispatch={mainStateDispatch}
-        className="row-start-4 col-start-1 flex flex-col overflow-auto"
-      />
-
-      <PromptEditor
-        fileEditorState={mainState.fileEditor}
-        promptEditorRef={promptEditorRef}
-        globalEditorSettings={mainState.globalEditorSettings}
-        mainStateDispatch={mainStateDispatch}
-        explorerNodeMap={mainState.explorerNodeMap}
-        currentlySelectedPromptTab.tabName
-        className="row-start-4 col-start-3"
-      />
-
       <Chat
-        fileEditorState={mainState.fileEditor}
-        promptEditorRef={promptEditorRef}
-        globalEditorSettings={mainState.globalEditorSettings}
         mainStateDispatch={mainStateDispatch}
-        explorerNodeMap={mainState.explorerNodeMap}
+        promptSuggestion={mainState.promptSuggestion}
+        promptTemplateMap={mainState.promptTemplateMap}
         className="row-start-4 col-start-3"
       />
     </div>

@@ -17,32 +17,41 @@ import {
   getCurrentlySelectedFile,
 } from "@/utils/fileUtils";
 import {
+  PromptTemplate,
   PromptTemplateMap,
+  applyPromptTemplate,
   getCurrentlySelectedPrompt,
-  updatePromptEditor,
 } from "@/utils/promptUtils";
 import { ViewUpdate } from "@codemirror/view";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 
+const setPromptSuggestion = (
+  fileEditorRef: MutableRefObject<ReactCodeMirrorRef>,
+  selectedPrompt: PromptTemplate,
+  mainStateDispatch: MainStateDispatch
+): void => {
+  const newPrompt = applyPromptTemplate(fileEditorRef, selectedPrompt);
+  mainStateDispatch({
+    type: "SET_CHAT_PROMPT_SUGGESTION",
+    payload: newPrompt,
+  });
+};
+
 type FileEditorProps = {
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
-  promptEditorRef: MutableRefObject<ReactCodeMirrorRef>;
   globalEditorSettings: GlobalEditorSettings;
   mainStateDispatch: MainStateDispatch;
   explorerNodeMap: MainState["explorerNodeMap"];
   promptTemplateMap: PromptTemplateMap;
-  promptEditorRefSet: boolean;
   className: string;
 };
 
 export const FileEditor = ({
   fileEditorRef,
-  promptEditorRef,
   globalEditorSettings,
   mainStateDispatch,
   explorerNodeMap,
   promptTemplateMap,
-  promptEditorRefSet,
   className,
 }: FileEditorProps) => {
   const selectedFile = getCurrentlySelectedFile(explorerNodeMap);
@@ -60,10 +69,7 @@ export const FileEditor = ({
       console.log("\n\neditor:", editor);
       // WARNING: This is a mutation. Refs are mutable.
       fileEditorRef.current = editor;
-
-      if (promptEditorRefSet) {
-        updatePromptEditor(promptEditorRef, fileEditorRef, selectedPrompt);
-      }
+      setPromptSuggestion(fileEditorRef, selectedPrompt, mainStateDispatch);
     }
   }
 
@@ -103,10 +109,9 @@ export const FileEditor = ({
 
   useEffect(() => {
     // When the prompt editor ref is set, set the initial prompt editor value.
-    if (promptEditorRefSet) {
-      updatePromptEditor(promptEditorRef, fileEditorRef, selectedPrompt);
-    }
-  }, [promptEditorRefSet, promptEditorRef, fileEditorRef, selectedPrompt]);
+
+    setPromptSuggestion(fileEditorRef, selectedPrompt, mainStateDispatch);
+  }, [mainStateDispatch, fileEditorRef, selectedPrompt]);
 
   return (
     <div className={`${className} overflow-auto`}>
@@ -123,8 +128,12 @@ export const FileEditor = ({
 
           // debugger;
 
-          if (promptEditorRef.current?.view && fileEditorRef.current?.view) {
-            updatePromptEditor(promptEditorRef, fileEditorRef, selectedPrompt);
+          if (fileEditorRef.current?.view) {
+            setPromptSuggestion(
+              fileEditorRef,
+              selectedPrompt,
+              mainStateDispatch
+            );
           }
         }}
         // Both style={{ height: "100%" }} and height="100%" are necessary.

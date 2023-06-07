@@ -67,7 +67,7 @@ export const getInitialState = (): MainState => {
     },
     isMainMenuOpen: false,
     promptTemplateMap: defaultPromptTemplateMap,
-    promptEditorRefSet: false,
+    promptSuggestion: "",
   };
 };
 
@@ -287,10 +287,10 @@ export const mainStateReducer = (
       return draft;
     }
 
-    case "PROMPT_EDITOR_REF_SET": {
-      const promptEditorRefSet = action.payload;
+    case "SET_CHAT_PROMPT_SUGGESTION": {
+      const promptSuggestion = action.payload;
 
-      draft.promptEditorRefSet = promptEditorRefSet;
+      draft.promptSuggestion = promptSuggestion;
 
       return draft;
     }

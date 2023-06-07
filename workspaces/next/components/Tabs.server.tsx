@@ -80,17 +80,17 @@ export const SideTab = ({
   );
 };
 
-type MainTabsProps = {
+type TabsOnTheLeftProps = {
   activeIndex: number;
   mainStateDispatch: MainStateDispatch;
   isMainMenuOpen: boolean;
 };
 
-export const MainTabs = ({
+export const TabsOnTheLeft = ({
   activeIndex,
   mainStateDispatch,
   isMainMenuOpen,
-}: MainTabsProps) => {
+}: TabsOnTheLeftProps) => {
   const iconSize = 24;
   const onIconTabClick = (tab: number) => {
     mainStateDispatch({ type: "SET_ICON_TAB", payload: tab });
@@ -120,7 +120,26 @@ export const MainTabs = ({
       <Tab onTabClick={() => onIconTabClick(0)} isActive={activeIndex === 0}>
         <Folders size={iconSize} />
       </Tab>
+    </>
+  );
+};
 
+type TabsOnTheRightProps = {
+  activeIndex: number;
+  mainStateDispatch: MainStateDispatch;
+};
+
+export const TabsOnTheRight = ({
+  activeIndex,
+  mainStateDispatch,
+}: TabsOnTheRightProps) => {
+  const iconSize = 24;
+  const onIconTabClick = (tab: number) => {
+    mainStateDispatch({ type: "SET_ICON_TAB", payload: tab });
+  };
+
+  return (
+    <>
       <Tab onTabClick={() => onIconTabClick(0)} isActive={activeIndex === 0}>
         <Edit size={iconSize} />
       </Tab>
@@ -128,7 +147,6 @@ export const MainTabs = ({
       <Tab onTabClick={() => onIconTabClick(1)} isActive={activeIndex === 1}>
         <Terminal size={iconSize} />
       </Tab>
-
       <Tab
         onTabClick={() => onIconTabClick(2)}
         isActive={activeIndex === 2}

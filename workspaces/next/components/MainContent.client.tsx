@@ -13,10 +13,9 @@ import { MainMenu } from "./MainMenu.server";
 import { MyTerminal } from "./Terminal.client";
 
 export const MainContent = () => {
-  // The following refs contain fairly complex objects. I think immer doesn't like them.
-  // The refs are also mutable, so putting them in state or context is probably not a great idea.
+  // The following ReactCodeMirrorRef is a fairly complex object. I think immer doesn't like it.
+  // The ref is also mutable, so putting it in state or context is probably not a great idea.
   const fileEditorRef = useRef<ReactCodeMirrorRef>({});
-  const promptEditorRef = useRef<ReactCodeMirrorRef>({});
   const [mainState, mainStateDispatch] = useImmerReducer<
     MainState,
     MainStateAction
@@ -53,7 +52,6 @@ export const MainContent = () => {
         mainStateDispatch={mainStateDispatch}
         activeTab={activeMainTab}
         fileEditorRef={fileEditorRef}
-        promptEditorRef={promptEditorRef}
       />
 
       {/* 2nd tab - Will contain the file explorer and the file editor. */}

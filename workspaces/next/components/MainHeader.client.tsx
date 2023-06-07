@@ -5,7 +5,7 @@ import {
 } from "@/types/MainTypes";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { MutableRefObject } from "react";
-import { FileEditorTabs, MainTabs } from "./Tabs.server";
+import { FileEditorTabs, TabsOnTheLeft, TabsOnTheRight } from "./Tabs.server";
 
 type MainHeaderProps = {
   activeMainTab: number;
@@ -29,7 +29,7 @@ export const MainHeader = ({
       className="flex z-30 w-screen h-[42px]
   border-b-2 border-innactive-colors bg-white dark:bg-slate-800"
     >
-      <MainTabs
+      <TabsOnTheLeft
         activeIndex={activeMainTab}
         mainStateDispatch={mainStateDispatch}
         isMainMenuOpen={isMainMenuOpen}
@@ -40,6 +40,10 @@ export const MainHeader = ({
         explorerNodeMap={explorerNodeMap}
         mainStateDispatch={mainStateDispatch}
         fileEditorRef={fileEditorRef}
+      />
+      <TabsOnTheRight
+        activeIndex={activeMainTab}
+        mainStateDispatch={mainStateDispatch}
       />
     </div>
   );

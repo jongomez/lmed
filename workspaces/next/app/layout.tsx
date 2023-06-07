@@ -1,4 +1,5 @@
 import { MainProvider } from "@/components/MainProvider.client";
+import { ReactNode } from "react";
 import "xterm/css/xterm.css";
 import "./globals.css";
 
@@ -7,11 +8,7 @@ export const metadata = {
   description: "Llm based code editor",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="dark">
       {/* h-screen w-screen overflow-auto */}

@@ -1,5 +1,4 @@
 import { PromptTab } from "@/types/MainTypes";
-import { TransactionSpec } from "@codemirror/state";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { MutableRefObject } from "react";
 
@@ -159,17 +158,12 @@ export const getCurrentlySelectedPrompt = (
   return currentlySelectedPrompt;
 };
 
-export const updatePromptEditor = (
-  promptEditorRef: MutableRefObject<ReactCodeMirrorRef>,
+export const applyPromptTemplate = (
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>,
   selectedPrompt: PromptTemplate
-) => {
-  if (!promptEditorRef.current?.view) {
-    throw new Error("promptEditorRef.current?.view is falsy");
-  }
-
+): string => {
   // Extract placeholders from the selectedPrompt.
-  const { prompt, action } = selectedPrompt;
+  const { prompt } = selectedPrompt;
 
   // Get the values for the placeholders from the file editor.
   const textBeforeLine = getTextBeforeLine(fileEditorRef.current!);
@@ -187,33 +181,7 @@ export const updatePromptEditor = (
     .replace(textBeforeLinePlaceholder, textBeforeLine)
     .replace(textAfterLinePlaceholder, textAfterLine);
 
-  debugger;
-
-  /*
-
-  const newAction = action
-    .replace("{ReplaceCurrentLine}", currentLine)
-    .replace("{ReplaceCurrentSelection}", currentSelection);
-
-  const updatedPromptTemplate = {
-    ...selectedPrompt,
-    prompt: newPrompt,
-    action: newAction,
-  };
-
-  */
-
-  // Update the state of the prompt editor.
-  const currentDocLength = promptEditorRef.current.view.state.doc.length;
-  let transaction: TransactionSpec = {
-    changes: {
-      from: 0,
-      to: currentDocLength,
-      insert: newPrompt,
-    },
-  };
-
-  promptEditorRef.current.view.dispatch(transaction);
+  return newPrompt;
 };
 
 export const getCurrentlySelectedPromptTab = (

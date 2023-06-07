@@ -1,5 +1,5 @@
 import type { EditorTheme, Language } from "@/utils/editorUtils";
-import type { Delta } from "@/utils/hooks";
+import { Delta } from "@/utils/hooks/useDrag";
 import { PromptTemplateMap } from "@/utils/promptUtils";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import type { Dispatch } from "react";
@@ -72,7 +72,7 @@ export type MainState = {
   isMainMenuOpen: boolean;
   explorerNodeMap: Map<string, ExplorerNode>;
   promptTemplateMap: PromptTemplateMap;
-  promptEditorRefSet: boolean;
+  promptSuggestion: string;
   // selectedFileNodePath: string;
 };
 
@@ -145,8 +145,8 @@ export type MainStateAction =
       payload: { promptName: string };
     }
   | {
-      type: "PROMPT_EDITOR_REF_SET";
-      payload: boolean;
+      type: "SET_CHAT_PROMPT_SUGGESTION";
+      payload: string;
     };
 
 export type MainStateDispatch = Dispatch<MainStateAction>;
@@ -155,3 +155,15 @@ export type MainStateReducer = (
   state: MainState,
   action: MainStateAction
 ) => MainState;
+
+export type ChatMessage = {
+  role: "user" | "system" | "assistant";
+  content: string;
+};
+
+export type ChatHookState = {
+  messages: ChatMessage[];
+  isLoadingMessage: boolean;
+  errorMessage: string;
+  charCount: number;
+};
