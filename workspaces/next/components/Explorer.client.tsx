@@ -176,7 +176,7 @@ export const Explorer = ({
 }: ExplorerProps) => {
   const iconSize = 24;
   const iconClasses = "inline mr-2";
-  const buttonClasses = "w-[180px]";
+  const buttonClasses = "min-w-[150px] w-[180px] m-1";
 
   return (
     <div

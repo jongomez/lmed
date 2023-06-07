@@ -13,10 +13,10 @@ export const Button = ({ children, className, ...props }: ButtonProps) => {
     // add min-w here please. thank u
 
     <div
-      className={`inline-block text-center px-4 py-2 rounded-md
+      className={`flex justify-center items-center px-4 py-[6px] rounded-md
        text-white bg-blue-600 hover:bg-blue-700 focus:outline-none
         focus:ring-2 focus:ring-blue-600 focus:ring-opacity-50
-         cursor-pointer min-w-[150px] m-1 ${className}`}
+         cursor-pointer ${className}`}
       {...props}
     >
       {children}

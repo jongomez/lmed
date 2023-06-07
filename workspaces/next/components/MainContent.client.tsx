@@ -53,6 +53,7 @@ export const MainContent = () => {
         mainStateDispatch={mainStateDispatch}
         activeTab={activeMainTab}
         fileEditorRef={fileEditorRef}
+        promptEditorRef={promptEditorRef}
       />
 
       {/* 2nd tab - Will contain the file explorer and the file editor. */}

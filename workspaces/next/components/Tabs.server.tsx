@@ -10,8 +10,9 @@ import {
   ChevronsRightLeft,
   Code,
   Edit,
-  History,
+  Folders,
   MenuIcon,
+  MessageCircle,
   Settings,
   Terminal,
   X,
@@ -110,6 +111,14 @@ export const MainTabs = ({
         // className={`${isMainMenuOpen ? "z-50" : ""}`}
       >
         <MenuIcon size={iconSize} />
+      </Tab>
+
+      <Tab onTabClick={() => onIconTabClick(0)} isActive={activeIndex === 0}>
+        <MessageCircle size={iconSize} />
+      </Tab>
+
+      <Tab onTabClick={() => onIconTabClick(0)} isActive={activeIndex === 0}>
+        <Folders size={iconSize} />
       </Tab>
 
       <Tab onTabClick={() => onIconTabClick(0)} isActive={activeIndex === 0}>
@@ -244,7 +253,7 @@ export const PromptTabs = ({
         }
         isActive={allTabs[2].selected}
       >
-        <History size={iconSize} className={iconClasses} />
+        <MessageCircle size={iconSize} className={iconClasses} />
         {allTabs[2].tabName}
       </SideTab>
     </div>

@@ -1,10 +1,9 @@
 "use client";
 
 import CodeMirror from "@uiw/react-codemirror";
-import { MutableRefObject, useCallback, useRef } from "react";
+import { MutableRefObject, useCallback, useEffect } from "react";
 
 import {
-  FileNode,
   GlobalEditorSettings,
   MainState,
   MainStateDispatch,
@@ -15,29 +14,39 @@ import {
 } from "@/utils/editorUtils";
 import {
   SwitchToNewFileAnnotation,
-  getCurrentlySelectedFilePath,
+  getCurrentlySelectedFile,
 } from "@/utils/fileUtils";
+import {
+  PromptTemplateMap,
+  getCurrentlySelectedPrompt,
+  updatePromptEditor,
+} from "@/utils/promptUtils";
 import { ViewUpdate } from "@codemirror/view";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 
 type FileEditorProps = {
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
+  promptEditorRef: MutableRefObject<ReactCodeMirrorRef>;
   globalEditorSettings: GlobalEditorSettings;
   mainStateDispatch: MainStateDispatch;
   explorerNodeMap: MainState["explorerNodeMap"];
+  promptTemplateMap: PromptTemplateMap;
+  promptEditorRefSet: boolean;
   className: string;
 };
 
 export const FileEditor = ({
   fileEditorRef,
+  promptEditorRef,
   globalEditorSettings,
   mainStateDispatch,
   explorerNodeMap,
+  promptTemplateMap,
+  promptEditorRefSet,
   className,
 }: FileEditorProps) => {
-  const selectedFilePath = useRef<string>(
-    getCurrentlySelectedFilePath(explorerNodeMap)
-  );
+  const selectedFile = getCurrentlySelectedFile(explorerNodeMap);
+  const selectedPrompt = getCurrentlySelectedPrompt(promptTemplateMap);
 
   // Gotta use a ref callback:
   // https://github.com/uiwjs/react-codemirror/issues/314
@@ -51,6 +60,10 @@ export const FileEditor = ({
       console.log("\n\neditor:", editor);
       // WARNING: This is a mutation. Refs are mutable.
       fileEditorRef.current = editor;
+
+      if (promptEditorRefSet) {
+        updatePromptEditor(promptEditorRef, fileEditorRef, selectedPrompt);
+      }
     }
   }
 
@@ -65,20 +78,10 @@ export const FileEditor = ({
       console.log("value:", value);
       console.log("annotation:", annotation);
 
+      // updatePromptEditor(promptEditorRef, fileEditorRef, selectedPrompt);
+
       if (annotation === "FIRST_TIME_OPENING_FILE") {
         return;
-      }
-
-      let selectedFile = explorerNodeMap.get(
-        selectedFilePath.current
-      ) as FileNode;
-      if (!selectedFile.selected) {
-        // The selectedFilePath ref is NOT up to date. Let's update it.
-        selectedFilePath.current =
-          getCurrentlySelectedFilePath(explorerNodeMap);
-        selectedFile = explorerNodeMap.get(
-          selectedFilePath.current
-        ) as FileNode;
       }
 
       if (!selectedFile.isDirty) {
@@ -89,8 +92,21 @@ export const FileEditor = ({
         });
       }
     },
-    [selectedFilePath, explorerNodeMap, mainStateDispatch]
+    [
+      mainStateDispatch,
+      // fileEditorRef,
+      // promptEditorRef,
+      // selectedPrompt,
+      selectedFile,
+    ]
   );
+
+  useEffect(() => {
+    // When the prompt editor ref is set, set the initial prompt editor value.
+    if (promptEditorRefSet) {
+      updatePromptEditor(promptEditorRef, fileEditorRef, selectedPrompt);
+    }
+  }, [promptEditorRefSet, promptEditorRef, fileEditorRef, selectedPrompt]);
 
   return (
     <div className={`${className} overflow-auto`}>
@@ -100,6 +116,17 @@ export const FileEditor = ({
         theme={getEditorThemeFromState(globalEditorSettings)}
         extensions={[getEditorLanguageFromState(explorerNodeMap)]}
         onChange={onChange}
+        onUpdate={(viewUpdate: ViewUpdate) => {
+          if (!viewUpdate.selectionSet && !viewUpdate.docChanged) {
+            return;
+          }
+
+          // debugger;
+
+          if (promptEditorRef.current?.view && fileEditorRef.current?.view) {
+            updatePromptEditor(promptEditorRef, fileEditorRef, selectedPrompt);
+          }
+        }}
         // Both style={{ height: "100%" }} and height="100%" are necessary.
         style={{ height: "100%" }}
         height="100%"

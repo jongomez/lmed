@@ -1,7 +1,7 @@
 "use client";
 
-import CodeMirror from "@uiw/react-codemirror";
-import { useCallback } from "react";
+import CodeMirror, { ReactCodeMirrorRef } from "@uiw/react-codemirror";
+import { MutableRefObject, useCallback } from "react";
 
 import {
   FileEditorState,
@@ -9,7 +9,6 @@ import {
   MainState,
   MainStateDispatch,
 } from "@/types/MainTypes";
-import { PROMPT_EDITOR_ID } from "@/utils/constants";
 import {
   getEditorLanguageFromState,
   getEditorThemeFromState,
@@ -20,6 +19,7 @@ type PromptEditorProps = {
   globalEditorSettings: GlobalEditorSettings;
   mainStateDispatch: MainStateDispatch;
   explorerNodeMap: MainState["explorerNodeMap"];
+  promptEditorRef: MutableRefObject<ReactCodeMirrorRef>;
   className: string;
 };
 
@@ -28,6 +28,7 @@ export const PromptEditor = ({
   globalEditorSettings,
   mainStateDispatch,
   explorerNodeMap,
+  promptEditorRef,
   className,
 }: PromptEditorProps) => {
   // https://github.com/securingsincity/react-ace/issues/27
@@ -41,10 +42,30 @@ export const PromptEditor = ({
     // setMainState((prevState) => ({ ...prevState, value }));
   }, []);
 
+  // Gotta use a ref callback:
+  // https://github.com/uiwjs/react-codemirror/issues/314
+  function refCallack(editor: ReactCodeMirrorRef) {
+    if (
+      !promptEditorRef.current?.editor &&
+      editor?.editor &&
+      editor?.state &&
+      editor?.view
+    ) {
+      console.log("\n\nPrompt editor:", editor);
+      // WARNING: This is a mutation. Refs are mutable.
+      promptEditorRef.current = editor;
+      mainStateDispatch({
+        type: "PROMPT_EDITOR_REF_SET",
+        payload: true,
+      });
+    }
+  }
+
   return (
-    <div className={className} id={PROMPT_EDITOR_ID}>
+    <div className={`${className} overflow-auto`}>
       <CodeMirror
-        value="console.log('hello world!');"
+        ref={refCallack}
+        value="loading..."
         theme={getEditorThemeFromState(globalEditorSettings)}
         extensions={[getEditorLanguageFromState(explorerNodeMap)]}
         onChange={onChange}

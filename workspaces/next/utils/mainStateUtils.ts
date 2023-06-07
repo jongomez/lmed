@@ -15,6 +15,10 @@ import {
   getFileNode,
 } from "./explorerUtils";
 import { createEmptyFileInMemory, switchSelectedFile } from "./fileUtils";
+import {
+  defaultPromptTemplateMap,
+  getCurrentlySelectedPrompt,
+} from "./promptUtils";
 
 // Not sure if this is necessary.
 enableMapSet();
@@ -34,7 +38,7 @@ export const getInitialState = (): MainState => {
     },
     {
       selected: false,
-      tabName: "History",
+      tabName: "Chat",
     },
   ];
 
@@ -62,6 +66,8 @@ export const getInitialState = (): MainState => {
       resizableColSize: 200,
     },
     isMainMenuOpen: false,
+    promptTemplateMap: defaultPromptTemplateMap,
+    promptEditorRefSet: false,
   };
 };
 
@@ -258,6 +264,35 @@ export const mainStateReducer = (
         draftFileNode.parentDirectoryPath,
         draft.explorerNodeMap
       );
+
+      return draft;
+    }
+
+    case "SET_SELECTED_PROMPT": {
+      const { promptName } = action.payload;
+
+      // Deselect current prompt:
+      const currentPrompt = getCurrentlySelectedPrompt(draft.promptTemplateMap);
+      const newlySelectedPrompt = draft.promptTemplateMap.get(promptName);
+
+      if (!newlySelectedPrompt) {
+        throw new Error(
+          "SET_SELECTED_PROMPT - newlySelectedPrompt is undefined"
+        );
+      }
+
+      currentPrompt.selected = false;
+      newlySelectedPrompt.selected = true;
+
+      return draft;
+    }
+
+    case "PROMPT_EDITOR_REF_SET": {
+      const promptEditorRefSet = action.payload;
+
+      draft.promptEditorRefSet = promptEditorRefSet;
+
+      return draft;
     }
   }
 

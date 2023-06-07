@@ -1,5 +1,6 @@
 import type { EditorTheme, Language } from "@/utils/editorUtils";
 import type { Delta } from "@/utils/hooks";
+import { PromptTemplateMap } from "@/utils/promptUtils";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import type { Dispatch } from "react";
 
@@ -34,9 +35,11 @@ export type FileEditorTab = {
   fileNode: FileNode;
 };
 
+type PromptTabName = "Current Prompt" | "Prompt Source Code" | "Chat";
+
 export type PromptTab = {
   selected: boolean;
-  tabName: "Current Prompt" | "Prompt Source Code" | "History";
+  tabName: PromptTabName;
 };
 
 export type FileEditorState = {
@@ -68,6 +71,8 @@ export type MainState = {
   layout: LayoutState;
   isMainMenuOpen: boolean;
   explorerNodeMap: Map<string, ExplorerNode>;
+  promptTemplateMap: PromptTemplateMap;
+  promptEditorRefSet: boolean;
   // selectedFileNodePath: string;
 };
 
@@ -134,6 +139,14 @@ export type MainStateAction =
         fileNode: FileNode;
         fileHandle: FileSystemFileHandle;
       };
+    }
+  | {
+      type: "SET_SELECTED_PROMPT";
+      payload: { promptName: string };
+    }
+  | {
+      type: "PROMPT_EDITOR_REF_SET";
+      payload: boolean;
     };
 
 export type MainStateDispatch = Dispatch<MainStateAction>;

@@ -85,10 +85,10 @@ export const switchSelectedFile = (
       throw new Error("switchSelectedFile - switchToFile.fileHandle is null");
     }
 
-    // XXX: WARNING: This is an async operation. In a non async function. damn.
+    // XXX: WARNING: This is an async operation. In a non async function.
     switchToFile.fileHandle.getFile().then((file) => {
       file.text().then((contents) => {
-        // The following breaks codemirror for some reason. will use .dispatch() instead.
+        // The following results in a weirdly styles codemirror editor. will use .dispatch() instead.
         // const newState = EditorState.create({ doc: contents });
         // fileEditor.view!.setState(newState);
 
@@ -126,18 +126,18 @@ export const getCurrentlySelectedFile = (
   explorerNodeMap: MainState["explorerNodeMap"]
 ): FileNode => {
   let currentlySelectedFile: FileNode | undefined;
-  let numberOrFilesSelected = 0;
+  let numberOfFilesSelected = 0;
 
   for (const [nodeKey, node] of explorerNodeMap) {
     if (node.type === "file" && node.selected) {
-      numberOrFilesSelected++;
+      numberOfFilesSelected++;
       currentlySelectedFile = node;
     }
   }
 
-  if (numberOrFilesSelected != 1) {
+  if (numberOfFilesSelected != 1) {
     throw new Error(
-      `Expected 1 file to be selected, but ${numberOrFilesSelected} were selected`
+      `Expected 1 file to be selected, but ${numberOfFilesSelected} were selected`
     );
   }
 
