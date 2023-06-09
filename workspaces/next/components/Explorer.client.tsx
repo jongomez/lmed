@@ -166,6 +166,7 @@ type ExplorerProps = {
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
   mainStateDispatch: MainStateDispatch;
   className: string;
+  isExplorerActive: boolean;
 };
 
 export const Explorer = ({
@@ -173,6 +174,7 @@ export const Explorer = ({
   fileEditorRef,
   mainStateDispatch,
   className,
+  isExplorerActive,
 }: ExplorerProps) => {
   const iconSize = 24;
   const iconClasses = "inline mr-2";
@@ -180,7 +182,11 @@ export const Explorer = ({
 
   return (
     <div
-      className={`${className} flex flex-col justify-between overflow-hidden`}
+      className={`
+        ${className}
+        ${isExplorerActive ? "flex" : "hidden"}
+        flex-col justify-between overflow-hidden
+      `}
     >
       <ExplorerList
         explorerNodeMap={explorerNodeMap}
@@ -189,7 +195,7 @@ export const Explorer = ({
         indentationLevel={0}
       />
       <div className="w-90 flex flex-col items-center">
-        <div className="flex justify-center flex-wrap">
+        <div className="flex justify-center flex-wrap mb-3">
           <Button
             onClick={() =>
               openFile(mainStateDispatch, fileEditorRef, explorerNodeMap)

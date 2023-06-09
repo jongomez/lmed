@@ -44,6 +44,7 @@ type FileEditorProps = {
   explorerNodeMap: MainState["explorerNodeMap"];
   promptTemplateMap: PromptTemplateMap;
   className: string;
+  isFileEditorActive: boolean;
 };
 
 export const FileEditor = ({
@@ -53,6 +54,7 @@ export const FileEditor = ({
   explorerNodeMap,
   promptTemplateMap,
   className,
+  isFileEditorActive,
 }: FileEditorProps) => {
   const selectedFile = getCurrentlySelectedFile(explorerNodeMap);
   const selectedPrompt = getCurrentlySelectedPrompt(promptTemplateMap);
@@ -98,23 +100,24 @@ export const FileEditor = ({
         });
       }
     },
-    [
-      mainStateDispatch,
-      // fileEditorRef,
-      // promptEditorRef,
-      // selectedPrompt,
-      selectedFile,
-    ]
+    [mainStateDispatch, selectedFile]
   );
 
   useEffect(() => {
-    // When the prompt editor ref is set, set the initial prompt editor value.
-
-    setPromptSuggestion(fileEditorRef, selectedPrompt, mainStateDispatch);
+    // When the file editor ref is set, apply the initial prompt template.
+    if (fileEditorRef.current?.view) {
+      setPromptSuggestion(fileEditorRef, selectedPrompt, mainStateDispatch);
+    }
   }, [mainStateDispatch, fileEditorRef, selectedPrompt]);
 
   return (
-    <div className={`${className} overflow-auto`}>
+    <div
+      className={`
+        ${className} 
+        ${isFileEditorActive ? "" : "hidden"} 
+        overflow-auto
+      `}
+    >
       <CodeMirror
         ref={refCallack}
         value="console.log('hello world!');"

@@ -155,6 +155,7 @@ type ChatProps = {
   promptTemplateMap: PromptTemplateMap;
   promptSuggestion: string;
   className: string;
+  isChatActive: boolean;
 };
 
 export const Chat = ({
@@ -162,6 +163,7 @@ export const Chat = ({
   promptTemplateMap,
   promptSuggestion,
   className,
+  isChatActive,
 }: ChatProps) => {
   const {
     chatState,
@@ -178,7 +180,13 @@ export const Chat = ({
   const iconSize = 26;
 
   return (
-    <div className={`flex flex-col items-center justify-end`}>
+    <div
+      className={`
+        ${className}
+        ${isChatActive ? "flex" : "hidden"}
+        flex-col items-center justify-end
+      `}
+    >
       <PromptUI
         promptTemplateMap={promptTemplateMap}
         mainStateDispatch={mainStateDispatch}

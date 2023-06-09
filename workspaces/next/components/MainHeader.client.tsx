@@ -8,17 +8,15 @@ import { MutableRefObject } from "react";
 import { FileEditorTabs, TabsOnTheLeft, TabsOnTheRight } from "./Tabs.server";
 
 type MainHeaderProps = {
-  activeMainTab: number;
-  isMainMenuOpen: boolean;
   mainStateDispatch: MainStateDispatch;
   fileEditorState: FileEditorState;
   explorerNodeMap: MainState["explorerNodeMap"];
+  activeHeaderItems: MainState["activeHeaderItems"];
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
 };
 
 export const MainHeader = ({
-  activeMainTab,
-  isMainMenuOpen,
+  activeHeaderItems,
   mainStateDispatch,
   fileEditorState,
   explorerNodeMap,
@@ -26,25 +24,28 @@ export const MainHeader = ({
 }: MainHeaderProps) => {
   return (
     <div
-      className="flex z-30 w-screen h-[42px]
+      className="flex justify-between z-30 w-screen h-[42px]
   border-b-2 border-innactive-colors bg-white dark:bg-slate-800"
     >
-      <TabsOnTheLeft
-        activeIndex={activeMainTab}
-        mainStateDispatch={mainStateDispatch}
-        isMainMenuOpen={isMainMenuOpen}
-      />
-      <FileEditorTabs
-        activeMainTab={activeMainTab}
-        fileEditorState={fileEditorState}
-        explorerNodeMap={explorerNodeMap}
-        mainStateDispatch={mainStateDispatch}
-        fileEditorRef={fileEditorRef}
-      />
-      <TabsOnTheRight
-        activeIndex={activeMainTab}
-        mainStateDispatch={mainStateDispatch}
-      />
+      <div className="flex">
+        <TabsOnTheLeft
+          activeHeaderItems={activeHeaderItems}
+          mainStateDispatch={mainStateDispatch}
+        />
+        <FileEditorTabs
+          isEditorShowing={activeHeaderItems.fileEditor}
+          fileEditorState={fileEditorState}
+          explorerNodeMap={explorerNodeMap}
+          mainStateDispatch={mainStateDispatch}
+          fileEditorRef={fileEditorRef}
+        />
+      </div>
+      <div>
+        <TabsOnTheRight
+          activeHeaderItems={activeHeaderItems}
+          mainStateDispatch={mainStateDispatch}
+        />
+      </div>
     </div>
   );
 };

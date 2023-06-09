@@ -13,7 +13,7 @@ import {
   Folders,
   MenuIcon,
   MessageCircle,
-  Settings,
+  Settings as SettingsIcon,
   Terminal,
   X,
 } from "lucide-react";
@@ -81,43 +81,44 @@ export const SideTab = ({
 };
 
 type TabsOnTheLeftProps = {
-  activeIndex: number;
   mainStateDispatch: MainStateDispatch;
-  isMainMenuOpen: boolean;
+  activeHeaderItems: MainState["activeHeaderItems"];
 };
 
 export const TabsOnTheLeft = ({
-  activeIndex,
   mainStateDispatch,
-  isMainMenuOpen,
+  activeHeaderItems,
 }: TabsOnTheLeftProps) => {
   const iconSize = 24;
-  const onIconTabClick = (tab: number) => {
-    mainStateDispatch({ type: "SET_ICON_TAB", payload: tab });
-  };
 
   return (
     <>
       {/* The menu icon tab is different - it's not really a tab, it's more like a button. */}
       <Tab
         onTabClick={() => {
-          if (isMainMenuOpen) {
-            mainStateDispatch({ type: "CLOSE_MAIN_MENU" });
-          } else {
-            mainStateDispatch({ type: "OPEN_MAIN_MENU" });
-          }
+          mainStateDispatch({ type: "TOGGLE_MAIN_MENU" });
         }}
-        isActive={isMainMenuOpen}
+        isActive={activeHeaderItems.mainMenu}
         // className={`${isMainMenuOpen ? "z-50" : ""}`}
       >
         <MenuIcon size={iconSize} />
       </Tab>
 
-      <Tab onTabClick={() => onIconTabClick(0)} isActive={activeIndex === 0}>
+      <Tab
+        onTabClick={() => {
+          mainStateDispatch({ type: "ACTIVATE_CHAT" });
+        }}
+        isActive={activeHeaderItems.chat}
+      >
         <MessageCircle size={iconSize} />
       </Tab>
 
-      <Tab onTabClick={() => onIconTabClick(0)} isActive={activeIndex === 0}>
+      <Tab
+        onTabClick={() => {
+          mainStateDispatch({ type: "ACTIVATE_EXPLORER" });
+        }}
+        isActive={activeHeaderItems.explorer}
+      >
         <Folders size={iconSize} />
       </Tab>
     </>
@@ -125,34 +126,43 @@ export const TabsOnTheLeft = ({
 };
 
 type TabsOnTheRightProps = {
-  activeIndex: number;
+  activeHeaderItems: MainState["activeHeaderItems"];
   mainStateDispatch: MainStateDispatch;
 };
 
 export const TabsOnTheRight = ({
-  activeIndex,
+  activeHeaderItems,
   mainStateDispatch,
 }: TabsOnTheRightProps) => {
   const iconSize = 24;
-  const onIconTabClick = (tab: number) => {
-    mainStateDispatch({ type: "SET_ICON_TAB", payload: tab });
-  };
 
   return (
     <>
-      <Tab onTabClick={() => onIconTabClick(0)} isActive={activeIndex === 0}>
+      <Tab
+        onTabClick={() => {
+          mainStateDispatch({ type: "ACTIVATE_FILE_EDITOR" });
+        }}
+        isActive={activeHeaderItems.fileEditor}
+      >
         <Edit size={iconSize} />
       </Tab>
 
-      <Tab onTabClick={() => onIconTabClick(1)} isActive={activeIndex === 1}>
+      <Tab
+        onTabClick={() => {
+          mainStateDispatch({ type: "ACTIVATE_TERMINAL" });
+        }}
+        isActive={activeHeaderItems.terminal}
+      >
         <Terminal size={iconSize} />
       </Tab>
       <Tab
-        onTabClick={() => onIconTabClick(2)}
-        isActive={activeIndex === 2}
+        onTabClick={() => {
+          mainStateDispatch({ type: "TOGGLE_SETTINGS" });
+        }}
+        isActive={activeHeaderItems.settings}
         className="mr-[26px]"
       >
-        <Settings size={iconSize} />
+        <SettingsIcon size={iconSize} />
       </Tab>
     </>
   );
@@ -163,7 +173,7 @@ type FileEditorTabsProps = {
   explorerNodeMap: MainState["explorerNodeMap"];
   mainStateDispatch: MainStateDispatch;
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
-  activeMainTab: number;
+  isEditorShowing: boolean;
 };
 
 export const FileEditorTabs = ({
@@ -171,7 +181,7 @@ export const FileEditorTabs = ({
   explorerNodeMap,
   mainStateDispatch,
   fileEditorRef,
-  activeMainTab,
+  isEditorShowing,
 }: FileEditorTabsProps) => {
   return (
     <>
@@ -192,7 +202,7 @@ export const FileEditorTabs = ({
             key={index}
             isActive={fileNode.selected}
             className={`${
-              activeMainTab === 0 ? "" : "hidden"
+              isEditorShowing ? "" : "hidden"
             } flex justify-center items-center ${
               fileNode.isDirty ? "font-bold italic" : ""
             }`}

@@ -61,23 +61,32 @@ export type GlobalEditorSettings = {
 export type LayoutState = {
   resizableRowSize: number;
   resizableColSize: number;
+  mode: "horizontal" | "vertical";
 };
 
+export type HeaderItem =
+  | "fileEditor"
+  | "terminal"
+  | "chat"
+  | "explorer"
+  | "mainMenu"
+  | "settings";
+
 export type MainState = {
-  iconTabIndex: number;
   globalEditorSettings: GlobalEditorSettings;
   fileEditor: FileEditorState;
   promptEditor: PromptEditorState;
   layout: LayoutState;
-  isMainMenuOpen: boolean;
   explorerNodeMap: Map<string, ExplorerNode>;
   promptTemplateMap: PromptTemplateMap;
   promptSuggestion: string;
+  activeHeaderItems: {
+    [key in HeaderItem]: boolean;
+  };
   // selectedFileNodePath: string;
 };
 
 export type MainStateAction =
-  | { type: "SET_ICON_TAB"; payload: number }
   | {
       type: "OPEN_FILE";
       payload: { newNode: FileNode; fileEditor: ReactCodeMirrorRef };
@@ -98,8 +107,6 @@ export type MainStateAction =
       payload: { newNode: FileNode; fileEditor: ReactCodeMirrorRef };
     }
   | { type: "SET_CURRENT_PROMPT_TAB"; payload: PromptTab["tabName"] }
-  | { type: "OPEN_MAIN_MENU" }
-  | { type: "CLOSE_MAIN_MENU" }
   | {
       type: "RESIZE_EDITORS_HORIZONTALLY";
       payload: { event: PointerEvent; delta: Delta; initialRowSize: number };
@@ -147,6 +154,24 @@ export type MainStateAction =
   | {
       type: "SET_CHAT_PROMPT_SUGGESTION";
       payload: string;
+    }
+  | {
+      type: "TOGGLE_MAIN_MENU";
+    }
+  | {
+      type: "TOGGLE_SETTINGS";
+    }
+  | {
+      type: "ACTIVATE_CHAT";
+    }
+  | {
+      type: "ACTIVATE_EXPLORER";
+    }
+  | {
+      type: "ACTIVATE_FILE_EDITOR";
+    }
+  | {
+      type: "ACTIVATE_TERMINAL";
     };
 
 export type MainStateDispatch = Dispatch<MainStateAction>;

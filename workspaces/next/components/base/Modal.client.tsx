@@ -1,34 +1,52 @@
+import { X } from "lucide-react";
 import { PointerEvent, ReactNode } from "react";
 
 interface ModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  overlayClassNames?: string;
+  className: string;
+  closeActionCallback: () => void;
   children: ReactNode;
 }
 
-export const Modal = ({ isOpen, onClose, children }: ModalProps) => {
+export const Modal = ({
+  isOpen,
+  closeActionCallback,
+  overlayClassNames = "bg-black bg-opacity-50",
+  className,
+  children,
+}: ModalProps) => {
   if (!isOpen) {
     return null;
   }
 
   const handleOverlayPointerDown = (e: PointerEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
-      onClose();
+      closeActionCallback();
     }
   };
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-center justify-center overflow-auto bg-black bg-opacity-50"
+      className={`
+        ${overlayClassNames}
+        fixed inset-0 z-40 flex items-center 
+        justify-center overflow-auto
+      `}
       onPointerDown={handleOverlayPointerDown}
     >
-      <div className="relative bg-white z-50 p-6 rounded-lg shadow-lg">
+      <div
+        className={`
+          ${className}
+          relative bg-white z-50 p-6 rounded-lg shadow-lg
+        `}
+      >
         {children}
         <button
-          onPointerDown={onClose}
+          onPointerDown={closeActionCallback}
           className="absolute top-2 right-2 text-lg font-bold"
         >
-          X
+          <X size={24} />
         </button>
       </div>
     </div>

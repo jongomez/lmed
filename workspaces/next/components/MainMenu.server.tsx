@@ -63,7 +63,7 @@ export const MainMenu = ({
     <>
       {/* Menu overlay - when clicked, it closes the menu. */}
       <div
-        onClick={() => mainStateDispatch({ type: "CLOSE_MAIN_MENU" })}
+        onClick={() => mainStateDispatch({ type: "TOGGLE_MAIN_MENU" })}
         // className="fixed top-[42px] left-0 w-full h-[calc(100vh_-_42px)] z-10 bg-black bg-opacity-50"
         // className="fixed top-0 left-0 w-full h-full z-10 bg-black bg-opacity-50"
         className="fixed top-0 left-0 w-full h-full z-40"
@@ -79,7 +79,6 @@ export const MainMenu = ({
         <MenuItem
           onClick={() => {
             createNewFile(mainStateDispatch, explorerNodeMap, fileEditorRef);
-            mainStateDispatch({ type: "CLOSE_MAIN_MENU" });
           }}
         >
           <FilePlus size={iconSize} className={iconClasses} />
@@ -88,7 +87,6 @@ export const MainMenu = ({
         <MenuItem
           onClick={() => {
             openFile(mainStateDispatch, fileEditorRef, explorerNodeMap);
-            mainStateDispatch({ type: "CLOSE_MAIN_MENU" });
           }}
         >
           <File size={iconSize} className={iconClasses} />
@@ -97,7 +95,6 @@ export const MainMenu = ({
         <MenuItem
           onClick={() => {
             openDirectory(mainStateDispatch, explorerNodeMap);
-            mainStateDispatch({ type: "CLOSE_MAIN_MENU" });
           }}
         >
           <FolderOpen size={iconSize} className={iconClasses} />
@@ -111,7 +108,6 @@ export const MainMenu = ({
               fileEditorState,
               fileEditorRef
             );
-            mainStateDispatch({ type: "CLOSE_MAIN_MENU" });
           }}
         >
           <Save size={iconSize} className={iconClasses} />
@@ -137,7 +133,7 @@ export const MainMenu = ({
           </MenuItem>
         </a>
         <MenuItem
-          onClick={() => mainStateDispatch({ type: "CLOSE_MAIN_MENU" })}
+          onClick={() => mainStateDispatch({ type: "TOGGLE_MAIN_MENU" })}
         >
           <X size={iconSize} className={iconClasses} />
           Close Menu

@@ -7,10 +7,9 @@ import { Settings } from "./Settings.client";
 // import { MainTabHeader } from "./Tabs.server";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { useRef } from "react";
-import { FileAndPromptEditors } from "./FileAndPromptEditors.client";
+import { MainGrid } from "./MainGrid.server";
 import { MainHeader } from "./MainHeader.client";
 import { MainMenu } from "./MainMenu.server";
-import { MyTerminal } from "./Terminal.client";
 
 export const MainContent = () => {
   // The following ReactCodeMirrorRef is a fairly complex object. I think immer doesn't like it.
@@ -21,15 +20,11 @@ export const MainContent = () => {
     MainStateAction
   >(mainStateReducer, getInitialState());
 
-  const activeMainTab = mainState.iconTabIndex;
-  const isMainMenuOpen = mainState.isMainMenuOpen;
-
   return (
     // <div className={`h-screen w-screen grid ${tabGridClasses[activeMainTab]}`}>
     <div>
       <MainHeader
-        activeMainTab={activeMainTab}
-        isMainMenuOpen={isMainMenuOpen}
+        activeHeaderItems={mainState.activeHeaderItems}
         mainStateDispatch={mainStateDispatch}
         fileEditorState={mainState.fileEditor}
         explorerNodeMap={mainState.explorerNodeMap}
@@ -37,7 +32,7 @@ export const MainContent = () => {
       />
 
       {/* Main menu. This is a pop-up menu that will be accessible in all tabs. */}
-      {isMainMenuOpen && (
+      {mainState.activeHeaderItems.mainMenu && (
         <MainMenu
           mainStateDispatch={mainStateDispatch}
           explorerNodeMap={mainState.explorerNodeMap}
@@ -46,23 +41,19 @@ export const MainContent = () => {
         />
       )}
 
-      {/* 1st tab - Will contain file editor, file explorer, and prompt editor. */}
-      <FileAndPromptEditors
+      <MainGrid
         mainState={mainState}
         mainStateDispatch={mainStateDispatch}
-        activeTab={activeMainTab}
+        activeHeaderItems={mainState.activeHeaderItems}
         fileEditorRef={fileEditorRef}
       />
 
-      {/* 2nd tab - Will contain the file explorer and the file editor. */}
-      <MyTerminal activeTab={activeMainTab} />
-
-      {/* 3rd tab - Will contain the file explorer and the file editor. */}
-      <Settings
-        fileEditorState={mainState.fileEditor}
-        mainStateDispatch={mainStateDispatch}
-        activeTab={activeMainTab}
-      />
+      {mainState.activeHeaderItems.settings && (
+        <Settings
+          fileEditorState={mainState.fileEditor}
+          mainStateDispatch={mainStateDispatch}
+        />
+      )}
 
       {/* <Benchmarks className={}/> */}
 

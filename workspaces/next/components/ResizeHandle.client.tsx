@@ -1,6 +1,6 @@
 "use client";
 
-import { OnDrag, useDrag } from "@/utils/hooks";
+import { OnDrag, useDrag } from "@/utils/hooks/useDrag";
 import { useRef } from "react";
 
 export type ResizeCursor = "cursor-row-resize" | "cursor-col-resize";

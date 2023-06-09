@@ -166,10 +166,10 @@ export const applyPromptTemplate = (
   const { prompt } = selectedPrompt;
 
   // Get the values for the placeholders from the file editor.
-  const textBeforeLine = getTextBeforeLine(fileEditorRef.current!);
-  const textAfterLine = getTextAfterLine(fileEditorRef.current!);
-  const currentLine = getCurrentLine(fileEditorRef.current!);
-  const currentSelection = getCurrentSelection(fileEditorRef.current!);
+  const textBeforeLine = getTextBeforeLine(fileEditorRef.current);
+  const textAfterLine = getTextAfterLine(fileEditorRef.current);
+  const currentLine = getCurrentLine(fileEditorRef.current);
+  const currentSelection = getCurrentSelection(fileEditorRef.current);
   const checkedFiles = getCheckedFiles();
 
   // Replace placeholders with the extracted values.

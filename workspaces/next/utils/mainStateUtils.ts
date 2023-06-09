@@ -15,6 +15,7 @@ import {
   getFileNode,
 } from "./explorerUtils";
 import { createEmptyFileInMemory, switchSelectedFile } from "./fileUtils";
+import { getInitialLayout } from "./layoutUtils";
 import {
   defaultPromptTemplateMap,
   getCurrentlySelectedPrompt,
@@ -47,10 +48,18 @@ export const getInitialState = (): MainState => {
   initialFile.selected = true; // exceptional case: the initial file is selected manually here.
   explorerNodeMap.set(initialFile.path, initialFile);
 
+  const initialLayout = getInitialLayout();
+
   return {
-    iconTabIndex: 0,
     explorerNodeMap,
-    // selectedFileNodePath,
+    activeHeaderItems: {
+      fileEditor: true,
+      chat: true,
+      terminal: false,
+      explorer: false,
+      mainMenu: false,
+      settings: false,
+    },
     fileEditor: {
       openFilePaths: [initialFile.path],
     },
@@ -61,11 +70,7 @@ export const getInitialState = (): MainState => {
     promptEditor: {
       allTabs: initialPromptTabs,
     },
-    layout: {
-      resizableRowSize: 200,
-      resizableColSize: 200,
-    },
-    isMainMenuOpen: false,
+    layout: initialLayout,
     promptTemplateMap: defaultPromptTemplateMap,
     promptSuggestion: "",
   };
@@ -76,11 +81,6 @@ export const mainStateReducer = (
   action: MainStateAction
 ): MainState => {
   switch (action.type) {
-    case "SET_ICON_TAB": {
-      draft.iconTabIndex = action.payload;
-      return draft;
-    }
-
     case "OPEN_FILE": {
       const { newNode, fileEditor } = action.payload;
       addToExplorerNodeMap(draft.explorerNodeMap, newNode);
@@ -179,16 +179,6 @@ export const mainStateReducer = (
       draft.fileEditor.openFilePaths.push(newNode.path);
       newNode.openInTab = true;
 
-      return draft;
-    }
-
-    case "OPEN_MAIN_MENU": {
-      draft.isMainMenuOpen = true;
-      return draft;
-    }
-
-    case "CLOSE_MAIN_MENU": {
-      draft.isMainMenuOpen = false;
       return draft;
     }
 
@@ -291,6 +281,45 @@ export const mainStateReducer = (
       const promptSuggestion = action.payload;
 
       draft.promptSuggestion = promptSuggestion;
+
+      return draft;
+    }
+    case "TOGGLE_MAIN_MENU": {
+      draft.activeHeaderItems.mainMenu = !draft.activeHeaderItems.mainMenu;
+
+      return draft;
+    }
+
+    case "TOGGLE_SETTINGS": {
+      draft.activeHeaderItems.settings = !draft.activeHeaderItems.settings;
+
+      return draft;
+    }
+
+    case "ACTIVATE_CHAT": {
+      draft.activeHeaderItems.chat = true;
+      draft.activeHeaderItems.explorer = false;
+
+      return draft;
+    }
+
+    case "ACTIVATE_EXPLORER": {
+      draft.activeHeaderItems.chat = false;
+      draft.activeHeaderItems.explorer = true;
+
+      return draft;
+    }
+
+    case "ACTIVATE_FILE_EDITOR": {
+      draft.activeHeaderItems.fileEditor = true;
+      draft.activeHeaderItems.terminal = false;
+
+      return draft;
+    }
+
+    case "ACTIVATE_TERMINAL": {
+      draft.activeHeaderItems.fileEditor = false;
+      draft.activeHeaderItems.terminal = true;
 
       return draft;
     }

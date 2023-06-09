@@ -1,6 +1,6 @@
 "use client";
 
-import { useSocket } from "@/utils/hooks";
+import { useSocket } from "@/utils/hooks/randomHooks";
 import { useEffect, useRef } from "react";
 import { Socket } from "socket.io-client";
 import type { Terminal as TerminalType } from "xterm";
@@ -21,7 +21,7 @@ if (typeof window !== "undefined") {
 let fitAddon: FitAddonType | undefined;
 
 type MyTerminalProps = {
-  activeTab: number;
+  isTerminalActive: boolean;
 };
 
 const initTerminal = async (xtermElement: HTMLDivElement, socket: Socket) => {
@@ -51,12 +51,11 @@ const initTerminal = async (xtermElement: HTMLDivElement, socket: Socket) => {
   fitAddon.fit();
 };
 
-export const MyTerminal = ({ activeTab }: MyTerminalProps) => {
+export const MyTerminal = ({ isTerminalActive }: MyTerminalProps) => {
   // Socket is not part of the mainState because I was getting some immer type errors.
   const socket = useSocket();
   const xtermRef = useRef<HTMLDivElement>(null);
   const hasInitTerminal = useRef(false);
-  const isVisible = activeTab === 1;
 
   useEffect(() => {
     if (!xtermRef.current || hasInitTerminal.current || !socket) {
@@ -68,12 +67,17 @@ export const MyTerminal = ({ activeTab }: MyTerminalProps) => {
   }, [xtermRef, socket]);
 
   // If the tab is not visible, and we call fit, the terminal won't show.
-  if (isVisible) {
+  if (isTerminalActive) {
     fitAddon?.fit();
   }
 
   return (
-    <div className={`${isVisible ? "" : "hidden"} h-[calc(100vh_-_42px)]`}>
+    <div
+      className={`
+        ${isTerminalActive ? "" : "hidden"} 
+        h-[calc(100vh_-_42px)]
+      `}
+    >
       <div id="terminal" ref={xtermRef} className="col-span-full"></div>
       {/* TODO: Add a terminal prompt editor here. */}
     </div>
