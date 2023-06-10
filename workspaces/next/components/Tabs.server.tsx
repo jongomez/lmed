@@ -160,7 +160,7 @@ export const TabsOnTheRight = ({
           mainStateDispatch({ type: "TOGGLE_SETTINGS" });
         }}
         isActive={activeHeaderItems.settings}
-        className="mr-[26px]"
+        // className="mr-[26px]"
       >
         <SettingsIcon size={iconSize} />
       </Tab>

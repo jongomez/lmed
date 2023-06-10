@@ -130,21 +130,30 @@ const PrintMessages = memo(function PrintMessages({
         const isBot = message.role === "assistant";
         const contentLines = message.content.split(/\n+/);
 
-        return contentLines.map((line, lineIndex) => (
+        return (
           <div
-            style={{
-              backgroundColor: isBot ? `rgba(230, 230, 230)` : undefined,
-            }}
-            className="py-2 px-2.5"
-            key={`${index}-${lineIndex}`}
+            className={`
+              ${isBot ? "bg-secondary-colors" : "bg-tertiary-colors"} 
+              mb-2 mr-2 rounded-md
+              `}
+            key={index}
           >
-            <div className="font-semibold text-messageColor">
-              {" "}
-              {lineIndex === 0 && (isBot ? "LLM:" : "You:")}
-            </div>{" "}
-            {line}
+            {contentLines.map((line, lineIndex) => (
+              <div
+                className={`
+                  main-text-colors
+                  py-2 px-2.5`}
+                key={`${index}-${lineIndex}`}
+              >
+                <div className="font-semibold">
+                  {" "}
+                  {lineIndex === 0 && (isBot ? "LLM:" : "You:")}
+                </div>{" "}
+                {line}
+              </div>
+            ))}
           </div>
-        ));
+        );
       })}
     </>
   );
@@ -184,75 +193,101 @@ export const Chat = ({
       className={`
         ${className}
         ${isChatActive ? "flex" : "hidden"}
-        flex-col items-center justify-end
+        flex-col
+        p-2
+        overflow-auto
+        justify-between
       `}
     >
-      <PromptUI
-        promptTemplateMap={promptTemplateMap}
-        mainStateDispatch={mainStateDispatch}
-        className="row-start-3 col-start-3 flex overflow-auto"
-      />
-
       <div
         ref={messagesContainerRef}
-        className="bg-gray-200 mb-2 rounded-lg overflow-y-scroll w-full"
+        // className="bg-gray-200 mb-2 rounded-lg overflow-y-scroll w-full"
+        className="mb-2 overflow-auto"
       >
         <PrintMessages messages={chatState.messages} />
       </div>
 
-      <div className="flex items-center w-full">
-        <textarea
-          ref={textAreaRef}
-          className="h-14 w-full placeholder-gray-500 bg-white text-gray-900"
-          placeholder={
-            chatState.isLoadingMessage
-              ? "Loading message..."
-              : "Type message here"
-          }
-          disabled={chatState.isLoadingMessage}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              send(
-                textAreaRef,
-                setChatState,
-                appendBotMessage,
-                appendUserMessage,
-                isLoadingMessage
-              );
-            }
-          }}
-          onChange={(e) =>
-            setChatState({ ...chatState, charCount: e.target.value.length })
-          }
+      <div>
+        <PromptUI
+          promptTemplateMap={promptTemplateMap}
+          mainStateDispatch={mainStateDispatch}
+          className="row-start-3 col-start-3 flex overflow-auto"
         />
-
-        {isLoadingMessage ? (
-          <div className="ml-2 flex items-center justify-center text-gray-600 bg-gray-200 rounded-full">
-            <Loader size={iconSize} />
-          </div>
-        ) : (
-          <button
-            className="ml-2 bg-blue-500 text-white rounded-full"
-            onClick={() =>
-              send(
-                textAreaRef,
-                setChatState,
-                appendBotMessage,
-                appendUserMessage,
-                isLoadingMessage
-              )
+        <div
+          className="bg-tertiary-colors
+          relative flex items-center w-full h-40 
+          rounded-md
+          py-1 pl-3
+          shadow-md
+          border-[1px] border-innactive-colors
+          "
+        >
+          <textarea
+            ref={textAreaRef}
+            className="resize-none 
+            h-full w-full
+            outline-none
+            main-text-colors
+            bg-transparent
+            pr-12
+            
+            "
+            placeholder={
+              chatState.isLoadingMessage
+                ? "Loading message..."
+                : "Type message here"
             }
-          >
-            <SendIcon size={iconSize} />
-          </button>
-        )}
-      </div>
+            disabled={chatState.isLoadingMessage}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                send(
+                  textAreaRef,
+                  setChatState,
+                  appendBotMessage,
+                  appendUserMessage,
+                  isLoadingMessage
+                );
+              }
+            }}
+            onChange={(e) =>
+              setChatState({ ...chatState, charCount: e.target.value.length })
+            }
+            value={promptSuggestion}
+          />
 
-      <ChatErrors
-        errorMessage={chatState.errorMessage}
-        charCount={chatState.charCount}
-      />
+          <div className="absolute right-5 bottom-3">
+            {isLoadingMessage ? (
+              <div
+                className="ml-2 flex items-center justify-center
+              text-gray-600 bg-gray-200 rounded-full"
+              >
+                <Loader size={iconSize} />
+              </div>
+            ) : (
+              <button
+                className="ml-2 bg-blue-500 text-white rounded-md p-1"
+                onClick={() =>
+                  send(
+                    textAreaRef,
+                    setChatState,
+                    appendBotMessage,
+                    appendUserMessage,
+                    isLoadingMessage
+                  )
+                }
+              >
+                <SendIcon size={iconSize} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <ChatErrors
+          errorMessage={chatState.errorMessage}
+          charCount={chatState.charCount}
+        />
+      </div>
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { getInitialState, mainStateReducer } from "@/utils/mainStateUtils";
 import { useImmerReducer } from "use-immer";
 import { Settings } from "./Settings.client";
 // import { MainTabHeader } from "./Tabs.server";
+import { useStateFromLocalStorage } from "@/utils/hooks/randomHooks";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { useRef } from "react";
 import { MainGrid } from "./MainGrid.server";
@@ -19,6 +20,8 @@ export const MainContent = () => {
     MainState,
     MainStateAction
   >(mainStateReducer, getInitialState());
+  // Get state from local storage. This is wrapped in a useEffect because of NextJS SSR stuff.
+  useStateFromLocalStorage(mainStateDispatch);
 
   return (
     // <div className={`h-screen w-screen grid ${tabGridClasses[activeMainTab]}`}>

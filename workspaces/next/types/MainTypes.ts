@@ -172,6 +172,10 @@ export type MainStateAction =
     }
   | {
       type: "ACTIVATE_TERMINAL";
+    }
+  | {
+      type: "SET_STATE_FROM_LOCAL_STORAGE";
+      payload: { layout: LayoutState };
     };
 
 export type MainStateDispatch = Dispatch<MainStateAction>;

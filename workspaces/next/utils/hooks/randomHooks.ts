@@ -1,8 +1,9 @@
 import { MainContext } from "@/components/MainProvider.client";
-import { SiteTheme } from "@/types/MainTypes";
+import { MainStateDispatch, SiteTheme } from "@/types/MainTypes";
 import { useContext, useEffect, useState } from "react";
 import { Socket, io } from "socket.io-client";
 import { WEBSOCKET_SERVER_PORT } from "../../../../shared/constants";
+import { defaultLayout, getLayoutFromLocalStorage } from "../layoutUtils";
 
 type UseThemeReturnType = {
   siteTheme: SiteTheme;
@@ -49,4 +50,17 @@ export const useSocket = (): Socket | null => {
   }, []);
 
   return socket;
+};
+
+export const useStateFromLocalStorage = (
+  mainStateDispatch: MainStateDispatch
+) => {
+  useEffect(() => {
+    const localStorageLayout = getLayoutFromLocalStorage();
+
+    mainStateDispatch({
+      type: "SET_STATE_FROM_LOCAL_STORAGE",
+      payload: { layout: localStorageLayout || defaultLayout },
+    });
+  }, [mainStateDispatch]);
 };

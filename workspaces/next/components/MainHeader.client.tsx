@@ -25,7 +25,7 @@ export const MainHeader = ({
   return (
     <div
       className="flex justify-between z-30 w-screen h-[42px]
-  border-b-2 border-innactive-colors bg-white dark:bg-slate-800"
+  border-b-2 border-innactive-colors bg-main-colors"
     >
       <div className="flex">
         <TabsOnTheLeft

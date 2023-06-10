@@ -33,7 +33,7 @@ export const MainGrid = ({
   } = getMainGridStyles(mainState.layout);
 
   return (
-    <div style={mainGridStyle}>
+    <div style={mainGridStyle} className="bg-main-colors">
       <Chat
         mainStateDispatch={mainStateDispatch}
         promptSuggestion={mainState.promptSuggestion}
@@ -76,7 +76,11 @@ export const MainGrid = ({
         isFileEditorActive={mainState.activeHeaderItems.fileEditor}
       />
 
-      <MyTerminal isTerminalActive={mainState.activeHeaderItems.terminal} />
+      <MyTerminal
+        isTerminalActive={mainState.activeHeaderItems.terminal}
+        className={terminalClassNames}
+        layoutState={mainState.layout}
+      />
     </div>
   );
 };

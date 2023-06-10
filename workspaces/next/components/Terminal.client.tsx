@@ -1,7 +1,8 @@
 "use client";
 
+import { LayoutState } from "@/types/MainTypes";
 import { useSocket } from "@/utils/hooks/randomHooks";
-import { useEffect, useRef } from "react";
+import { MutableRefObject, useEffect, useRef } from "react";
 import { Socket } from "socket.io-client";
 import type { Terminal as TerminalType } from "xterm";
 import { FitAddon as FitAddonType } from "xterm-addon-fit";
@@ -18,22 +19,26 @@ if (typeof window !== "undefined") {
   SearchAddon = require("xterm-addon-search").SearchAddon;
 }
 
-let fitAddon: FitAddonType | undefined;
-
 type MyTerminalProps = {
   isTerminalActive: boolean;
+  className: string;
+  layoutState: LayoutState;
 };
 
-const initTerminal = async (xtermElement: HTMLDivElement, socket: Socket) => {
+const initTerminal = async (
+  xtermElement: HTMLDivElement,
+  socket: Socket,
+  fitAddonRef: MutableRefObject<FitAddonType | null>
+) => {
   const terminal = new Terminal() as TerminalType;
 
-  fitAddon = new FitAddon() as FitAddonType;
+  fitAddonRef.current = new FitAddon() as FitAddonType;
 
   const searchAddon = new SearchAddon();
   const webLinksAddon = new WebLinksAddon();
 
   terminal.loadAddon(searchAddon);
-  terminal.loadAddon(fitAddon);
+  terminal.loadAddon(fitAddonRef.current);
   terminal.loadAddon(webLinksAddon);
 
   terminal.open(xtermElement);
@@ -47,13 +52,16 @@ const initTerminal = async (xtermElement: HTMLDivElement, socket: Socket) => {
   terminal.onData((data: string) => {
     socket.emit("input", data);
   });
-
-  fitAddon.fit();
 };
 
-export const MyTerminal = ({ isTerminalActive }: MyTerminalProps) => {
+export const MyTerminal = ({
+  isTerminalActive,
+  className,
+  layoutState,
+}: MyTerminalProps) => {
   // Socket is not part of the mainState because I was getting some immer type errors.
   const socket = useSocket();
+  const fitAddonRef = useRef<FitAddonType>(null);
   const xtermRef = useRef<HTMLDivElement>(null);
   const hasInitTerminal = useRef(false);
 
@@ -62,24 +70,46 @@ export const MyTerminal = ({ isTerminalActive }: MyTerminalProps) => {
       return;
     }
 
-    initTerminal(xtermRef.current, socket);
+    initTerminal(xtermRef.current, socket, fitAddonRef);
     hasInitTerminal.current = true;
-  }, [xtermRef, socket]);
+  }, [xtermRef, socket, isTerminalActive]);
 
-  // If the tab is not visible, and we call fit, the terminal won't show.
-  if (isTerminalActive) {
-    fitAddon?.fit();
-  }
+  // Everytime there's a layout change, we need to call .fit(). Hence the layoutState obj in the deps array.
+  useEffect(() => {
+    if (isTerminalActive && fitAddonRef.current) {
+      fitAddonRef.current.fit();
+    }
+  }, [isTerminalActive, fitAddonRef, layoutState]);
+
+  useEffect(() => {
+    const xtermResizeListener = () => {
+      if (fitAddonRef.current) {
+        fitAddonRef.current.fit();
+      }
+    };
+    window.addEventListener("resize", xtermResizeListener);
+
+    return () => {
+      window.removeEventListener("resize", xtermResizeListener);
+    };
+  }, [fitAddonRef]);
 
   return (
     <div
+      // HACK: use position absolute with top: -999999px to hide the terminal. Using display: none made the
+      // fit addon not work: the terminal internal renderer is not able to calculate some necessary dimensions stuff.
       className={`
-        ${isTerminalActive ? "" : "hidden"} 
-        h-[calc(100vh_-_42px)]
+        ${isTerminalActive ? "" : "absolute top-[-999999px]"} 
+        ${className}
+        overflow-auto
+        bg-black
       `}
     >
-      <div id="terminal" ref={xtermRef} className="col-span-full"></div>
-      {/* TODO: Add a terminal prompt editor here. */}
+      <div
+        id="terminal"
+        ref={xtermRef}
+        className="h-[calc(100vh_-_42px)]"
+      ></div>
     </div>
   );
 };

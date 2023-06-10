@@ -39,6 +39,8 @@ export const Modal = ({
         className={`
           ${className}
           relative bg-white z-50 p-6 rounded-lg shadow-lg
+          bg-main-colors
+          main-text-colors
         `}
       >
         {children}

@@ -15,7 +15,7 @@ import {
   getFileNode,
 } from "./explorerUtils";
 import { createEmptyFileInMemory, switchSelectedFile } from "./fileUtils";
-import { getInitialLayout } from "./layoutUtils";
+import { defaultLayout, setLayoutInLocalStorage } from "./layoutUtils";
 import {
   defaultPromptTemplateMap,
   getCurrentlySelectedPrompt,
@@ -48,8 +48,6 @@ export const getInitialState = (): MainState => {
   initialFile.selected = true; // exceptional case: the initial file is selected manually here.
   explorerNodeMap.set(initialFile.path, initialFile);
 
-  const initialLayout = getInitialLayout();
-
   return {
     explorerNodeMap,
     activeHeaderItems: {
@@ -70,7 +68,7 @@ export const getInitialState = (): MainState => {
     promptEditor: {
       allTabs: initialPromptTabs,
     },
-    layout: initialLayout,
+    layout: defaultLayout,
     promptTemplateMap: defaultPromptTemplateMap,
     promptSuggestion: "",
   };
@@ -196,6 +194,7 @@ export const mainStateReducer = (
       );
 
       draft.layout.resizableRowSize = resizableRowSize;
+      setLayoutInLocalStorage(draft.layout);
 
       // console.log("resizableRowSize", resizableRowSize);
       // console.log("deltaY", deltaY);
@@ -208,10 +207,12 @@ export const mainStateReducer = (
       const initialColSize = action.payload.initialColSize;
       // Col size (width) can't be smaller than 0.
       let resizableColSize = Math.max(0, initialColSize + deltaX);
-      // Col size (width) can't be greater than 100vh.
-      resizableColSize = Math.min(window.innerHeight, resizableColSize);
+      // Col size (width) can't be greater than 100vw.
+      resizableColSize = Math.min(window.innerWidth, resizableColSize);
 
       draft.layout.resizableColSize = resizableColSize;
+
+      setLayoutInLocalStorage(draft.layout);
 
       // console.log("resizableColSize", resizableColSize);
       // console.log("deltaX", deltaX);
@@ -320,6 +321,14 @@ export const mainStateReducer = (
     case "ACTIVATE_TERMINAL": {
       draft.activeHeaderItems.fileEditor = false;
       draft.activeHeaderItems.terminal = true;
+
+      return draft;
+    }
+
+    case "SET_STATE_FROM_LOCAL_STORAGE": {
+      const { layout } = action.payload;
+
+      draft.layout = layout;
 
       return draft;
     }

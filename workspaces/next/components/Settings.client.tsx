@@ -42,9 +42,9 @@ export const Settings = ({
           className="ml-2"
         >
           {siteTheme === "dark" ? (
-            <Sun className="text-dark dark:text-white" />
+            <Sun className="main-text-colors" />
           ) : (
-            <Moon className="text-dark dark:text-white" />
+            <Moon className="main-text-colors" />
           )}
         </button>
       </div>

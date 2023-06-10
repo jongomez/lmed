@@ -11,7 +11,7 @@ export const setLayoutInLocalStorage = (layout: LayoutState) => {
   window.localStorage.setItem(LAYOUT_LOCAL_STORAGE_KEY, JSON.stringify(layout));
 };
 
-const getLayoutFromLocalStorage = (): LayoutState | null => {
+export const getLayoutFromLocalStorage = (): LayoutState | null => {
   const localStorageTheme = window.localStorage.getItem(
     LAYOUT_LOCAL_STORAGE_KEY
   );
@@ -19,16 +19,10 @@ const getLayoutFromLocalStorage = (): LayoutState | null => {
   return localStorageTheme ? JSON.parse(localStorageTheme) : null;
 };
 
-const defaultLayout: LayoutState = {
+export const defaultLayout: LayoutState = {
   mode: "horizontal",
   resizableColSize: 400,
   resizableRowSize: 400,
-};
-
-export const getInitialLayout = (): LayoutState => {
-  const layoutFromLocalStorage = getLayoutFromLocalStorage();
-
-  return layoutFromLocalStorage || defaultLayout;
 };
 
 type MainGridStyles = {
