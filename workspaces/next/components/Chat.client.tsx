@@ -1,16 +1,16 @@
 "use client";
 
-import { ChatMessage, MainStateDispatch } from "@/types/MainTypes";
+import { ChatMessage, MainState, MainStateDispatch } from "@/types/MainTypes";
 
 import { Loader, SendIcon } from "lucide-react";
 
 import { ChatHookReturnType, useChat } from "@/utils/hooks/useChat";
 import { PromptTemplateMap } from "@/utils/promptUtils";
-import { memo } from "react";
+import { memo, useEffect, useRef } from "react";
 import { ChatErrors } from "./ChatErrors.client";
 import { PromptUI } from "./PromptUI.client";
 
-const CHAT_MESSAGES_URL = "/api/chat";
+const CHAT_MESSAGES_URL = "/api";
 const OPENAI_TIMEOUT_MILLISECONDS = 5_000;
 export const MAX_CHARS = 999_999;
 
@@ -23,12 +23,13 @@ export type ChatServerResponse =
 // This function is called when a user wants to send a message to the backend. It does the following:
 // 1. Appends the user's message to the existing messages array. This shows the message in the chat's scroll view.
 // 2. Sends a POST request to the backend and waits for the server side events.
-const send = (
+const sendChatMessage = (
   textAreaRef: ChatHookReturnType["textAreaRef"],
   setChatState: ChatHookReturnType["setChatState"],
   appendBotMessage: ChatHookReturnType["appendBotMessage"],
   appendUserMessage: ChatHookReturnType["appendUserMessage"],
-  isLoadingMessage: boolean
+  isLoadingMessage: boolean,
+  settings: MainState["settings"]
 ) => {
   if (isLoadingMessage) {
     return;
@@ -55,14 +56,19 @@ const send = (
     const messagesToSendToBackend = allMessages.slice(-2);
 
     // Sends a POST request to the backend.
-    sendMessages(messagesToSendToBackend, setChatState, appendBotMessage);
+    sendMessages(
+      messagesToSendToBackend,
+      setChatState,
+      appendBotMessage,
+      settings
+    );
   }
 };
-
 const sendMessages = async (
   messagesToSendToBackend: ChatMessage[],
   setChatState: ChatHookReturnType["setChatState"],
-  appendBotMessage: ChatHookReturnType["appendBotMessage"]
+  appendBotMessage: ChatHookReturnType["appendBotMessage"],
+  settings: MainState["settings"]
 ) => {
   let errorMessage = "";
 
@@ -83,11 +89,12 @@ const sendMessages = async (
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(
-        messagesToSendToBackend.map((message) => {
+      body: JSON.stringify({
+        messages: messagesToSendToBackend.map((message) => {
           return { content: message.content, role: message.role };
-        })
-      ),
+        }),
+        keys: [settings.openAIAPIKey],
+      }),
       signal: controller.signal,
     });
 
@@ -99,10 +106,28 @@ const sendMessages = async (
       throw new Error(result.error);
     }
 
-    const jsonResponse = await response.json();
+    if (!response.body) {
+      throw new Error("Response body is undefined.");
+    }
 
-    // Append the text to the chat's scroll view.
-    appendBotMessage({ content: jsonResponse.text, role: "assistant" });
+    const reader = response.body.getReader();
+    let completeResponse = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+      // Convert Uint8Array to string and append to completeResponse
+      completeResponse += new TextDecoder().decode(value);
+    }
+
+    debugger;
+
+    // Append the text from the server to the chat.
+    appendBotMessage({ content: completeResponse, role: "assistant" });
   } catch (error) {
     errorMessage = "Error: something went wrong.";
     if (error instanceof Error) {
@@ -124,6 +149,14 @@ type PrintMessagesProps = {
 const PrintMessages = memo(function PrintMessages({
   messages,
 }: PrintMessagesProps) {
+  const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (endRef.current) {
+      endRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
   return (
     <>
       {messages.map((message, index) => {
@@ -135,7 +168,9 @@ const PrintMessages = memo(function PrintMessages({
             className={`
               ${isBot ? "bg-secondary-colors" : "bg-tertiary-colors"} 
               mb-2 mr-2 rounded-md
-              `}
+              border-innactive-colors
+              border-[1px]
+            `}
             key={index}
           >
             {contentLines.map((line, lineIndex) => (
@@ -155,6 +190,7 @@ const PrintMessages = memo(function PrintMessages({
           </div>
         );
       })}
+      <div ref={endRef} /> {/* Invisible div for auto scrolling purposes */}
     </>
   );
 });
@@ -165,6 +201,7 @@ type ChatProps = {
   promptSuggestion: string;
   className: string;
   isChatActive: boolean;
+  settings: MainState["settings"];
 };
 
 export const Chat = ({
@@ -173,6 +210,7 @@ export const Chat = ({
   promptSuggestion,
   className,
   isChatActive,
+  settings,
 }: ChatProps) => {
   const {
     chatState,
@@ -241,12 +279,13 @@ export const Chat = ({
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                send(
+                sendChatMessage(
                   textAreaRef,
                   setChatState,
                   appendBotMessage,
                   appendUserMessage,
-                  isLoadingMessage
+                  isLoadingMessage,
+                  settings
                 );
               }
             }}
@@ -268,12 +307,13 @@ export const Chat = ({
               <button
                 className="ml-2 bg-blue-500 text-white rounded-md p-1"
                 onClick={() =>
-                  send(
+                  sendChatMessage(
                     textAreaRef,
                     setChatState,
                     appendBotMessage,
                     appendUserMessage,
-                    isLoadingMessage
+                    isLoadingMessage,
+                    settings
                   )
                 }
               >

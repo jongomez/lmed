@@ -73,7 +73,10 @@ export type HeaderItem =
   | "settings";
 
 export type MainState = {
-  globalEditorSettings: GlobalEditorSettings;
+  settings: {
+    globalEditorSettings: GlobalEditorSettings;
+    openAIAPIKey: string;
+  };
   fileEditor: FileEditorState;
   promptEditor: PromptEditorState;
   layout: LayoutState;
@@ -83,6 +86,7 @@ export type MainState = {
   activeHeaderItems: {
     [key in HeaderItem]: boolean;
   };
+
   // selectedFileNodePath: string;
 };
 
@@ -176,6 +180,10 @@ export type MainStateAction =
   | {
       type: "SET_STATE_FROM_LOCAL_STORAGE";
       payload: { layout: LayoutState };
+    }
+  | {
+      type: "SET_OPENAI_API_KEY";
+      payload: string;
     };
 
 export type MainStateDispatch = Dispatch<MainStateAction>;

@@ -49,6 +49,13 @@ export const getInitialState = (): MainState => {
   explorerNodeMap.set(initialFile.path, initialFile);
 
   return {
+    settings: {
+      globalEditorSettings: {
+        fontSize: 14,
+        theme: "github-dark",
+      },
+      openAIAPIKey: "",
+    },
     explorerNodeMap,
     activeHeaderItems: {
       fileEditor: true,
@@ -61,10 +68,7 @@ export const getInitialState = (): MainState => {
     fileEditor: {
       openFilePaths: [initialFile.path],
     },
-    globalEditorSettings: {
-      fontSize: 14,
-      theme: "github-dark",
-    },
+
     promptEditor: {
       allTabs: initialPromptTabs,
     },
@@ -329,6 +333,14 @@ export const mainStateReducer = (
       const { layout } = action.payload;
 
       draft.layout = layout;
+
+      return draft;
+    }
+
+    case "SET_OPENAI_API_KEY": {
+      const openAIAPIKey = action.payload;
+
+      draft.settings.openAIAPIKey = openAIAPIKey;
 
       return draft;
     }

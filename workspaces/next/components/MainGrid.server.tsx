@@ -40,6 +40,7 @@ export const MainGrid = ({
         promptTemplateMap={mainState.promptTemplateMap}
         className={chatClassNames}
         isChatActive={mainState.activeHeaderItems.chat}
+        settings={mainState.settings}
       />
 
       <Explorer
@@ -68,7 +69,7 @@ export const MainGrid = ({
 
       <FileEditor
         fileEditorRef={fileEditorRef}
-        globalEditorSettings={mainState.globalEditorSettings}
+        globalEditorSettings={mainState.settings.globalEditorSettings}
         mainStateDispatch={mainStateDispatch}
         explorerNodeMap={mainState.explorerNodeMap}
         promptTemplateMap={mainState.promptTemplateMap}

@@ -55,6 +55,7 @@ export const MainContent = () => {
         <Settings
           fileEditorState={mainState.fileEditor}
           mainStateDispatch={mainStateDispatch}
+          settings={mainState.settings}
         />
       )}
 
