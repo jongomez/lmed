@@ -164,7 +164,7 @@ export const FileEditor = ({
           getEditorLanguageFromState(explorerNodeMap),
           customAutocompletion({
             override: getCompletionSources(
-              "ahhaahahahahahahaa asdf asdf a asdf asdf asdf asdf asd fasd afhahaasdlkcsdkl"
+              "ahhaahahahahahahaa asdf asdf\n\n a asdf asdf asdf asdf asd f\na\nsd afhahaasdlkcsdkl"
             ),
           }),
         ]}
