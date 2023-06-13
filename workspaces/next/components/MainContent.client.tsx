@@ -51,13 +51,12 @@ export const MainContent = () => {
         fileEditorRef={fileEditorRef}
       />
 
-      {mainState.activeHeaderItems.settings && (
-        <Settings
-          fileEditorState={mainState.fileEditor}
-          mainStateDispatch={mainStateDispatch}
-          settings={mainState.settings}
-        />
-      )}
+      <Settings
+        fileEditorState={mainState.fileEditor}
+        mainStateDispatch={mainStateDispatch}
+        settings={mainState.settings}
+        isSettingsActive={mainState.activeHeaderItems.settings}
+      />
 
       {/* <Benchmarks className={}/> */}
 

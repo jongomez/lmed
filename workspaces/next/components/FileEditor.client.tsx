@@ -9,6 +9,13 @@ import {
   MainStateDispatch,
 } from "@/types/MainTypes";
 import {
+  CompletionContext,
+  CompletionResult,
+  CompletionSource,
+  customAutocompletion,
+  snippetCompletion,
+} from "@/utils/codemirror/customAutocomplete/src";
+import {
   getEditorLanguageFromState,
   getEditorThemeFromState,
 } from "@/utils/editorUtils";
@@ -22,8 +29,35 @@ import {
   applyPromptTemplate,
   getCurrentlySelectedPrompt,
 } from "@/utils/promptUtils";
+
 import { ViewUpdate } from "@codemirror/view";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
+
+// This function returns an array of CompletionSources. A CompletionSource is a function.
+const getCompletionSources = (
+  lastLLMResponse: string
+): readonly CompletionSource[] => {
+  const completionSource = (
+    context: CompletionContext
+  ): CompletionResult | null => {
+    // Create a completion from a snippet.
+    const completion = snippetCompletion(lastLLMResponse, {
+      label: "Replace line with:\n" + lastLLMResponse,
+    });
+
+    // Use the current cursor position for the CompletionResult.
+    const cursorPos = context.pos;
+
+    // Return a CompletionResult that spans the current cursor position.
+    return {
+      from: cursorPos,
+      to: cursorPos,
+      options: [completion],
+    };
+  };
+
+  return [completionSource];
+};
 
 const setPromptSuggestion = (
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>,
@@ -45,6 +79,7 @@ type FileEditorProps = {
   promptTemplateMap: PromptTemplateMap;
   className: string;
   isFileEditorActive: boolean;
+  lastLLMResponse: string;
 };
 
 export const FileEditor = ({
@@ -55,6 +90,7 @@ export const FileEditor = ({
   promptTemplateMap,
   className,
   isFileEditorActive,
+  lastLLMResponse,
 }: FileEditorProps) => {
   const selectedFile = getCurrentlySelectedFile(explorerNodeMap);
   const selectedPrompt = getCurrentlySelectedPrompt(promptTemplateMap);
@@ -83,8 +119,10 @@ export const FileEditor = ({
         SwitchToNewFileAnnotation
       );
 
-      console.log("value:", value);
-      console.log("annotation:", annotation);
+      // startCompletion(viewUpdate.view);
+
+      console.log("onChange value:", value);
+      console.log("onChange viewUpdate annotation:", annotation);
 
       // updatePromptEditor(promptEditorRef, fileEditorRef, selectedPrompt);
 
@@ -122,14 +160,19 @@ export const FileEditor = ({
         ref={refCallack}
         value="console.log('hello world!');"
         theme={getEditorThemeFromState(globalEditorSettings)}
-        extensions={[getEditorLanguageFromState(explorerNodeMap)]}
+        extensions={[
+          getEditorLanguageFromState(explorerNodeMap),
+          customAutocompletion({
+            override: getCompletionSources(
+              "ahhaahahahahahahaa asdf asdf a asdf asdf asdf asdf asd fasd afhahaasdlkcsdkl"
+            ),
+          }),
+        ]}
         onChange={onChange}
         onUpdate={(viewUpdate: ViewUpdate) => {
           if (!viewUpdate.selectionSet && !viewUpdate.docChanged) {
             return;
           }
-
-          // debugger;
 
           if (fileEditorRef.current?.view) {
             setPromptSuggestion(
@@ -143,6 +186,10 @@ export const FileEditor = ({
         style={{ height: "100%" }}
         height="100%"
         width="100%"
+        basicSetup={{
+          // Turn off the default autocompletion plugin, as we're using our own.
+          autocompletion: false,
+        }}
       />
     </div>
   );

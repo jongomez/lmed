@@ -83,6 +83,7 @@ export type MainState = {
   explorerNodeMap: Map<string, ExplorerNode>;
   promptTemplateMap: PromptTemplateMap;
   promptSuggestion: string;
+  lastLLMResponse: string;
   activeHeaderItems: {
     [key in HeaderItem]: boolean;
   };
@@ -184,6 +185,13 @@ export type MainStateAction =
   | {
       type: "SET_OPENAI_API_KEY";
       payload: string;
+    }
+  | {
+      type: "HANDLE_LLM_RESPONSE";
+      payload: {
+        response: string;
+        fileEditorRef: ReactCodeMirrorRef;
+      };
     };
 
 export type MainStateDispatch = Dispatch<MainStateAction>;

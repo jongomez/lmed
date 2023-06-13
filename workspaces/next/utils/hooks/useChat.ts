@@ -1,5 +1,12 @@
 import { ChatHookState, ChatMessage } from "@/types/MainTypes";
-import { Dispatch, RefObject, SetStateAction, useRef, useState } from "react";
+import {
+  Dispatch,
+  RefObject,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 const dummyMessages: ChatMessage[] = [
   { role: "assistant", content: "Hey, how's it going?" },
@@ -14,7 +21,7 @@ export type ChatHookReturnType = {
   appendUserMessage: (userMessage: string) => ChatMessage[];
 };
 
-export const useChat = (): ChatHookReturnType => {
+export const useChat = (promptSuggestion: string): ChatHookReturnType => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [chatState, setChatState] = useState<ChatHookState>({
@@ -23,6 +30,14 @@ export const useChat = (): ChatHookReturnType => {
     messages: dummyMessages,
     isLoadingMessage: false,
   });
+
+  // The following useEffect is used to scroll to the bottom of the text area.
+  useEffect(() => {
+    if (textAreaRef.current) {
+      textAreaRef.current.value = promptSuggestion;
+      textAreaRef.current.scrollTop = textAreaRef.current.scrollHeight;
+    }
+  }, [textAreaRef, promptSuggestion]);
 
   // Appends message from the bot to the messages state array. This will update the chat's text area.
   // If the message already exists, it updates the existing message.

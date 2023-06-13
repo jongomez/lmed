@@ -41,6 +41,7 @@ export const MainGrid = ({
         className={chatClassNames}
         isChatActive={mainState.activeHeaderItems.chat}
         settings={mainState.settings}
+        fileEditorRef={fileEditorRef}
       />
 
       <Explorer
@@ -75,6 +76,7 @@ export const MainGrid = ({
         promptTemplateMap={mainState.promptTemplateMap}
         className={fileEditorClassNames}
         isFileEditorActive={mainState.activeHeaderItems.fileEditor}
+        lastLLMResponse={mainState.lastLLMResponse}
       />
 
       <MyTerminal

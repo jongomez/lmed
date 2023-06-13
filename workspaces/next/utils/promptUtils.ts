@@ -31,8 +31,7 @@ export const replaceCurrentSelection: PromptActionToken =
 const lineCompletionPrompt: PromptTemplate = {
   prompt: `Your task is to assist in writing code.
 Given the context provided, please complete the "Incomplete Line of Code" correctly and coherently.
-Consider the context, style, language syntax, and semantics to provide the most suitable code completion. 
-If the line of code ends with an opening bracket, remember to provide the corresponding closing bracket.
+Wrap the code in your response in tripple backticks \`\`\`
 
 Code from other files:
 ${checkedFilesPlaceholder}

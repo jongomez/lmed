@@ -34,12 +34,14 @@ type SettingsProps = {
   fileEditorState: FileEditorState;
   mainStateDispatch: MainStateDispatch;
   settings: MainState["settings"];
+  isSettingsActive: boolean;
 };
 
 export const Settings = ({
   fileEditorState,
   mainStateDispatch,
   settings,
+  isSettingsActive,
 }: SettingsProps) => {
   const { siteTheme, toggleSiteTheme } = useTheme();
 
@@ -57,8 +59,10 @@ export const Settings = ({
       closeActionCallback={() => {
         mainStateDispatch({ type: "TOGGLE_SETTINGS" });
       }}
-      overlayClassNames="bg-black bg-opacity-10"
-      className="w-[600px]"
+      overlayClassNames={`${
+        isSettingsActive ? "" : "hidden"
+      } bg-black bg-opacity-10`}
+      className={`${isSettingsActive ? "" : "hidden"} w-[600px] `}
     >
       <SettingsSection title="Theme">
         <div className="flex">

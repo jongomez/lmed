@@ -75,6 +75,7 @@ export const getInitialState = (): MainState => {
     layout: defaultLayout,
     promptTemplateMap: defaultPromptTemplateMap,
     promptSuggestion: "",
+    lastLLMResponse: "",
   };
 };
 
@@ -341,6 +342,14 @@ export const mainStateReducer = (
       const openAIAPIKey = action.payload;
 
       draft.settings.openAIAPIKey = openAIAPIKey;
+
+      return draft;
+    }
+
+    case "HANDLE_LLM_RESPONSE": {
+      const { response, fileEditorRef } = action.payload;
+
+      draft.lastLLMResponse = response;
 
       return draft;
     }

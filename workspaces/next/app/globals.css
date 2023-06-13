@@ -50,3 +50,10 @@
 .focus-ring {
   @apply focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-300;
 }
+
+.cm-tooltip-autocomplete {
+  color: pink !important;
+  background-color: azure !important;
+  overflow: scroll !important;
+  text-overflow: unset !important;
+}

@@ -2,11 +2,12 @@
 
 import { ChatMessage, MainState, MainStateDispatch } from "@/types/MainTypes";
 
-import { Loader, SendIcon } from "lucide-react";
+import { Loader2, SendIcon } from "lucide-react";
 
 import { ChatHookReturnType, useChat } from "@/utils/hooks/useChat";
 import { PromptTemplateMap } from "@/utils/promptUtils";
-import { memo, useEffect, useRef } from "react";
+import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
+import { MutableRefObject, memo, useEffect, useRef } from "react";
 import { ChatErrors } from "./ChatErrors.client";
 import { PromptUI } from "./PromptUI.client";
 
@@ -29,7 +30,8 @@ const sendChatMessage = (
   appendBotMessage: ChatHookReturnType["appendBotMessage"],
   appendUserMessage: ChatHookReturnType["appendUserMessage"],
   isLoadingMessage: boolean,
-  settings: MainState["settings"]
+  settings: MainState["settings"],
+  onMessageReceived: OnMessageReceivedFunction
 ) => {
   if (isLoadingMessage) {
     return;
@@ -48,10 +50,11 @@ const sendChatMessage = (
       return;
     }
 
+    // TODO: Only clear the text area if user is using a custom prompt (e.g. has manually modified a prompt).
     textAreaRef.current.value = "";
     textAreaRef.current.focus();
 
-    // Gets the last 2 messages to send to the backend.
+    // Gets the last X messages to send to the backend.
     const allMessages = appendUserMessage(textInput);
     const messagesToSendToBackend = allMessages.slice(-2);
 
@@ -60,7 +63,8 @@ const sendChatMessage = (
       messagesToSendToBackend,
       setChatState,
       appendBotMessage,
-      settings
+      settings,
+      onMessageReceived
     );
   }
 };
@@ -68,7 +72,8 @@ const sendMessages = async (
   messagesToSendToBackend: ChatMessage[],
   setChatState: ChatHookReturnType["setChatState"],
   appendBotMessage: ChatHookReturnType["appendBotMessage"],
-  settings: MainState["settings"]
+  settings: MainState["settings"],
+  onMessageReceived: OnMessageReceivedFunction
 ) => {
   let errorMessage = "";
 
@@ -121,13 +126,15 @@ const sendMessages = async (
       }
 
       // Convert Uint8Array to string and append to completeResponse
-      completeResponse += new TextDecoder().decode(value);
+      let chunk = new TextDecoder().decode(value);
+      completeResponse += chunk;
+
+      // Append each chunk from the server to the chat.
+      appendBotMessage({ content: completeResponse, role: "assistant" });
     }
 
-    debugger;
-
-    // Append the text from the server to the chat.
-    appendBotMessage({ content: completeResponse, role: "assistant" });
+    // We're done! Let's see what we can do with the response.
+    onMessageReceived(completeResponse);
   } catch (error) {
     errorMessage = "Error: something went wrong.";
     if (error instanceof Error) {
@@ -153,7 +160,7 @@ const PrintMessages = memo(function PrintMessages({
 
   useEffect(() => {
     if (endRef.current) {
-      endRef.current.scrollIntoView({ behavior: "smooth" });
+      endRef.current.scrollIntoView({ behavior: "auto" });
     }
   }, [messages]);
 
@@ -195,6 +202,8 @@ const PrintMessages = memo(function PrintMessages({
   );
 });
 
+type OnMessageReceivedFunction = (completeResponse: string) => void;
+
 type ChatProps = {
   mainStateDispatch: MainStateDispatch;
   promptTemplateMap: PromptTemplateMap;
@@ -202,6 +211,7 @@ type ChatProps = {
   className: string;
   isChatActive: boolean;
   settings: MainState["settings"];
+  fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
 };
 
 export const Chat = ({
@@ -211,6 +221,7 @@ export const Chat = ({
   className,
   isChatActive,
   settings,
+  fileEditorRef,
 }: ChatProps) => {
   const {
     chatState,
@@ -219,11 +230,19 @@ export const Chat = ({
     messagesContainerRef,
     appendBotMessage,
     appendUserMessage,
-  } = useChat();
+  } = useChat(promptSuggestion);
+
+  const onMessageReceived = (completeResponse: string) => {
+    mainStateDispatch({
+      type: "HANDLE_LLM_RESPONSE",
+      payload: {
+        response: completeResponse,
+        fileEditorRef: fileEditorRef.current,
+      },
+    });
+  };
 
   const { isLoadingMessage } = chatState;
-
-  // Constant numbers:
   const iconSize = 26;
 
   return (
@@ -285,23 +304,24 @@ export const Chat = ({
                   appendBotMessage,
                   appendUserMessage,
                   isLoadingMessage,
-                  settings
+                  settings,
+                  onMessageReceived
                 );
               }
             }}
-            onChange={(e) =>
-              setChatState({ ...chatState, charCount: e.target.value.length })
-            }
-            value={promptSuggestion}
+            onChange={(e) => {
+              setChatState({ ...chatState, charCount: e.target.value.length });
+            }}
           />
 
           <div className="absolute right-5 bottom-3">
             {isLoadingMessage ? (
               <div
-                className="ml-2 flex items-center justify-center
-              text-gray-600 bg-gray-200 rounded-full"
+                className="ml-2 p-1 flex items-center justify-center
+              main-text-colors rounded-full
+              animate-spin"
               >
-                <Loader size={iconSize} />
+                <Loader2 size={iconSize} />
               </div>
             ) : (
               <button
@@ -313,7 +333,8 @@ export const Chat = ({
                     appendBotMessage,
                     appendUserMessage,
                     isLoadingMessage,
-                    settings
+                    settings,
+                    onMessageReceived
                   )
                 }
               >
