@@ -46,11 +46,6 @@ function optionContent(
     });
 
   // This was modified to allow multi line labels on the completion list.
-  // This block of code defines a new element in the `content` array.
-  // This element has two properties: a `render` function and a `position` number.
-  // The `render` function is responsible for creating a DOM element that represents
-  // the auto-completion suggestion in the CodeMirror's dropdown list.
-  // The `position` number defines the order of this element in the `content` array.
   content.push(
     {
       // This `render` function takes three parameters:
@@ -66,45 +61,48 @@ function optionContent(
         let labelContainer = document.createElement("div");
         labelContainer.className = "cm-completionLabelContainer";
 
-        // Destructuring to extract the label from the completion object.
+        // The label is the complete text for the completion. This can have multiple lines.
         let { label } = completion;
 
-        // The label is split into separate lines.
+        // The label can have multiple lines. If it does, separate them.
         let lines = label.split("\n");
 
-        // For each line of the label, create a span.
+        // For each line of the label, create a div with 1 or more child spans.
+        // The different spans represent the matched and unmatched parts of the text (aka label).
         lines.forEach((line: string) => {
-          let labelElt = document.createElement("span");
+          let labelElt = document.createElement("div");
           labelElt.className = "cm-completionLabel";
 
+          // Handle empty lines and lines with spaces at the beginning
+          if (line.trim().length === 0) {
+            line = "\u00A0";
+          } else if (line[0] === " ") {
+            const leadingSpacesCount = line.search(/\S|$/);
+            line = "\u00A0".repeat(leadingSpacesCount) + line.trim();
+          }
+
           let off = 0;
-          // This loop runs through each matched segment of the line.
           for (let j = 1; j < match.length; ) {
             let from = match[j++],
               to = match[j++];
 
-            // If there are characters before the match, they are added to the span.
             if (from > off)
               labelElt.appendChild(
                 document.createTextNode(line.slice(off, from))
               );
 
-            // A new span is created for the matched text and appended to the label element.
             let span = labelElt.appendChild(document.createElement("span"));
             span.appendChild(document.createTextNode(line.slice(from, to)));
             span.className = "cm-completionMatchedText";
             off = to;
           }
 
-          // If there are characters after the match, they are added to the span.
           if (off < line.length)
             labelElt.appendChild(document.createTextNode(line.slice(off)));
 
-          // The span (representing the line) is added to the div container.
           labelContainer.appendChild(labelElt);
         });
 
-        // The div container is returned to be used as the DOM representation of the completion.
         return labelContainer;
       },
       // The position of this element in the `content` array is defined as 50.
