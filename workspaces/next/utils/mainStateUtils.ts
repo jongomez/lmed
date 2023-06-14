@@ -1,6 +1,7 @@
 "use client";
 
 import type {
+  ChatMessage,
   ExplorerNode,
   MainState,
   MainStateAction,
@@ -43,6 +44,10 @@ export const getInitialState = (): MainState => {
     },
   ];
 
+  const dummyInitialMessages: ChatMessage[] = [
+    { role: "assistant", content: "Hey, how's it going?" },
+  ];
+
   const initialFile = createEmptyFileInMemory(explorerNodeMap);
   // const selectedFileNodePath = initialFile.path;
   initialFile.selected = true; // exceptional case: the initial file is selected manually here.
@@ -76,6 +81,12 @@ export const getInitialState = (): MainState => {
     promptTemplateMap: defaultPromptTemplateMap,
     promptSuggestion: "",
     lastLLMResponse: "",
+    chatState: {
+      messages: dummyInitialMessages,
+      charCount: 0,
+      errorMessage: "",
+      isLoadingMessage: false,
+    },
   };
 };
 
@@ -350,6 +361,42 @@ export const mainStateReducer = (
       const { response, fileEditorRef } = action.payload;
 
       draft.lastLLMResponse = response;
+
+      return draft;
+    }
+
+    case "UPDATE_CHAT_STATE": {
+      // Appends message from the bot to the messages state array. This will update the chat's text area.
+      // If the message already exists, it updates the existing message.
+      const currentMessages = draft.chatState.messages;
+      const { newMessage, isLoadingMessage, errorMessage, textAreaValue } =
+        action.payload;
+
+      if (typeof textAreaValue !== "undefined") {
+        draft.chatState.charCount = textAreaValue.length;
+      }
+
+      const lastMessageRole = currentMessages.at(-1)?.role;
+
+      if (lastMessageRole === "assistant" && newMessage?.role === "assistant") {
+        //  Update existing message - this is what created the "streaming text" effect.
+        // XXX: WARNING: This is will re-render the entire chat component (and possibly others) multiple times.
+        if (typeof newMessage !== "undefined") {
+          currentMessages[currentMessages.length - 1] = newMessage;
+        }
+      } else if (typeof newMessage !== "undefined") {
+        // NOTE: Besides creating a new message, also clear any error messages.
+        draft.chatState.errorMessage = "";
+        draft.chatState.messages.push(newMessage);
+      }
+
+      if (typeof isLoadingMessage !== "undefined") {
+        draft.chatState.isLoadingMessage = isLoadingMessage;
+      }
+
+      if (typeof errorMessage !== "undefined") {
+        draft.chatState.errorMessage = errorMessage;
+      }
 
       return draft;
     }

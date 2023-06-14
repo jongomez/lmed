@@ -87,8 +87,6 @@ export const acceptCompletion: Command = (view: EditorView) => {
 
 /// Explicitly start autocompletion.
 export const startCompletion: Command = (view: EditorView) => {
-  console.log("heyyyy");
-  debugger;
   let cState = view.state.field(completionState, false);
   if (!cState) return false;
   view.dispatch({ effects: startCompletionEffect.of(true) });

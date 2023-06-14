@@ -9,11 +9,12 @@ import {
   MainStateDispatch,
 } from "@/types/MainTypes";
 import {
+  Completion,
   CompletionContext,
   CompletionResult,
   CompletionSource,
   customAutocompletion,
-  snippetCompletion,
+  startCompletion,
 } from "@/utils/codemirror/customAutocomplete/src";
 import {
   getEditorLanguageFromState,
@@ -30,6 +31,7 @@ import {
   getCurrentlySelectedPrompt,
 } from "@/utils/promptUtils";
 
+import { extractCodeFromLLMResponse } from "@/utils/LLMResponseUtils";
 import { ViewUpdate } from "@codemirror/view";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 
@@ -40,18 +42,48 @@ const getCompletionSources = (
   const completionSource = (
     context: CompletionContext
   ): CompletionResult | null => {
-    // Create a completion from a snippet.
-    const completion = snippetCompletion(lastLLMResponse, {
-      label: "Replace line with:\n" + lastLLMResponse,
-    });
+    // The current line text.
+    const lineText = context.state.doc.lineAt(context.pos).text;
 
-    // Use the current cursor position for the CompletionResult.
-    const cursorPos = context.pos;
+    // Construct a completion that replaces the current line with lastLLMResponse.
+    const completion: Completion = {
+      label: lastLLMResponse,
+      apply: (view, completion, pos) => {
+        // Get the current line boundaries.
+        const lineFrom = view.state.doc.lineAt(pos).from;
+        const lineTo = view.state.doc.lineAt(pos).to;
 
-    // Return a CompletionResult that spans the current cursor position.
+        // Delete the current line.
+        view.dispatch({ changes: { from: lineFrom, to: lineTo } });
+
+        // Insert lastLLMResponse at the start of the line.
+        view.dispatch({ changes: { from: lineFrom, insert: lastLLMResponse } });
+
+        // Set the cursor at the end of the line.
+        const endOfLinePos = lineFrom + lastLLMResponse.length;
+        view.dispatch({
+          selection: {
+            anchor: endOfLinePos,
+            head: endOfLinePos,
+          },
+        });
+      },
+    };
+
+    // Only suggest the completion if the entire line text is a substring of the completion label.
+    // (this is not currently used, but could come in handy in the future)
+    // if (!completion.label.includes(lineText.trim())) {
+    //   return null;
+    // }
+
+    // Get the current line boundaries for the CompletionResult.
+    const lineFrom = context.state.doc.lineAt(context.pos).from;
+    const lineTo = context.state.doc.lineAt(context.pos).to;
+
+    // Return a CompletionResult that spans the entire line.
     return {
-      from: cursorPos,
-      to: cursorPos,
+      from: lineFrom,
+      to: lineTo,
       options: [completion],
     };
   };
@@ -94,6 +126,7 @@ export const FileEditor = ({
 }: FileEditorProps) => {
   const selectedFile = getCurrentlySelectedFile(explorerNodeMap);
   const selectedPrompt = getCurrentlySelectedPrompt(promptTemplateMap);
+  const LLMResponseCode = extractCodeFromLLMResponse(lastLLMResponse);
 
   // Gotta use a ref callback:
   // https://github.com/uiwjs/react-codemirror/issues/314
@@ -142,11 +175,20 @@ export const FileEditor = ({
   );
 
   useEffect(() => {
-    // When the file editor ref is set, apply the initial prompt template.
+    // When the file editor ref is set and ready, we can start handling the prompt suggestions. This is
+    // because the prompt templates take into account text from the editor. Meaning: no editor, no prompt.
     if (fileEditorRef.current?.view) {
       setPromptSuggestion(fileEditorRef, selectedPrompt, mainStateDispatch);
     }
   }, [mainStateDispatch, fileEditorRef, selectedPrompt]);
+
+  useEffect(() => {
+    // Every time there's new LLM response code, we'll automatically show the completion tooltip.
+    if (fileEditorRef.current?.view) {
+      startCompletion(fileEditorRef.current.view);
+      fileEditorRef.current.view.focus();
+    }
+  }, [LLMResponseCode, fileEditorRef]);
 
   return (
     <div
@@ -163,9 +205,7 @@ export const FileEditor = ({
         extensions={[
           getEditorLanguageFromState(explorerNodeMap),
           customAutocompletion({
-            override: getCompletionSources(
-              "ahhaahahahahahahaa asdf asdf\n\n a asdf asdf asdf asdf asd f\na\nsd afhahaasdlkcsdkl"
-            ),
+            override: getCompletionSources(LLMResponseCode),
           }),
         ]}
         onChange={onChange}

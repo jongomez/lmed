@@ -85,7 +85,7 @@ export const Settings = ({
         <div className="flex flex-col space-y-4">
           <div>
             <form>
-              <label htmlFor="OpenAIAPIKey">OpenAI API Key:</label>
+              <label htmlFor="OpenAIAPIKey">OpenAI API Key</label>
               <input
                 type="password"
                 name="OpenAI API Key"

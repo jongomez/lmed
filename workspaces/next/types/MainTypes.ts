@@ -87,7 +87,7 @@ export type MainState = {
   activeHeaderItems: {
     [key in HeaderItem]: boolean;
   };
-
+  chatState: ChatState;
   // selectedFileNodePath: string;
 };
 
@@ -192,6 +192,15 @@ export type MainStateAction =
         response: string;
         fileEditorRef: ReactCodeMirrorRef;
       };
+    }
+  | {
+      type: "UPDATE_CHAT_STATE";
+      payload: {
+        newMessage?: ChatMessage;
+        isLoadingMessage?: boolean;
+        errorMessage?: string;
+        textAreaValue?: string;
+      };
     };
 
 export type MainStateDispatch = Dispatch<MainStateAction>;
@@ -206,7 +215,7 @@ export type ChatMessage = {
   content: string;
 };
 
-export type ChatHookState = {
+export type ChatState = {
   messages: ChatMessage[];
   isLoadingMessage: boolean;
   errorMessage: string;

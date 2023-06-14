@@ -41,6 +41,7 @@ export const MainGrid = ({
         className={chatClassNames}
         isChatActive={mainState.activeHeaderItems.chat}
         settings={mainState.settings}
+        chatState={mainState.chatState}
         fileEditorRef={fileEditorRef}
       />
 

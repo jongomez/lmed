@@ -1,13 +1,16 @@
 "use client";
 
-import { ChatMessage, MainState, MainStateDispatch } from "@/types/MainTypes";
+import {
+  ChatMessage,
+  ChatState,
+  MainState,
+  MainStateDispatch,
+} from "@/types/MainTypes";
 
-import { Loader2, SendIcon } from "lucide-react";
-
-import { ChatHookReturnType, useChat } from "@/utils/hooks/useChat";
 import { PromptTemplateMap } from "@/utils/promptUtils";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
-import { MutableRefObject, memo, useEffect, useRef } from "react";
+import { Loader2, SendIcon } from "lucide-react";
+import { MutableRefObject, RefObject, memo, useEffect, useRef } from "react";
 import { ChatErrors } from "./ChatErrors.client";
 import { PromptUI } from "./PromptUI.client";
 
@@ -25,62 +28,60 @@ export type ChatServerResponse =
 // 1. Appends the user's message to the existing messages array. This shows the message in the chat's scroll view.
 // 2. Sends a POST request to the backend and waits for the server side events.
 const sendChatMessage = (
-  textAreaRef: ChatHookReturnType["textAreaRef"],
-  setChatState: ChatHookReturnType["setChatState"],
-  appendBotMessage: ChatHookReturnType["appendBotMessage"],
-  appendUserMessage: ChatHookReturnType["appendUserMessage"],
+  textAreaRef: RefObject<HTMLTextAreaElement>,
+  mainStateDispatch: MainStateDispatch,
+  previousMessages: ChatMessage[],
   isLoadingMessage: boolean,
-  settings: MainState["settings"],
-  onMessageReceived: OnMessageReceivedFunction
+  settings: MainState["settings"]
 ) => {
   if (isLoadingMessage) {
     return;
   }
 
-  const textInput = textAreaRef?.current?.value;
+  const newMessage: ChatMessage = {
+    content: textAreaRef?.current?.value || "",
+    role: "user",
+  };
 
-  if (textAreaRef?.current && textInput) {
-    if (textInput.length > MAX_CHARS) {
-      setChatState((currentState) => {
-        return {
-          ...currentState,
+  if (textAreaRef?.current && newMessage.content) {
+    if (newMessage.content.length > MAX_CHARS) {
+      mainStateDispatch({
+        type: "UPDATE_CHAT_STATE",
+        payload: {
           errorMessage: `Please enter a message with ${MAX_CHARS} characters or less.`,
-        };
+        },
       });
+
       return;
     }
 
-    // TODO: Only clear the text area if user is using a custom prompt (e.g. has manually modified a prompt).
+    // TODO (maybe?): Only clear the text area if user is using a custom prompt (e.g. has manually modified a prompt).
     textAreaRef.current.value = "";
     textAreaRef.current.focus();
 
-    // Gets the last X messages to send to the backend.
-    const allMessages = appendUserMessage(textInput);
-    const messagesToSendToBackend = allMessages.slice(-2);
+    mainStateDispatch({
+      type: "UPDATE_CHAT_STATE",
+      payload: { newMessage },
+    });
+
+    // Currently only send 2 messages to the backend: the previous message and the new message.
+    const messagesToSendToBackend = [...previousMessages.slice(-1), newMessage];
 
     // Sends a POST request to the backend.
-    sendMessages(
-      messagesToSendToBackend,
-      setChatState,
-      appendBotMessage,
-      settings,
-      onMessageReceived
-    );
+    sendMessages(messagesToSendToBackend, mainStateDispatch, settings);
   }
 };
 const sendMessages = async (
   messagesToSendToBackend: ChatMessage[],
-  setChatState: ChatHookReturnType["setChatState"],
-  appendBotMessage: ChatHookReturnType["appendBotMessage"],
-  settings: MainState["settings"],
-  onMessageReceived: OnMessageReceivedFunction
+  mainStateDispatch: MainStateDispatch,
+  settings: MainState["settings"]
 ) => {
   let errorMessage = "";
 
-  setChatState((currentState) => ({
-    ...currentState,
-    isLoadingMessage: true,
-  }));
+  mainStateDispatch({
+    type: "UPDATE_CHAT_STATE",
+    payload: { isLoadingMessage: true },
+  });
 
   try {
     const controller = new AbortController();
@@ -116,7 +117,7 @@ const sendMessages = async (
     }
 
     const reader = response.body.getReader();
-    let completeResponse = "";
+    let responseChunks = "";
 
     while (true) {
       const { done, value } = await reader.read();
@@ -127,14 +128,17 @@ const sendMessages = async (
 
       // Convert Uint8Array to string and append to completeResponse
       let chunk = new TextDecoder().decode(value);
-      completeResponse += chunk;
+      responseChunks += chunk;
 
       // Append each chunk from the server to the chat.
-      appendBotMessage({ content: completeResponse, role: "assistant" });
-    }
 
-    // We're done! Let's see what we can do with the response.
-    onMessageReceived(completeResponse);
+      mainStateDispatch({
+        type: "UPDATE_CHAT_STATE",
+        payload: {
+          newMessage: { content: responseChunks, role: "assistant" },
+        },
+      });
+    }
   } catch (error) {
     errorMessage = "Error: something went wrong.";
     if (error instanceof Error) {
@@ -142,11 +146,13 @@ const sendMessages = async (
     }
   }
 
-  setChatState((currentState) => ({
-    ...currentState,
-    errorMessage,
-    isLoadingMessage: false,
-  }));
+  mainStateDispatch({
+    type: "UPDATE_CHAT_STATE",
+    payload: {
+      errorMessage,
+      isLoadingMessage: false,
+    },
+  });
 };
 
 type PrintMessagesProps = {
@@ -202,8 +208,6 @@ const PrintMessages = memo(function PrintMessages({
   );
 });
 
-type OnMessageReceivedFunction = (completeResponse: string) => void;
-
 type ChatProps = {
   mainStateDispatch: MainStateDispatch;
   promptTemplateMap: PromptTemplateMap;
@@ -212,6 +216,7 @@ type ChatProps = {
   isChatActive: boolean;
   settings: MainState["settings"];
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
+  chatState: ChatState;
 };
 
 export const Chat = ({
@@ -221,28 +226,20 @@ export const Chat = ({
   className,
   isChatActive,
   settings,
+  chatState,
   fileEditorRef,
 }: ChatProps) => {
-  const {
-    chatState,
-    setChatState,
-    textAreaRef,
-    messagesContainerRef,
-    appendBotMessage,
-    appendUserMessage,
-  } = useChat(promptSuggestion);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
-  const onMessageReceived = (completeResponse: string) => {
-    mainStateDispatch({
-      type: "HANDLE_LLM_RESPONSE",
-      payload: {
-        response: completeResponse,
-        fileEditorRef: fileEditorRef.current,
-      },
-    });
-  };
+  // The following useEffect is used to scroll to the bottom of the text area.
+  useEffect(() => {
+    if (textAreaRef.current) {
+      textAreaRef.current.value = promptSuggestion;
+      textAreaRef.current.scrollTop = textAreaRef.current.scrollHeight;
+    }
+  }, [textAreaRef, promptSuggestion]);
 
-  const { isLoadingMessage } = chatState;
+  const { isLoadingMessage, messages } = chatState;
   const iconSize = 26;
 
   return (
@@ -257,7 +254,6 @@ export const Chat = ({
       `}
     >
       <div
-        ref={messagesContainerRef}
         // className="bg-gray-200 mb-2 rounded-lg overflow-y-scroll w-full"
         className="mb-2 overflow-auto"
       >
@@ -300,17 +296,18 @@ export const Chat = ({
                 e.preventDefault();
                 sendChatMessage(
                   textAreaRef,
-                  setChatState,
-                  appendBotMessage,
-                  appendUserMessage,
+                  mainStateDispatch,
+                  messages,
                   isLoadingMessage,
-                  settings,
-                  onMessageReceived
+                  settings
                 );
               }
             }}
             onChange={(e) => {
-              setChatState({ ...chatState, charCount: e.target.value.length });
+              mainStateDispatch({
+                type: "UPDATE_CHAT_STATE",
+                payload: { textAreaValue: e.target.value },
+              });
             }}
           />
 
@@ -329,12 +326,10 @@ export const Chat = ({
                 onClick={() =>
                   sendChatMessage(
                     textAreaRef,
-                    setChatState,
-                    appendBotMessage,
-                    appendUserMessage,
+                    mainStateDispatch,
+                    messages,
                     isLoadingMessage,
-                    settings,
-                    onMessageReceived
+                    settings
                   )
                 }
               >

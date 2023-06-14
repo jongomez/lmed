@@ -73,7 +73,8 @@ function optionContent(
           let labelElt = document.createElement("div");
           labelElt.className = "cm-completionLabel";
 
-          // Handle empty lines and lines with spaces at the beginning
+          // Handle empty lines and lines with spaces at the beginning.
+          // "\u00A0" is a non-breaking space. I tried using "&nbsp;" but createTextNode literally printed "&nbsp;".
           if (line.trim().length === 0) {
             line = "\u00A0";
           } else if (line[0] === " ") {
