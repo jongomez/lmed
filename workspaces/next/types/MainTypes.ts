@@ -1,6 +1,6 @@
+import { PromptTemplateMap } from "@/utils/chat/promptUtils";
 import type { EditorTheme, Language } from "@/utils/editorUtils";
 import { Delta } from "@/utils/hooks/useDrag";
-import { PromptTemplateMap } from "@/utils/promptUtils";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import type { Dispatch } from "react";
 
@@ -187,13 +187,6 @@ export type MainStateAction =
       payload: string;
     }
   | {
-      type: "HANDLE_LLM_RESPONSE";
-      payload: {
-        response: string;
-        fileEditorRef: ReactCodeMirrorRef;
-      };
-    }
-  | {
       type: "UPDATE_CHAT_STATE";
       payload: {
         newMessage?: ChatMessage;
@@ -213,6 +206,7 @@ export type MainStateReducer = (
 export type ChatMessage = {
   role: "user" | "system" | "assistant";
   content: string;
+  // origin?: "chat" | "codemirror"; // pressing ctrl+space on the codemirror editor will send a message to the chat.
 };
 
 export type ChatState = {

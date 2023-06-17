@@ -3,19 +3,14 @@
 import CodeMirror from "@uiw/react-codemirror";
 import { MutableRefObject, useCallback, useEffect } from "react";
 
+import { ChatState, MainState, MainStateDispatch } from "@/types/MainTypes";
 import {
-  GlobalEditorSettings,
-  MainState,
-  MainStateDispatch,
-} from "@/types/MainTypes";
-import {
-  Completion,
-  CompletionContext,
-  CompletionResult,
-  CompletionSource,
-  customAutocompletion,
-  startCompletion,
-} from "@/utils/codemirror/customAutocomplete/src";
+  PromptTemplate,
+  PromptTemplateMap,
+  applyPromptTemplate,
+  getCurrentlySelectedPrompt,
+} from "@/utils/chat/promptUtils";
+import { customAutocompletion } from "@/utils/codemirror/customAutocomplete/src";
 import {
   getEditorLanguageFromState,
   getEditorThemeFromState,
@@ -24,72 +19,11 @@ import {
   SwitchToNewFileAnnotation,
   getCurrentlySelectedFile,
 } from "@/utils/fileUtils";
-import {
-  PromptTemplate,
-  PromptTemplateMap,
-  applyPromptTemplate,
-  getCurrentlySelectedPrompt,
-} from "@/utils/promptUtils";
 
-import { extractCodeFromLLMResponse } from "@/utils/LLMResponseUtils";
+import { extractCodeFromLLMResponse } from "@/utils/chat/LLMResponseUtils";
+import { getCompletionSources } from "@/utils/codemirror/codemirrorUtils";
 import { ViewUpdate } from "@codemirror/view";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
-
-// This function returns an array of CompletionSources. A CompletionSource is a function.
-const getCompletionSources = (
-  lastLLMResponse: string
-): readonly CompletionSource[] => {
-  const completionSource = (
-    context: CompletionContext
-  ): CompletionResult | null => {
-    // The current line text.
-    const lineText = context.state.doc.lineAt(context.pos).text;
-
-    // Construct a completion that replaces the current line with lastLLMResponse.
-    const completion: Completion = {
-      label: lastLLMResponse,
-      apply: (view, completion, pos) => {
-        // Get the current line boundaries.
-        const lineFrom = view.state.doc.lineAt(pos).from;
-        const lineTo = view.state.doc.lineAt(pos).to;
-
-        // Delete the current line.
-        view.dispatch({ changes: { from: lineFrom, to: lineTo } });
-
-        // Insert lastLLMResponse at the start of the line.
-        view.dispatch({ changes: { from: lineFrom, insert: lastLLMResponse } });
-
-        // Set the cursor at the end of the line.
-        const endOfLinePos = lineFrom + lastLLMResponse.length;
-        view.dispatch({
-          selection: {
-            anchor: endOfLinePos,
-            head: endOfLinePos,
-          },
-        });
-      },
-    };
-
-    // Only suggest the completion if the entire line text is a substring of the completion label.
-    // (this is not currently used, but could come in handy in the future)
-    // if (!completion.label.includes(lineText.trim())) {
-    //   return null;
-    // }
-
-    // Get the current line boundaries for the CompletionResult.
-    const lineFrom = context.state.doc.lineAt(context.pos).from;
-    const lineTo = context.state.doc.lineAt(context.pos).to;
-
-    // Return a CompletionResult that spans the entire line.
-    return {
-      from: lineFrom,
-      to: lineTo,
-      options: [completion],
-    };
-  };
-
-  return [completionSource];
-};
 
 const setPromptSuggestion = (
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>,
@@ -105,24 +39,26 @@ const setPromptSuggestion = (
 
 type FileEditorProps = {
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
-  globalEditorSettings: GlobalEditorSettings;
+  settings: MainState["settings"];
   mainStateDispatch: MainStateDispatch;
   explorerNodeMap: MainState["explorerNodeMap"];
   promptTemplateMap: PromptTemplateMap;
   className: string;
   isFileEditorActive: boolean;
   lastLLMResponse: string;
+  chatState: ChatState;
 };
 
 export const FileEditor = ({
   fileEditorRef,
-  globalEditorSettings,
+  settings,
   mainStateDispatch,
   explorerNodeMap,
   promptTemplateMap,
   className,
   isFileEditorActive,
   lastLLMResponse,
+  chatState,
 }: FileEditorProps) => {
   const selectedFile = getCurrentlySelectedFile(explorerNodeMap);
   const selectedPrompt = getCurrentlySelectedPrompt(promptTemplateMap);
@@ -152,12 +88,8 @@ export const FileEditor = ({
         SwitchToNewFileAnnotation
       );
 
-      // startCompletion(viewUpdate.view);
-
-      console.log("onChange value:", value);
-      console.log("onChange viewUpdate annotation:", annotation);
-
-      // updatePromptEditor(promptEditorRef, fileEditorRef, selectedPrompt);
+      // console.log("onChange value:", value);
+      // console.log("onChange viewUpdate annotation:", annotation);
 
       if (annotation === "FIRST_TIME_OPENING_FILE") {
         return;
@@ -182,14 +114,6 @@ export const FileEditor = ({
     }
   }, [mainStateDispatch, fileEditorRef, selectedPrompt]);
 
-  useEffect(() => {
-    // Every time there's new LLM response code, we'll automatically show the completion tooltip.
-    if (fileEditorRef.current?.view) {
-      startCompletion(fileEditorRef.current.view);
-      fileEditorRef.current.view.focus();
-    }
-  }, [LLMResponseCode, fileEditorRef]);
-
   return (
     <div
       className={`
@@ -201,11 +125,18 @@ export const FileEditor = ({
       <CodeMirror
         ref={refCallack}
         value="console.log('hello world!');"
-        theme={getEditorThemeFromState(globalEditorSettings)}
+        theme={getEditorThemeFromState(settings.globalEditorSettings)}
         extensions={[
           getEditorLanguageFromState(explorerNodeMap),
           customAutocompletion({
-            override: getCompletionSources(LLMResponseCode),
+            override: getCompletionSources(
+              LLMResponseCode,
+              mainStateDispatch,
+              settings,
+              fileEditorRef,
+              chatState
+            ),
+            activateOnTyping: false,
           }),
         ]}
         onChange={onChange}

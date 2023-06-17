@@ -8,6 +8,10 @@ import type {
   PromptTab,
 } from "@/types/MainTypes";
 import { enableMapSet } from "immer";
+import {
+  defaultPromptTemplateMap,
+  getCurrentlySelectedPrompt,
+} from "./chat/promptUtils";
 import { HEADER_SIZE_PX, RESIZE_HANDLE_SIZE_PX } from "./constants";
 import {
   addToExplorerNodeMap,
@@ -17,10 +21,6 @@ import {
 } from "./explorerUtils";
 import { createEmptyFileInMemory, switchSelectedFile } from "./fileUtils";
 import { defaultLayout, setLayoutInLocalStorage } from "./layoutUtils";
-import {
-  defaultPromptTemplateMap,
-  getCurrentlySelectedPrompt,
-} from "./promptUtils";
 
 // Not sure if this is necessary.
 enableMapSet();
@@ -111,7 +111,7 @@ export const mainStateReducer = (
       //   "original(draft.explorer.explorerNodeMap)",
       //   original(draft.explorer.explorerNodeMap)
       // );
-      // debugger;
+      //
 
       for (const node of directoryChildrenToCreate) {
         if (draft.explorerNodeMap.has(node.path)) {
@@ -151,7 +151,6 @@ export const mainStateReducer = (
     case "SWITCH_FILE": {
       const { fileNode, fileEditor } = action.payload;
 
-      debugger;
       if (fileNode.selected && fileNode.openInTab) {
         console.log("fileNode already selected and open in tab");
         return draft;
@@ -357,44 +356,36 @@ export const mainStateReducer = (
       return draft;
     }
 
-    case "HANDLE_LLM_RESPONSE": {
-      const { response, fileEditorRef } = action.payload;
-
-      draft.lastLLMResponse = response;
-
-      return draft;
-    }
-
     case "UPDATE_CHAT_STATE": {
-      // Appends message from the bot to the messages state array. This will update the chat's text area.
-      // If the message already exists, it updates the existing message.
-      const currentMessages = draft.chatState.messages;
       const { newMessage, isLoadingMessage, errorMessage, textAreaValue } =
         action.payload;
 
-      if (typeof textAreaValue !== "undefined") {
+      if (textAreaValue !== undefined) {
         draft.chatState.charCount = textAreaValue.length;
       }
 
-      const lastMessageRole = currentMessages.at(-1)?.role;
+      const lastMessageRole = draft.chatState.messages?.at(-1)?.role;
 
       if (lastMessageRole === "assistant" && newMessage?.role === "assistant") {
-        //  Update existing message - this is what created the "streaming text" effect.
-        // XXX: WARNING: This is will re-render the entire chat component (and possibly others) multiple times.
-        if (typeof newMessage !== "undefined") {
-          currentMessages[currentMessages.length - 1] = newMessage;
+        if (newMessage !== undefined) {
+          draft.chatState.messages[draft.chatState.messages.length - 1] =
+            newMessage;
+
+          // If a server message is done loading, set lastLLMResponse.
+          if (!isLoadingMessage && !errorMessage) {
+            draft.lastLLMResponse = newMessage.content;
+          }
         }
-      } else if (typeof newMessage !== "undefined") {
-        // NOTE: Besides creating a new message, also clear any error messages.
+      } else if (newMessage !== undefined) {
         draft.chatState.errorMessage = "";
         draft.chatState.messages.push(newMessage);
       }
 
-      if (typeof isLoadingMessage !== "undefined") {
+      if (isLoadingMessage !== undefined) {
         draft.chatState.isLoadingMessage = isLoadingMessage;
       }
 
-      if (typeof errorMessage !== "undefined") {
+      if (errorMessage !== undefined) {
         draft.chatState.errorMessage = errorMessage;
       }
 

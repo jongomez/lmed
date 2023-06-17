@@ -2,7 +2,7 @@ import { MainStateDispatch } from "@/types/MainTypes";
 import {
   PromptTemplateMap,
   getCurrentlySelectedPromptName,
-} from "@/utils/promptUtils";
+} from "@/utils/chat/promptUtils";
 import { ChangeEvent } from "react";
 
 type PromptUIProps = {

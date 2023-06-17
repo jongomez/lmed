@@ -31,7 +31,8 @@ export const replaceCurrentSelection: PromptActionToken =
 const lineCompletionPrompt: PromptTemplate = {
   prompt: `Your task is to assist in writing code.
 Given the context provided, please complete the "Incomplete Line of Code" correctly and coherently.
-Wrap the code in your response in tripple backticks \`\`\`
+Only include code in your answer.
+Wrap the code in your response in triple back ticks \`\`\`
 
 Code from other files:
 ${checkedFilesPlaceholder}
@@ -47,13 +48,20 @@ ${currentLinePlaceholder}
 
 Please provide the completed line of code:`,
   action: `${replaceCurrentLine}`,
-  selected: true,
+  selected: true, // This is the default prompt - it will be selected by default.
+};
+
+const customPrompt: PromptTemplate = {
+  prompt: "",
+  action: "",
+  selected: false,
 };
 
 export type PromptTemplateMap = Map<string, PromptTemplate>;
 
 export const defaultPromptTemplateMap = new Map<string, PromptTemplate>([
   ["Line completion", lineCompletionPrompt],
+  ["Custom", customPrompt],
 ]);
 
 export const getCurrentlySelectedPromptName = (

@@ -71,13 +71,14 @@ export const MainGrid = ({
 
       <FileEditor
         fileEditorRef={fileEditorRef}
-        globalEditorSettings={mainState.settings.globalEditorSettings}
+        settings={mainState.settings}
         mainStateDispatch={mainStateDispatch}
         explorerNodeMap={mainState.explorerNodeMap}
         promptTemplateMap={mainState.promptTemplateMap}
         className={fileEditorClassNames}
         isFileEditorActive={mainState.activeHeaderItems.fileEditor}
         lastLLMResponse={mainState.lastLLMResponse}
+        chatState={mainState.chatState}
       />
 
       <MyTerminal
