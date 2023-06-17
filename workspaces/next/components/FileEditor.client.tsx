@@ -73,7 +73,6 @@ export const FileEditor = ({
       editor?.state &&
       editor?.view
     ) {
-      console.log("\n\neditor:", editor);
       // WARNING: This is a mutation. Refs are mutable.
       fileEditorRef.current = editor;
       setPromptSuggestion(fileEditorRef, selectedPrompt, mainStateDispatch);

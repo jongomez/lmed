@@ -31,8 +31,7 @@ export const replaceCurrentSelection: PromptActionToken =
 const lineCompletionPrompt: PromptTemplate = {
   prompt: `Your task is to assist in writing code.
 Given the context provided, please complete the "Incomplete Line of Code" correctly and coherently.
-Only include code in your answer.
-Wrap the code in your response in triple back ticks \`\`\`
+Respond using markdown. Don't forget to wrap your code in triple back ticks \`\`\`
 
 Code from other files:
 ${checkedFilesPlaceholder}

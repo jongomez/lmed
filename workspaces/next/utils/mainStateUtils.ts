@@ -1,7 +1,6 @@
 "use client";
 
 import type {
-  ChatMessage,
   ExplorerNode,
   MainState,
   MainStateAction,
@@ -44,10 +43,6 @@ export const getInitialState = (): MainState => {
     },
   ];
 
-  const dummyInitialMessages: ChatMessage[] = [
-    { role: "assistant", content: "Hey, how's it going?" },
-  ];
-
   const initialFile = createEmptyFileInMemory(explorerNodeMap);
   // const selectedFileNodePath = initialFile.path;
   initialFile.selected = true; // exceptional case: the initial file is selected manually here.
@@ -82,7 +77,7 @@ export const getInitialState = (): MainState => {
     promptSuggestion: "",
     lastLLMResponse: "",
     chatState: {
-      messages: dummyInitialMessages,
+      messages: [],
       charCount: 0,
       errorMessage: "",
       isLoadingMessage: false,

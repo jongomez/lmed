@@ -8,61 +8,81 @@ import {
 } from "@/types/MainTypes";
 
 import { sendChatMessage } from "@/utils/chat/messageHandlingUtils";
-import { preprocessChatMessage } from "@/utils/chat/preprocessChatMessage";
 import { PromptTemplateMap } from "@/utils/chat/promptUtils";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { Loader2, SendIcon } from "lucide-react";
 import { MutableRefObject, memo, useEffect, useRef } from "react";
+import { ReactMarkdown } from "react-markdown/lib/react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { ChatErrors } from "./ChatErrors.client";
-import { CodeBlock } from "./CodeBlock.server";
 import { PromptUI } from "./PromptUI.client";
 
-type SingleChatMessageProps = {
+const messageBaseClasses =
+  "mb-2 mr-2 rounded-md border-innactive-colors border-[1px]";
+const messageHeaderClasses = "font-semibold main-text-colors py-2 px-2.5";
+
+type SingleMessageProps = {
   message: ChatMessage;
   messageIndex: number;
 };
 
-// SingleChatMessage component
-const SingleChatMessage = ({
-  message,
-  messageIndex,
-}: SingleChatMessageProps) => {
-  const isBot = message.role === "assistant";
-  const chatSegments = preprocessChatMessage(message.content);
+const UserMessage = ({ message, messageIndex }: SingleMessageProps) => {
+  const lines = message.content.split("\n");
 
   return (
     <div
-      className={`
-          ${isBot ? "bg-secondary-colors" : "bg-tertiary-colors"} 
-          mb-2 mr-2 rounded-md
-          border-innactive-colors
-          border-[1px]
-        `}
+      className={`${messageBaseClasses} bg-secondary-colors pb-2`}
       key={messageIndex}
     >
-      <div className="font-semibold main-text-colors py-2 px-2.5">
-        {isBot ? "LLM:" : "You:"}
-      </div>
+      <div className={messageHeaderClasses}>User:</div>
 
-      {chatSegments.map((segment, segmentIndex) => {
-        if (segment.isCodeBlock) {
-          return (
-            <CodeBlock
-              code={segment.content}
-              key={`${messageIndex}-${segmentIndex}`}
-            />
-          );
-        } else {
-          return (
-            <div
-              className={`main-text-colors py-2 px-2.5`}
-              key={`${messageIndex}-${segmentIndex}`}
-            >
-              {segment.content}
-            </div>
-          );
-        }
+      {lines.map((line, lineIndex) => {
+        return (
+          <div className="main-text-colors px-2.5 " key={lineIndex}>
+            {line === "" ? <br /> : line}
+          </div>
+        );
       })}
+    </div>
+  );
+};
+
+const LLMMessage = ({ message, messageIndex }: SingleMessageProps) => {
+  return (
+    <div
+      className={`${messageBaseClasses} bg-secondary-colors`}
+      key={messageIndex}
+    >
+      <div className={messageHeaderClasses}>LLM:</div>
+
+      <ReactMarkdown
+        className="main-text-colors px-2.5 pb-2"
+        components={{
+          code({ node, inline, className, children, ...props }) {
+            const match = /language-(\w+)/.exec(className || "");
+            return (
+              <SyntaxHighlighter
+                {...props}
+                style={okaidia}
+                language={match?.[1]}
+                PreTag="div"
+              >
+                {/* {String(children).replace(/\n$/, "")} */}
+                {children}
+              </SyntaxHighlighter>
+            );
+          },
+          p(props) {
+            // HACK ALERT: This code is used to prevent:
+            // Warning: validateDOMNesting(...): <div> cannot appear as a descendant of <p>.
+            // XXX: If for some reason the llm responses are not rendering correctly, LOOK HERE FIRST.
+            return <div {...props} />;
+          },
+        }}
+      >
+        {message.content}
+      </ReactMarkdown>
     </div>
   );
 };
@@ -84,9 +104,17 @@ const ChatMessages = memo(function ChatMessages({
 
   return (
     <>
-      {messages.map((message, index) => (
-        <SingleChatMessage message={message} messageIndex={index} key={index} />
-      ))}
+      {messages.map((message, index) => {
+        if (message.role === "assistant") {
+          return (
+            <LLMMessage message={message} messageIndex={index} key={index} />
+          );
+        } else {
+          return (
+            <UserMessage message={message} messageIndex={index} key={index} />
+          );
+        }
+      })}
       <div ref={endRef} /> {/* Invisible div for auto scrolling purposes */}
     </>
   );
@@ -117,6 +145,26 @@ export const ChatTextArea = ({
       textAreaRef.current.scrollTop = textAreaRef.current.scrollHeight;
     }
   }, [textAreaRef, promptSuggestion]);
+
+  // For debugging purposes - show and initial chat message.
+  // A useEffect is used to prevent hydration errors.
+  useEffect(() => {
+    const dummyInitialMessages: ChatMessage[] = [
+      { role: "assistant", content: "Hey, how's it going?" },
+      {
+        role: "assistant",
+        content: "```console.log('heyy')```",
+      },
+    ];
+
+    mainStateDispatch({
+      type: "UPDATE_CHAT_STATE",
+      payload: {
+        newMessage: dummyInitialMessages[1],
+        isLoadingMessage: false,
+      },
+    });
+  }, [mainStateDispatch]);
 
   return (
     <div

@@ -88,6 +88,7 @@ export const getCompletionSources = (
     ////
     ////// Case 2: The currently selected line does not match lastLLMResponse, meaning there's no valid completion.
     console.log("lastLLMResponse", lastLLMResponse);
+    debugger;
     // if (!lastLLMResponse.includes(lineText.trim())) {
     if (!lastLLMResponse) {
       const lineCompletionPrompt = applyPromptTemplate(
@@ -129,6 +130,8 @@ export const getCompletionSources = (
       return loadingCompletionResult;
     }
 
+TODO: Always perform a new fetch
+
     //
     ////
     ////// Case 3: We have a valid completion.
@@ -158,12 +161,18 @@ export const getCompletionSources = (
 
     // Get the current line boundaries for the CompletionResult.
     const lineFrom = context.state.doc.lineAt(context.pos).from;
-    const lineTo = context.state.doc.lineAt(context.pos).to;
+    // const lineTo = context.state.doc.lineAt(context.pos).to;
+
+    // Setting from and to to lineFrom will do the following:
+    // 1. The autocomplete tooltip will only show up at the start of the current line.
+    // 2. No matching will be done on the current line. This means that the autocomplete tooltip will always show up.
+    // 3. If no matching is ever done, the autocomplete tooltip will disappear as soon as the user types anything.
+    // This is obviously not ideal. But for now it'll do.
 
     // Return a CompletionResult that spans the entire line.
     return {
       from: lineFrom,
-      to: lineTo,
+      to: lineFrom,
       options: [completion],
     };
   };

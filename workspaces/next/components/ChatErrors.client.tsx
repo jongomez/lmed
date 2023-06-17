@@ -1,5 +1,5 @@
+import { MAX_CHARS } from "@/utils/chat/messageHandlingUtils";
 import { ReactNode } from "react";
-import { MAX_CHARS } from "./Chat.client";
 
 type ChatErrorTextComponentProps = {
   children: ReactNode;
