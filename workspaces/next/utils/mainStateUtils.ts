@@ -352,8 +352,13 @@ export const mainStateReducer = (
     }
 
     case "UPDATE_CHAT_STATE": {
-      const { newMessage, isLoadingMessage, errorMessage, textAreaValue } =
-        action.payload;
+      const {
+        newMessage,
+        isLoadingMessage,
+        errorMessage,
+        textAreaValue,
+        abortController,
+      } = action.payload;
 
       if (textAreaValue !== undefined) {
         draft.chatState.charCount = textAreaValue.length;
@@ -382,6 +387,10 @@ export const mainStateReducer = (
 
       if (errorMessage !== undefined) {
         draft.chatState.errorMessage = errorMessage;
+      }
+
+      if (abortController !== undefined) {
+        draft.chatState.abortController = abortController;
       }
 
       return draft;

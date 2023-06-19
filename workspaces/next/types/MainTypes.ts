@@ -191,6 +191,7 @@ export type MainStateAction =
       payload: {
         newMessage?: ChatMessage;
         isLoadingMessage?: boolean;
+        abortController?: AbortController;
         errorMessage?: string;
         textAreaValue?: string;
       };
@@ -206,7 +207,7 @@ export type MainStateReducer = (
 export type ChatMessage = {
   role: "user" | "system" | "assistant";
   content: string;
-  // origin?: "chat" | "codemirror"; // pressing ctrl+space on the codemirror editor will send a message to the chat.
+  // origin?: "chat" | "codemirror"; // pressing ctrl-space on the codemirror editor will send a message to the chat.
 };
 
 export type ChatState = {
@@ -214,4 +215,5 @@ export type ChatState = {
   isLoadingMessage: boolean;
   errorMessage: string;
   charCount: number;
+  abortController?: AbortController;
 };

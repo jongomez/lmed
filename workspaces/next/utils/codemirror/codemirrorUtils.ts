@@ -25,7 +25,7 @@ import {
 
 Autocomplete cases:
 - The autocomplete tooltip can be triggered by the following:
-  - Pressing Ctrl+Space
+  - Pressing Ctrl-Space
   - The backend OpenAI request has return a valid completion
   - NOTE: activateOnTyping⁠ was disabled. This means typing on the text editor WILL NOT trigger the autocomplete.
     - Maybe this can be an option on the settings?
@@ -123,6 +123,7 @@ export const getCompletionSources = (
         sendPostRequestWithMultipleMessages(
           messagesToSendToBackend,
           mainStateDispatch,
+          chatState,
           settings
         );
       }
@@ -130,7 +131,11 @@ export const getCompletionSources = (
       return loadingCompletionResult;
     }
 
-TODO: Always perform a new fetch
+    // If the previous message is exacly the same as the current message, and we have a valid lastLLMResponse, use it.
+    // TODO: Fix this.
+    // if (getMostRecentUserMessage(chatState) === lineCompletionPrompt) {
+    //   return noCompletionResult;
+    // }
 
     //
     ////

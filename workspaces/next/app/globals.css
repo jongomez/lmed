@@ -42,6 +42,10 @@
   @apply bg-white dark:bg-gray-600;
 }
 
+.hover-secondary-colors {
+  @apply hover:bg-[rgb(237,238,241)] hover:dark:bg-gray-700;
+}
+
 .bg-active-colors {
   @apply bg-blue-50 dark:bg-slate-700;
 }

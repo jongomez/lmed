@@ -1,6 +1,21 @@
 // Taken from:
 // https://nextjs.org/docs/pages/building-your-application/optimizing/testing#setting-up-jest-with-babel
 
+const esModules = [
+  "mdast[^/]+",
+  "micromark",
+  "micromark[^/]+",
+  "unist[^/]+",
+  "remark-parse",
+  "unified",
+  "bail",
+  "trough",
+  "vfile",
+  "vfile-message",
+  "is-plain-obj",
+  "decode-named-character-reference",
+];
+
 module.exports = {
   collectCoverage: true,
   // on node 14.x coverage provider v8 offers good speed and more or less good report
@@ -31,7 +46,7 @@ module.exports = {
   },
   // Add more setup options before each test is run
   // setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  testPathIgnorePatterns: ["<rootDir>/node_modules/", "<rootDir>/.next/"],
+  testPathIgnorePatterns: ["<rootDir>/../../node_modules/", "<rootDir>/.next/"],
   testEnvironment: "jsdom",
   transform: {
     // Use babel-jest to transpile tests with the next/babel preset
@@ -39,7 +54,7 @@ module.exports = {
     "^.+\\.(js|jsx|ts|tsx)$": ["babel-jest", { presets: ["next/babel"] }],
   },
   transformIgnorePatterns: [
-    "/node_modules/",
+    `/node_modules/(?!(${esModules.join("|")})/)`,
     "^.+\\.module\\.(css|sass|scss)$",
   ],
 };

@@ -32,7 +32,7 @@ const UserMessage = ({ message, messageIndex }: SingleMessageProps) => {
 
   return (
     <div
-      className={`${messageBaseClasses} bg-secondary-colors pb-2`}
+      className={`${messageBaseClasses} bg-tertiary-colors pb-2`}
       key={messageIndex}
     >
       <div className={messageHeaderClasses}>User:</div>
@@ -60,16 +60,17 @@ const LLMMessage = ({ message, messageIndex }: SingleMessageProps) => {
         className="main-text-colors px-2.5 pb-2"
         components={{
           code({ node, inline, className, children, ...props }) {
-            const match = /language-(\w+)/.exec(className || "");
+            const languageRegExResult = /language-(\w+)/.exec(className || "");
+
             return (
               <SyntaxHighlighter
                 {...props}
                 style={okaidia}
-                language={match?.[1]}
+                language={languageRegExResult?.[1]}
                 PreTag="div"
               >
                 {/* {String(children).replace(/\n$/, "")} */}
-                {children}
+                {String(children)}
               </SyntaxHighlighter>
             );
           },
@@ -135,7 +136,7 @@ export const ChatTextArea = ({
 }: ChatTextAreProps) => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { isLoadingMessage, messages } = chatState;
+  const { isLoadingMessage } = chatState;
   const iconSize = 26;
 
   // The following useEffect is used to scroll to the bottom of the text area.
@@ -193,8 +194,7 @@ export const ChatTextArea = ({
             sendChatMessage(
               textAreaRef,
               mainStateDispatch,
-              messages,
-              isLoadingMessage,
+              chatState,
               settings
             );
           }
@@ -223,8 +223,7 @@ export const ChatTextArea = ({
               sendChatMessage(
                 textAreaRef,
                 mainStateDispatch,
-                messages,
-                isLoadingMessage,
+                chatState,
                 settings
               )
             }

@@ -8,9 +8,9 @@ import {
   PromptTemplate,
   PromptTemplateMap,
   applyPromptTemplate,
+  defaultPromptTemplateMap,
   getCurrentlySelectedPrompt,
 } from "@/utils/chat/promptUtils";
-import { customAutocompletion } from "@/utils/codemirror/customAutocomplete/src";
 import {
   getEditorLanguageFromState,
   getEditorThemeFromState,
@@ -20,9 +20,11 @@ import {
   getCurrentlySelectedFile,
 } from "@/utils/fileUtils";
 
-import { extractCodeFromLLMResponse } from "@/utils/chat/LLMResponseUtils";
-import { getCompletionSources } from "@/utils/codemirror/codemirrorUtils";
+import { fetchInlineSuggestion } from "@/utils/chat/messageHandlingUtils";
+import { inlineSuggestion } from "@/utils/codemirror/customInlineSuggestion/src";
+import { EditorState } from "@codemirror/state";
 import { ViewUpdate } from "@codemirror/view";
+
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 
 const setPromptSuggestion = (
@@ -62,7 +64,7 @@ export const FileEditor = ({
 }: FileEditorProps) => {
   const selectedFile = getCurrentlySelectedFile(explorerNodeMap);
   const selectedPrompt = getCurrentlySelectedPrompt(promptTemplateMap);
-  const LLMResponseCode = extractCodeFromLLMResponse(lastLLMResponse);
+  // const LLMResponseCode = extractCodeBlocksFromMarkdown(lastLLMResponse)?.[0];
 
   // Gotta use a ref callback:
   // https://github.com/uiwjs/react-codemirror/issues/314
@@ -113,6 +115,19 @@ export const FileEditor = ({
     }
   }, [mainStateDispatch, fileEditorRef, selectedPrompt]);
 
+  const fetchCallback = useCallback(
+    (editorState: EditorState) => {
+      return fetchInlineSuggestion(
+        mainStateDispatch,
+        fileEditorRef,
+        defaultPromptTemplateMap,
+        chatState,
+        settings
+      );
+    },
+    [mainStateDispatch, fileEditorRef, chatState, settings]
+  );
+
   return (
     <div
       className={`
@@ -127,15 +142,9 @@ export const FileEditor = ({
         theme={getEditorThemeFromState(settings.globalEditorSettings)}
         extensions={[
           getEditorLanguageFromState(explorerNodeMap),
-          customAutocompletion({
-            override: getCompletionSources(
-              LLMResponseCode,
-              mainStateDispatch,
-              settings,
-              fileEditorRef,
-              chatState
-            ),
-            activateOnTyping: false,
+          inlineSuggestion({
+            fetchFn: fetchCallback,
+            mode: "manual",
           }),
         ]}
         onChange={onChange}
@@ -156,10 +165,10 @@ export const FileEditor = ({
         style={{ height: "100%" }}
         height="100%"
         width="100%"
-        basicSetup={{
-          // Turn off the default autocompletion plugin, as we're using our own.
-          autocompletion: false,
-        }}
+        // basicSetup={{
+        //   // Old approach - Turn off the default autocompletion plugin, as we're using our own.
+        //   // autocompletion: false,
+        // }}
       />
     </div>
   );

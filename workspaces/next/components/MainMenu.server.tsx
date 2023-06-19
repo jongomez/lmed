@@ -32,9 +32,11 @@ const MenuItem = ({ onClick, children, className }: MenuItemProps) => {
   return (
     <div
       onClick={onClick}
-      className={`p-2 cursor-pointer main-text-colors hover-main-text-colors ${
-        className || ""
-      }`}
+      className={`
+        p-2 cursor-pointer main-text-colors hover-main-text-colors
+        hover-secondary-colors rounded-md
+        ${className || ""}
+      `}
     >
       {children}
     </div>

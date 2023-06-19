@@ -1,5 +1,17 @@
-import { ChatMessage, MainState, MainStateDispatch } from "@/types/MainTypes";
-import { RefObject } from "react";
+import {
+  ChatMessage,
+  ChatState,
+  MainState,
+  MainStateDispatch,
+} from "@/types/MainTypes";
+import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
+import { MutableRefObject, RefObject } from "react";
+import { extractCodeBlocksFromMarkdown } from "./LLMResponseUtils";
+import {
+  PromptTemplate,
+  PromptTemplateMap,
+  applyPromptTemplate,
+} from "./promptUtils";
 
 const CHAT_MESSAGES_URL = "/api";
 const OPENAI_TIMEOUT_MILLISECONDS = 5_000;
@@ -30,11 +42,10 @@ const validateMessageLength = (
 export const sendChatMessage = (
   textAreaRef: RefObject<HTMLTextAreaElement>,
   mainStateDispatch: MainStateDispatch,
-  previousMessages: ChatMessage[],
-  isLoadingMessage: boolean,
+  chatState: ChatState,
   settings: MainState["settings"]
 ) => {
-  if (isLoadingMessage) {
+  if (chatState.isLoadingMessage) {
     return;
   }
 
@@ -56,12 +67,16 @@ export const sendChatMessage = (
     });
 
     // Currently only send 2 messages to the backend: the previous message and the new message.
-    const messagesToSendToBackend = [...previousMessages.slice(-1), newMessage];
+    const messagesToSendToBackend = [
+      ...chatState.messages.slice(-1),
+      newMessage,
+    ];
 
     // Sends a POST request to the backend.
     sendPostRequestWithMultipleMessages(
       messagesToSendToBackend,
       mainStateDispatch,
+      chatState,
       settings
     );
   }
@@ -70,7 +85,7 @@ export const sendChatMessage = (
 const handleLLMResponse = async (
   response: Response,
   mainStateDispatch: MainStateDispatch
-) => {
+): Promise<string> => {
   if (!response.body) {
     throw new Error("Response body is undefined.");
   }
@@ -97,26 +112,38 @@ const handleLLMResponse = async (
       },
     });
   }
+
+  return responseChunks;
 };
 
 export const sendPostRequestWithMultipleMessages = async (
   messagesToSendToBackend: ChatMessage[],
   mainStateDispatch: MainStateDispatch,
+  chatState: ChatState,
   settings: MainState["settings"]
-) => {
+): Promise<string> => {
   let errorMessage = "";
+  let finalLLMMessage = "";
 
-  mainStateDispatch({
-    type: "UPDATE_CHAT_STATE",
-    payload: { isLoadingMessage: true },
-  });
+  if (chatState.isLoadingMessage && chatState.abortController) {
+    console.log("Aborting previous request.");
+    chatState.abortController.abort();
+  }
 
   try {
-    const controller = new AbortController();
+    const abortController = new AbortController();
     const timeoutId = setTimeout(() => {
-      console.log("CLEARING TIMEOUT");
-      controller.abort();
+      console.log("Request took too long. Aborting.");
+      abortController.abort();
     }, OPENAI_TIMEOUT_MILLISECONDS);
+
+    mainStateDispatch({
+      type: "UPDATE_CHAT_STATE",
+      payload: {
+        isLoadingMessage: true,
+        abortController: abortController,
+      },
+    });
 
     const response = await fetch(CHAT_MESSAGES_URL, {
       method: "POST",
@@ -129,7 +156,7 @@ export const sendPostRequestWithMultipleMessages = async (
         }),
         keys: [settings.openAIAPIKey],
       }),
-      signal: controller.signal,
+      signal: abortController.signal,
     });
 
     // We have a response! Maybe it's an error, but not worries. We'll handle it below.
@@ -140,7 +167,7 @@ export const sendPostRequestWithMultipleMessages = async (
       throw new Error(result.error);
     }
 
-    handleLLMResponse(response, mainStateDispatch);
+    finalLLMMessage = await handleLLMResponse(response, mainStateDispatch);
   } catch (error) {
     errorMessage = "Error: something went wrong.";
     if (error instanceof Error) {
@@ -155,4 +182,49 @@ export const sendPostRequestWithMultipleMessages = async (
       isLoadingMessage: false,
     },
   });
+
+  return finalLLMMessage;
+};
+
+export const fetchInlineSuggestion = async (
+  mainStateDispatch: MainStateDispatch,
+  fileEditorRef: MutableRefObject<ReactCodeMirrorRef>,
+  defaultPromptTemplateMap: PromptTemplateMap,
+  chatState: ChatState,
+  settings: MainState["settings"]
+): Promise<string> => {
+  const lineCompletionPrompt = applyPromptTemplate(
+    fileEditorRef,
+    defaultPromptTemplateMap.get("Line completion") as PromptTemplate
+  );
+
+  const newMessage: ChatMessage = {
+    content: lineCompletionPrompt,
+    role: "user",
+  };
+
+  // Add the prompt user message to the chat state.
+  mainStateDispatch({
+    type: "UPDATE_CHAT_STATE",
+    payload: { newMessage },
+  });
+
+  // Currently only send 2 messages to the backend: the previous message and the new message.
+  const messagesToSendToBackend: ChatMessage[] = [
+    ...chatState.messages.slice(-1),
+    newMessage,
+  ];
+
+  const llmResponse = await sendPostRequestWithMultipleMessages(
+    messagesToSendToBackend,
+    mainStateDispatch,
+    chatState,
+    settings
+  );
+
+  const codeBlocks = extractCodeBlocksFromMarkdown(llmResponse);
+
+  console.log("finalCode", codeBlocks[0]);
+
+  return codeBlocks[0] || "";
 };
