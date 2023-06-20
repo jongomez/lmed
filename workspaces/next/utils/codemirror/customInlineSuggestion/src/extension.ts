@@ -26,22 +26,22 @@ export const InlineSuggestionState = StateField.define<{
   },
 
   // tr is the transaction that represents the state change.
-  update(__, tr: Transaction) {
+  update(value, tr: Transaction) {
     const inlineSuggestion = tr.effects.find((e) =>
       e.is(InlineSuggestionEffect)
     );
 
-    // Updates the suggestion whenever a InlineSuggestionEffect is found in the transaction.
-    if (tr.state.doc) {
-      if (inlineSuggestion) {
-        debugger;
-      }
-
-      if (inlineSuggestion && tr.state.doc == inlineSuggestion.value.doc) {
-        return { suggestion: inlineSuggestion.value.text };
-      }
+    // If an inline suggestion is found and it corresponds to the current document.
+    if (inlineSuggestion && tr.state.doc == inlineSuggestion.value.doc) {
+      return { suggestion: inlineSuggestion.value.text };
     }
 
+    // If the document hasn't changed, keep the previous suggestion.
+    if (!tr.docChanged) {
+      return value;
+    }
+
+    // Otherwise, reset the suggestion.
     return { suggestion: null };
   },
 });
@@ -120,11 +120,14 @@ export const renderInlineSuggestionPlugin = ViewPlugin.fromClass(
       // This is where we display the inline suggestion.
       // NOTE: This gets called every time there's an update on the codemirror editor.
 
-      console.log("Changes: ", update.changes);
-      console.log("Effects: ", update.transactions[0].effects);
-      console.log("Annotation: ", update.transactions[0].annotation);
+      // console.log("Changes: ", update?.changes);
+      // console.log(
+      //   "transactions[0].effects: ",
+      //   update.transactions?.[0].effects
+      // );
+      // console.log("Annotation: ", update.transactions?.[0].annotation);
 
-      debugger;
+      // debugger;
 
       const suggestionText = update.state.field(
         InlineSuggestionState

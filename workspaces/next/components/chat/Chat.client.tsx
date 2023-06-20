@@ -12,81 +12,10 @@ import { PromptTemplateMap } from "@/utils/chat/promptUtils";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { Loader2, SendIcon } from "lucide-react";
 import { MutableRefObject, memo, useEffect, useRef } from "react";
-import { ReactMarkdown } from "react-markdown/lib/react-markdown";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { PromptUI } from "../PromptUI.client";
 import { ChatErrors } from "./ChatErrors.client";
-import { PromptUI } from "./PromptUI.client";
-
-const messageBaseClasses =
-  "mb-2 mr-2 rounded-md border-innactive-colors border-[1px]";
-const messageHeaderClasses = "font-semibold main-text-colors py-2 px-2.5";
-
-type SingleMessageProps = {
-  message: ChatMessage;
-  messageIndex: number;
-};
-
-const UserMessage = ({ message, messageIndex }: SingleMessageProps) => {
-  const lines = message.content.split("\n");
-
-  return (
-    <div
-      className={`${messageBaseClasses} bg-tertiary-colors pb-2`}
-      key={messageIndex}
-    >
-      <div className={messageHeaderClasses}>User:</div>
-
-      {lines.map((line, lineIndex) => {
-        return (
-          <div className="main-text-colors px-2.5 " key={lineIndex}>
-            {line === "" ? <br /> : line}
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-const LLMMessage = ({ message, messageIndex }: SingleMessageProps) => {
-  return (
-    <div
-      className={`${messageBaseClasses} bg-secondary-colors`}
-      key={messageIndex}
-    >
-      <div className={messageHeaderClasses}>LLM:</div>
-
-      <ReactMarkdown
-        className="main-text-colors px-2.5 pb-2"
-        components={{
-          code({ node, inline, className, children, ...props }) {
-            const languageRegExResult = /language-(\w+)/.exec(className || "");
-
-            return (
-              <SyntaxHighlighter
-                {...props}
-                style={okaidia}
-                language={languageRegExResult?.[1]}
-                PreTag="div"
-              >
-                {/* {String(children).replace(/\n$/, "")} */}
-                {String(children)}
-              </SyntaxHighlighter>
-            );
-          },
-          p(props) {
-            // HACK ALERT: This code is used to prevent:
-            // Warning: validateDOMNesting(...): <div> cannot appear as a descendant of <p>.
-            // XXX: If for some reason the llm responses are not rendering correctly, LOOK HERE FIRST.
-            return <div {...props} />;
-          },
-        }}
-      >
-        {message.content}
-      </ReactMarkdown>
-    </div>
-  );
-};
+import { LLMMessage } from "./LLMMessage.client";
+import { UserMessage } from "./UserMessage.server";
 
 type ChatMessagesProps = {
   messages: ChatMessage[];

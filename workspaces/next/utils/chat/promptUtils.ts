@@ -1,6 +1,9 @@
 import { PromptTab } from "@/types/MainTypes";
+import { EditorView } from "@codemirror/view";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { MutableRefObject } from "react";
+
+// const INCOMPLETE_LINE_MARKER = "<INCOMPLETE_LINE>";
 
 export type PromptTemplate = {
   prompt: string;
@@ -13,10 +16,12 @@ type PromptPlaceholder =
   | "{CurrentSelection}"
   | "{CheckedFiles}"
   | "{TextBeforeLine}"
-  | "{TextAfterLine}";
+  | "{TextAfterLine}"
+  | "{LineCompletion}";
 
 type PromptActionToken = "{ReplaceCurrentLine}" | "{ReplaceCurrentSelection}";
 
+export const lineCompletionPlaceholder: PromptPlaceholder = "{LineCompletion}";
 export const currentLinePlaceholder: PromptPlaceholder = "{CurrentLine}";
 export const currentSelectionPlaceholder: PromptPlaceholder =
   "{CurrentSelection}";
@@ -29,23 +34,10 @@ export const replaceCurrentSelection: PromptActionToken =
   "{ReplaceCurrentSelection}";
 
 const lineCompletionPrompt: PromptTemplate = {
-  prompt: `Your task is to assist in writing code.
-Given the context provided, please complete the "Incomplete Line of Code" correctly and coherently.
-Respond using markdown. Don't forget to wrap your code in triple back ticks \`\`\`
-
-Code from other files:
-${checkedFilesPlaceholder}
-
-Code before line:
-${textBeforeLinePlaceholder}
-
-Code after line:
-${textAfterLinePlaceholder}
-
-Incomplete Line of Code:
-${currentLinePlaceholder}
-
-Please provide the completed line of code:`,
+  prompt: `Your task is to assist in writing a single, complete line of code.
+Respond using markdown and ensure to enclose your code within triple back ticks \`\`\`.
+${lineCompletionPlaceholder}
+`,
   action: `${replaceCurrentLine}`,
   selected: true, // This is the default prompt - it will be selected by default.
 };
@@ -89,9 +81,9 @@ export const getCurrentlySelectedPromptName = (
   return currentlySelectedPromptName;
 };
 
-const getTextBeforeLine = (fileEditor: ReactCodeMirrorRef): string => {
+const getCodeBeforeLine = (fileEditor: ReactCodeMirrorRef): string => {
   if (!fileEditor.view) {
-    throw new Error("getTextBeforeLine - fileEditor.view is falsy");
+    throw new Error("getCodeBeforeLine - fileEditor.view is falsy");
   }
 
   const cursorPos = fileEditor.view.state.selection.main.head;
@@ -105,9 +97,9 @@ const getTextBeforeLine = (fileEditor: ReactCodeMirrorRef): string => {
   return "";
 };
 
-const getTextAfterLine = (fileEditor: ReactCodeMirrorRef): string => {
+const getCodeAfterLine = (fileEditor: ReactCodeMirrorRef): string => {
   if (!fileEditor.view) {
-    throw new Error("getTextAfterLine - fileEditor.view is falsy");
+    throw new Error("getCodeAfterLine - fileEditor.view is falsy");
   }
 
   const cursorPos = fileEditor.view.state.selection.main.head;
@@ -164,28 +156,88 @@ export const getCurrentlySelectedPrompt = (
   return currentlySelectedPrompt;
 };
 
+const getPreviousLine = (view: EditorView): string => {
+  const cursorPos = view.state.selection.main.head;
+  const currentLine = view.state.doc.lineAt(cursorPos);
+  const prevLine =
+    currentLine.number > 1
+      ? view.state.doc.line(currentLine.number - 1).text
+      : null;
+
+  return prevLine || "N/A";
+};
+
+const getNextLine = (view: EditorView): string => {
+  const cursorPos = view.state.selection.main.head;
+  const currentLine = view.state.doc.lineAt(cursorPos);
+  const nextLine =
+    currentLine.number < view.state.doc.lines
+      ? view.state.doc.line(currentLine.number + 1).text
+      : null;
+
+  return nextLine || "N/A";
+};
+
+export const getCodeForLineCompletionPrompt = (
+  fileEditor: ReactCodeMirrorRef
+): string => {
+  let finalPrompt = "";
+
+  if (!fileEditor.view) {
+    throw new Error(
+      "getCodeForLineCompletionPrompt - fileEditor.view is falsy"
+    );
+  }
+
+  const cursorPos = fileEditor.view.state.selection.main.head;
+
+  if (cursorPos === undefined) {
+    throw new Error("Cursor position could not be determined");
+  }
+
+  const codeBeforeCursor = getCodeBeforeLine(fileEditor);
+  const codeAfterCursor = getCodeAfterLine(fileEditor);
+
+  if (codeBeforeCursor.trim()) {
+    finalPrompt += `Code before:\n${codeBeforeCursor}\n`;
+  }
+
+  if (codeAfterCursor.trim()) {
+    finalPrompt += `Code after:\n${codeBeforeCursor}\n`;
+  }
+
+  const currentLine = fileEditor.view.state.doc.lineAt(cursorPos);
+
+  if (currentLine.text.trim()) {
+    // If we have something to show for the current line - ask the LLM to complete it.
+    finalPrompt += `Generate a complete line of code that can replace the following line:\n${currentLine.text}`;
+  } else {
+    // If we don't have anything to show for the current line - ask the LLM to create something.
+    finalPrompt += "Given the context, create a new line of code.";
+  }
+
+  return finalPrompt;
+};
+
+export const placeholders: Record<PromptPlaceholder, PlaceholderFunction> = {
+  [lineCompletionPlaceholder]: getCodeForLineCompletionPrompt,
+  [currentLinePlaceholder]: getCurrentLine,
+  [currentSelectionPlaceholder]: getCurrentSelection,
+  [checkedFilesPlaceholder]: () => getCheckedFiles().join(","),
+  [textBeforeLinePlaceholder]: getCodeBeforeLine,
+  [textAfterLinePlaceholder]: getCodeAfterLine,
+};
+
 export const applyPromptTemplate = (
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>,
-  selectedPrompt: PromptTemplate
+  promptTemplate: PromptTemplate
 ): string => {
-  // Extract placeholders from the selectedPrompt.
-  const { prompt } = selectedPrompt;
+  let newPrompt = promptTemplate.prompt;
 
-  // Get the values for the placeholders from the file editor.
-  const textBeforeLine = getTextBeforeLine(fileEditorRef.current);
-  const textAfterLine = getTextAfterLine(fileEditorRef.current);
-  const currentLine = getCurrentLine(fileEditorRef.current);
-  const currentSelection = getCurrentSelection(fileEditorRef.current);
-  const checkedFiles = getCheckedFiles();
-
-  // Replace placeholders with the extracted values.
-  // WARNING: The replace function only replaces the first occurrence of the placeholder.
-  const newPrompt = prompt
-    .replace(currentLinePlaceholder, currentLine)
-    .replace(currentSelectionPlaceholder, currentSelection)
-    .replace(checkedFilesPlaceholder, checkedFiles.join(","))
-    .replace(textBeforeLinePlaceholder, textBeforeLine)
-    .replace(textAfterLinePlaceholder, textAfterLine);
+  // Replace each placeholder with the result of its corresponding function
+  for (const [placeholder, func] of Object.entries(placeholders)) {
+    newPrompt = newPrompt.replace(placeholder, func(fileEditorRef.current));
+  }
 
   return newPrompt;
 };
@@ -201,3 +253,5 @@ export const getCurrentlySelectedPromptTab = (
 
   throw new Error("No prompt tab is selected");
 };
+
+type PlaceholderFunction = (fileEditor: ReactCodeMirrorRef) => string;

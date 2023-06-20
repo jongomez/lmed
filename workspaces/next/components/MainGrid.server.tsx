@@ -3,11 +3,11 @@ import { Delta } from "@/utils/hooks/useDrag";
 import { getMainGridStyles } from "@/utils/layoutUtils";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { MutableRefObject } from "react";
-import { Chat } from "./Chat.client";
 import { Explorer } from "./Explorer.client";
 import { FileEditor } from "./FileEditor.client";
 import { ResizeHandle } from "./ResizeHandle.client";
 import { MyTerminal } from "./Terminal.client";
+import { Chat } from "./chat/Chat.client";
 
 type MainGridProps = {
   mainState: MainState;

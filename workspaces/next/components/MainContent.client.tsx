@@ -10,7 +10,7 @@ import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { useRef } from "react";
 import { MainGrid } from "./MainGrid.server";
 import { MainHeader } from "./MainHeader.client";
-import { MainMenu } from "./MainMenu.server";
+import { MainMenu } from "./menus/MainMenu.server";
 
 export const MainContent = () => {
   // The following ReactCodeMirrorRef is a fairly complex object. I think immer doesn't like it.
