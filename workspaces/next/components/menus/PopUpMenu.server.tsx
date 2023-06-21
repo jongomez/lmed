@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { MenuOverlay } from "../base/Overlay.server";
+import { MenuOverlay } from "./MenuOverlay.server";
 
 type MenuItemProps = {
   onClick: () => void;

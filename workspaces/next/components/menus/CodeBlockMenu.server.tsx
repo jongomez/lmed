@@ -1,18 +1,43 @@
-import { MainStateDispatch } from "@/types/MainTypes";
+import {
+  replaceCurrentLineWithCode,
+  replaceCurrentSelectionWithCode,
+} from "@/utils/editorUtils";
+import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
+import { MutableRefObject } from "react";
 import { MenuItem, PopUpMenu } from "./PopUpMenu.server";
 
 type MessageMenuProps = {
-  mainStateDispatch: MainStateDispatch;
+  code: string;
+  onOverlayClick: () => void;
+  fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
 };
 
-export const MessageMenu = ({ mainStateDispatch }: MessageMenuProps) => {
+export const CodeBlockMenu = ({
+  code,
+  onOverlayClick,
+  fileEditorRef,
+}: MessageMenuProps) => {
   return (
     <PopUpMenu
-      className="top-[42px] w-[200px]"
-      onOverlayClick={() => mainStateDispatch({ type: "TOGGLE_MAIN_MENU" })}
+      className="top-[0px] left-[30px] w-[250px] border-2"
+      onOverlayClick={onOverlayClick}
     >
-      <MenuItem onClick={() => {}}>Copy</MenuItem>
-      <MenuItem onClick={() => {}}>Replace current line</MenuItem>
+      <MenuItem
+        onClick={() => {
+          replaceCurrentLineWithCode(fileEditorRef.current, code);
+          onOverlayClick();
+        }}
+      >
+        Replace current line
+      </MenuItem>
+      <MenuItem
+        onClick={() => {
+          replaceCurrentSelectionWithCode(fileEditorRef.current, code);
+          onOverlayClick();
+        }}
+      >
+        Replace current selection
+      </MenuItem>
     </PopUpMenu>
   );
 };

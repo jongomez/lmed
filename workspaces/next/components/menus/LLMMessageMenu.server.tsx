@@ -12,7 +12,7 @@ export const LLMMessageMenu = ({
 }: LLMMessageMenuProps) => {
   return (
     <PopUpMenu
-      className="top-[0px] right-[30px] w-[120px]"
+      className="top-[0px] right-[30px] w-[120px] border-2"
       onOverlayClick={onOverlayClick}
     >
       <MenuItem

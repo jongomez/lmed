@@ -20,7 +20,6 @@ export const inlineSuggestionConfig = Facet.define<
   InlineSuggestionConfig
 >({
   combine(configs) {
-    console.log("\n\n\nconfig!!\n\n\n");
     const defaultDelayBeforeFetching = 1000;
 
     // If no config is provided, use the last one (or the default one).

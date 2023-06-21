@@ -79,6 +79,7 @@ export const MainGrid = ({
         isFileEditorActive={mainState.activeHeaderItems.fileEditor}
         lastLLMResponse={mainState.lastLLMResponse}
         chatState={mainState.chatState}
+        keyboardShortcuts={mainState.settings.keyboardShortcuts}
       />
 
       <MyTerminal

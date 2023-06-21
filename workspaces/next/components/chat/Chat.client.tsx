@@ -12,17 +12,19 @@ import { PromptTemplateMap } from "@/utils/chat/promptUtils";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { Loader2, SendIcon } from "lucide-react";
 import { MutableRefObject, memo, useEffect, useRef } from "react";
-import { PromptUI } from "../PromptUI.client";
-import { ChatErrors } from "./ChatErrors.client";
+import { PromptUI } from "../PromptUI.server";
+import { ChatErrors } from "./ChatErrors.server";
 import { LLMMessage } from "./LLMMessage.client";
 import { UserMessage } from "./UserMessage.server";
 
 type ChatMessagesProps = {
   messages: ChatMessage[];
+  fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
 };
 
 const ChatMessages = memo(function ChatMessages({
   messages,
+  fileEditorRef,
 }: ChatMessagesProps) {
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -37,7 +39,12 @@ const ChatMessages = memo(function ChatMessages({
       {messages.map((message, index) => {
         if (message.role === "assistant") {
           return (
-            <LLMMessage message={message} messageIndex={index} key={index} />
+            <LLMMessage
+              message={message}
+              messageIndex={index}
+              key={index}
+              fileEditorRef={fileEditorRef}
+            />
           );
         } else {
           return (
@@ -201,7 +208,10 @@ export const Chat = ({
         // className="bg-gray-200 mb-2 rounded-lg overflow-y-scroll w-full"
         className="mb-2 overflow-auto"
       >
-        <ChatMessages messages={chatState.messages} />
+        <ChatMessages
+          messages={chatState.messages}
+          fileEditorRef={fileEditorRef}
+        />
       </div>
 
       <div>

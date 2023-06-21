@@ -1,20 +1,28 @@
 "use client";
 
 import { ChatMessage } from "@/types/MainTypes";
+import { toString } from "mdast-util-to-string";
 
-import { useState } from "react";
+import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
+import { MutableRefObject, useState } from "react";
 import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { CodeBlockHeader } from "./CodeBlockHeader.server";
 import { LLMMessageHeader } from "./MessageHeaders.client";
 import { messageBaseClasses } from "./UserMessage.server";
 
 type LLMMessageProps = {
   message: ChatMessage;
   messageIndex: number;
+  fileEditorRef: MutableRefObject<ReactCodeMirrorRef>;
 };
 
-export const LLMMessage = ({ message, messageIndex }: LLMMessageProps) => {
+export const LLMMessage = ({
+  message,
+  messageIndex,
+  fileEditorRef,
+}: LLMMessageProps) => {
   const [messageMode, setMessageMode] = useState<"raw" | "markdown">(
     "markdown"
   );
@@ -24,7 +32,10 @@ export const LLMMessage = ({ message, messageIndex }: LLMMessageProps) => {
       className={`${messageBaseClasses} bg-secondary-colors`}
       key={messageIndex}
     >
-      <LLMMessageHeader setMessageMode={setMessageMode} />
+      <LLMMessageHeader
+        setMessageMode={setMessageMode}
+        // messageMode={messageMode}
+      />
 
       {messageMode === "markdown" ? (
         <ReactMarkdown
@@ -36,15 +47,27 @@ export const LLMMessage = ({ message, messageIndex }: LLMMessageProps) => {
               );
 
               return (
-                <SyntaxHighlighter
-                  {...props}
-                  style={okaidia}
-                  language={languageRegExResult?.[1]}
-                  PreTag="div"
-                >
-                  {/* {String(children).replace(/\n$/, "")} */}
-                  {String(children)}
-                </SyntaxHighlighter>
+                <>
+                  <CodeBlockHeader
+                    fileEditorRef={fileEditorRef}
+                    code={toString(node)}
+                  />
+                  <SyntaxHighlighter
+                    {...props}
+                    customStyle={{
+                      marginTop: 0,
+                      borderTopRightRadius: 0,
+                      borderTopLeftRadius: 0,
+                    }}
+                    style={okaidia}
+                    language={languageRegExResult?.[1]}
+                    PreTag="div"
+                    className="mt-0"
+                  >
+                    {/* {String(children).replace(/\n$/, "")} */}
+                    {String(children)}
+                  </SyntaxHighlighter>
+                </>
               );
             },
             p(props) {
@@ -58,7 +81,9 @@ export const LLMMessage = ({ message, messageIndex }: LLMMessageProps) => {
           {message.content}
         </ReactMarkdown>
       ) : (
-        <pre>{message.content.replace(/\n/g, "\\n")}</pre>
+        <pre className="main-text-colors overflow-auto">
+          {message.content.replace(/\n/g, "\\n")}
+        </pre>
       )}
     </div>
   );

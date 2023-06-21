@@ -1,4 +1,7 @@
+"use client";
+
 import {
+  EditorSettings,
   FileEditorState,
   MainState,
   MainStateDispatch,
@@ -6,8 +9,10 @@ import {
 import { useTheme } from "@/utils/hooks/randomHooks";
 import { Moon, Sun } from "lucide-react";
 import { ReactNode } from "react";
-import { Modal } from "./base/Modal.client";
-import { H3 } from "./base/Typography.server";
+import { Modal } from "../base/Modal.client";
+import { RadioItem } from "../base/RadioItem.server";
+import { H3 } from "../base/Typography.server";
+import { KeyboardShortcutSettings } from "./KeyboardShortcutSettings.client";
 
 type SettingsSectionProps = {
   title: string;
@@ -44,6 +49,7 @@ export const Settings = ({
   isSettingsActive,
 }: SettingsProps) => {
   const { siteTheme, toggleSiteTheme } = useTheme();
+  const selectedKeyBindings = settings.editorSettings.keyBindings;
 
   const onThemeSwitchClick = () => {
     toggleSiteTheme();
@@ -51,6 +57,10 @@ export const Settings = ({
 
   const handleApiChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     mainStateDispatch({ type: "SET_OPENAI_API_KEY", payload: e.target.value });
+  };
+
+  const handleKeyBindings = (keyBindings: EditorSettings["keyBindings"]) => {
+    mainStateDispatch({ type: "SET_KEY_BINDINGS", payload: keyBindings });
   };
 
   return (
@@ -79,6 +89,28 @@ export const Settings = ({
             )}
           </button>
         </div>
+      </SettingsSection>
+
+      <SettingsSection title="Key Bindings">
+        <div className="flex">
+          <RadioItem
+            onChange={() => handleKeyBindings("default")}
+            checked={selectedKeyBindings === "default"}
+            label="Default"
+          />
+          <RadioItem
+            onChange={() => handleKeyBindings("vim")}
+            checked={selectedKeyBindings === "vim"}
+            label="Vim"
+          />
+        </div>
+      </SettingsSection>
+
+      <SettingsSection title="Keyboard Shortcuts">
+        <KeyboardShortcutSettings
+          mainStateDispatch={mainStateDispatch}
+          keyboardShortcuts={settings.keyboardShortcuts}
+        />
       </SettingsSection>
 
       <SettingsSection title="LLM Settings">

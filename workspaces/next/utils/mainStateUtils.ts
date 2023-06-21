@@ -50,11 +50,16 @@ export const getInitialState = (): MainState => {
 
   return {
     settings: {
-      globalEditorSettings: {
+      editorSettings: {
         fontSize: 14,
+        keyBindings: "default",
         theme: "github-dark",
       },
       openAIAPIKey: "",
+      keyboardShortcuts: {
+        "Save File": "ctrl+s",
+        "Get Inline Suggestion": "ctrl+enter",
+      },
     },
     explorerNodeMap,
     activeHeaderItems: {
@@ -68,7 +73,6 @@ export const getInitialState = (): MainState => {
     fileEditor: {
       openFilePaths: [initialFile.path],
     },
-
     promptEditor: {
       allTabs: initialPromptTabs,
     },
@@ -392,6 +396,29 @@ export const mainStateReducer = (
       if (abortController !== undefined) {
         draft.chatState.abortController = abortController;
       }
+
+      return draft;
+    }
+
+    case "SET_KEY_BINDINGS": {
+      const keyBindings = action.payload;
+
+      draft.settings.editorSettings.keyBindings = keyBindings;
+
+      return draft;
+    }
+
+    case "SET_KEYBOARD_SHORTCUT": {
+      const { keyboardShortcutAction, keys } = action.payload;
+
+      // Sanity check:
+      if (!(keyboardShortcutAction in draft.settings.keyboardShortcuts)) {
+        throw new Error(
+          `SET_KEYBOARD_SHORTCUT - keyboardShortcutAction ${keyboardShortcutAction} not found`
+        );
+      }
+
+      draft.settings.keyboardShortcuts[keyboardShortcutAction] = keys;
 
       return draft;
     }

@@ -1,5 +1,3 @@
-"use client";
-
 import { ChatMessage } from "@/types/MainTypes";
 import { UserMessageHeader } from "./MessageHeaders.client";
 

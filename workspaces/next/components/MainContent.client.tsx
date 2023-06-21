@@ -3,13 +3,16 @@
 import type { MainState, MainStateAction } from "@/types/MainTypes";
 import { getInitialState, mainStateReducer } from "@/utils/mainStateUtils";
 import { useImmerReducer } from "use-immer";
-import { Settings } from "./Settings.client";
+import { Settings } from "./settings/Settings.client";
 // import { MainTabHeader } from "./Tabs.server";
-import { useStateFromLocalStorage } from "@/utils/hooks/randomHooks";
+import {
+  useKeyboardShortcuts,
+  useStateFromLocalStorage,
+} from "@/utils/hooks/randomHooks";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { useRef } from "react";
 import { MainGrid } from "./MainGrid.server";
-import { MainHeader } from "./MainHeader.client";
+import { MainHeader } from "./MainHeader.server";
 import { MainMenu } from "./menus/MainMenu.server";
 
 export const MainContent = () => {
@@ -22,6 +25,7 @@ export const MainContent = () => {
   >(mainStateReducer, getInitialState());
   // Get state from local storage. This is wrapped in a useEffect because of NextJS SSR stuff.
   useStateFromLocalStorage(mainStateDispatch);
+  useKeyboardShortcuts(mainState.settings.keyboardShortcuts, mainStateDispatch);
 
   return (
     // <div className={`h-screen w-screen grid ${tabGridClasses[activeMainTab]}`}>

@@ -1,8 +1,15 @@
 import { MainContext } from "@/components/MainProvider.client";
-import { MainStateDispatch, SiteTheme } from "@/types/MainTypes";
+import {
+  KeyboardShortcutAction,
+  MainStateDispatch,
+  SiteTheme,
+} from "@/types/MainTypes";
 import { useContext, useEffect, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
+import { HotkeysEvent } from "react-hotkeys-hook/dist/types";
 import { Socket, io } from "socket.io-client";
 import { WEBSOCKET_SERVER_PORT } from "../../../../shared/constants";
+import { keyboardShortcutsHandler } from "../keyboardShortcutUtils";
 import { defaultLayout, getLayoutFromLocalStorage } from "../layoutUtils";
 
 type UseThemeReturnType = {
@@ -63,4 +70,22 @@ export const useStateFromLocalStorage = (
       payload: { layout: localStorageLayout || defaultLayout },
     });
   }, [mainStateDispatch]);
+};
+
+export const useKeyboardShortcuts = (
+  keyboardShortcuts: Record<KeyboardShortcutAction, string>,
+  mainStateDispatch: MainStateDispatch
+) => {
+  useHotkeys(
+    Object.values(keyboardShortcuts), // The shortcut keys to press are the values of keyboardShortcuts.
+    (keyboardEvent: KeyboardEvent, hotkeysEvent: HotkeysEvent) => {
+      // Every time a valid keyboard shortcut is pressed, this is called.
+      keyboardShortcutsHandler(
+        hotkeysEvent,
+        keyboardShortcuts,
+        mainStateDispatch
+      );
+    },
+    [keyboardShortcuts]
+  );
 };

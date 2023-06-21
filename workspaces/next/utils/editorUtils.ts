@@ -1,4 +1,4 @@
-import type { GlobalEditorSettings, MainState } from "@/types/MainTypes";
+import type { EditorSettings, MainState } from "@/types/MainTypes";
 import { EditorState, Extension } from "@codemirror/state";
 import { langs } from "@uiw/codemirror-extensions-langs";
 import * as themes from "@uiw/codemirror-themes-all";
@@ -112,16 +112,16 @@ export const getLanguageFromFileName = (fileName: string): Language => {
 };
 
 export const getEditorThemeFromState = (
-  globalEditorSettings: GlobalEditorSettings
+  editorSettings: EditorSettings
 ): Extension => {
   for (const themeNameSingleWord of themeNamesSingleWord) {
-    if (themeNameSingleWord === globalEditorSettings.theme) {
+    if (themeNameSingleWord === editorSettings.theme) {
       return themes[themeNameSingleWord];
     }
   }
 
   // TODO: There are some missing, e.g. gruvbox-light.
-  switch (globalEditorSettings.theme) {
+  switch (editorSettings.theme) {
     case "duotone-dark":
       return themes.duotoneDark;
     case "duotone-light":
@@ -210,3 +210,58 @@ export const createNewEditorState = (
   fileEditor: ReactCodeMirrorRef,
   newEditorState: EditorState
 ) => {};
+
+export const replaceCurrentLineWithCode = (
+  fileEditor: ReactCodeMirrorRef,
+  code: string
+) => {
+  if (!fileEditor.view) {
+    throw new Error("File editor ref has no view.");
+  }
+
+  const currentLine = fileEditor.view.state.doc.lineAt(
+    fileEditor.view.state.selection.main.head
+  );
+
+  const lineStart = currentLine.from;
+  const lineEnd = currentLine.to;
+
+  fileEditor.view.dispatch({
+    changes: [
+      {
+        from: lineStart,
+        to: lineEnd,
+        insert: code,
+      },
+    ],
+  });
+};
+
+export const replaceCurrentSelectionWithCode = (
+  fileEditor: ReactCodeMirrorRef,
+  code: string
+) => {
+  if (!fileEditor.view) {
+    throw new Error("File editor ref has no view.");
+  }
+
+  const currentSelection = fileEditor.view.state.selection.main;
+
+  const selectionStart = currentSelection.from;
+  const selectionEnd = currentSelection.to;
+
+  if (selectionStart === selectionEnd) {
+    console.log("No selection to replace :(");
+    return;
+  }
+
+  fileEditor.view.dispatch({
+    changes: [
+      {
+        from: selectionStart,
+        to: selectionEnd,
+        insert: code,
+      },
+    ],
+  });
+};

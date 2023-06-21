@@ -8,8 +8,30 @@ import {
 } from "./extension";
 
 import { Prec } from "@codemirror/state";
-import { keymap } from "@codemirror/view";
+import { EditorView, keymap } from "@codemirror/view";
 import { InlineSuggestionConfig, inlineSuggestionConfig } from "./config";
+
+export const shortcutFetch = (view: EditorView) => {
+  console.log("Ctrl-Enter has been pressed.");
+
+  let fetchFn = view.state.facet(inlineSuggestionConfig).fetchFn;
+
+  fetchFn(view.state).then((llmResponse: string) => {
+    console.log(
+      "Ctrl-Enter's own fetchFn has resolved with value:",
+      llmResponse
+    );
+
+    view.dispatch({
+      effects: InlineSuggestionEffect.of({
+        text: llmResponse,
+        doc: view.state.doc,
+      }),
+    });
+  });
+
+  return true;
+};
 
 export const inlineSuggestionKeymap = Prec.highest(
   keymap.of([
@@ -39,27 +61,7 @@ export const inlineSuggestionKeymap = Prec.highest(
     },
     {
       key: "Ctrl-Enter",
-      run: (view) => {
-        console.log("Ctrl-Enter has been pressed.");
-
-        let fetchFn = view.state.facet(inlineSuggestionConfig).fetchFn;
-
-        fetchFn(view.state).then((llmResponse: string) => {
-          console.log(
-            "Ctrl-Enter's own fetchFn has resolved with value:",
-            llmResponse
-          );
-
-          view.dispatch({
-            effects: InlineSuggestionEffect.of({
-              text: llmResponse,
-              doc: view.state.doc,
-            }),
-          });
-        });
-
-        return true;
-      },
+      run: shortcutFetch,
     },
   ])
 );

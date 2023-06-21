@@ -27,6 +27,9 @@ import { ViewUpdate } from "@codemirror/view";
 
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 
+import { customKeymap } from "@/utils/codemirror/customKeymap/src";
+import { vim } from "@replit/codemirror-vim";
+
 const setPromptSuggestion = (
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>,
   selectedPrompt: PromptTemplate,
@@ -49,6 +52,7 @@ type FileEditorProps = {
   isFileEditorActive: boolean;
   lastLLMResponse: string;
   chatState: ChatState;
+  keyboardShortcuts: MainState["settings"]["keyboardShortcuts"];
 };
 
 export const FileEditor = ({
@@ -61,6 +65,7 @@ export const FileEditor = ({
   isFileEditorActive,
   lastLLMResponse,
   chatState,
+  keyboardShortcuts,
 }: FileEditorProps) => {
   const selectedFile = getCurrentlySelectedFile(explorerNodeMap);
   const selectedPrompt = getCurrentlySelectedPrompt(promptTemplateMap);
@@ -139,13 +144,15 @@ export const FileEditor = ({
       <CodeMirror
         ref={refCallack}
         value="console.log('hello world!');"
-        theme={getEditorThemeFromState(settings.globalEditorSettings)}
+        theme={getEditorThemeFromState(settings.editorSettings)}
         extensions={[
+          ...(settings.editorSettings.keyBindings === "vim" ? [vim()] : []),
           getEditorLanguageFromState(explorerNodeMap),
           inlineSuggestion({
             fetchFn: fetchCallback,
             mode: "manual",
           }),
+          customKeymap(keyboardShortcuts),
         ]}
         onChange={onChange}
         onUpdate={(viewUpdate: ViewUpdate) => {

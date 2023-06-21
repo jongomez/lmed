@@ -1,3 +1,5 @@
+"use client";
+
 import { MoreHorizontal } from "lucide-react";
 import { Dispatch, SetStateAction, useState } from "react";
 import { LLMMessageMenu } from "../menus/LLMMessageMenu.server";
@@ -10,6 +12,7 @@ export const UserMessageHeader = () => {
 
 export type LLMMessageHeaderProps = {
   setMessageMode: Dispatch<SetStateAction<"markdown" | "raw">>;
+  // messageMode: "markdown" | "raw";
 };
 
 export const LLMMessageHeader = ({ setMessageMode }: LLMMessageHeaderProps) => {
@@ -36,3 +39,35 @@ export const LLMMessageHeader = ({ setMessageMode }: LLMMessageHeaderProps) => {
     </div>
   );
 };
+
+/*
+
+export const LLMMessageHeader = ({
+  setMessageMode,
+  messageMode,
+}: LLMMessageHeaderProps) => {
+  const rawMarkdownClasses = "main-text-colors underline cursor-pointer mr-2 ";
+  return (
+    <div className="flex justify-between items-center">
+      <div className={headerClasses}>LLM:</div>
+      {messageMode === "markdown" ? (
+        <div
+          className={`${rawMarkdownClasses} hover-main-text-colors`}
+          onClick={() => setMessageMode("raw")}
+        >
+          Raw
+        </div>
+      ) : (
+        <div
+          className={`${rawMarkdownClasses} hover-main-text-colors`}
+          onClick={() => setMessageMode("markdown")}
+        >
+          Markdown
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+*/

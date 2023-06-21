@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+.main-text-white {
+  @apply text-slate-200;
+}
+
 .main-text-colors {
   @apply text-slate-700 dark:text-slate-200;
 }
@@ -55,9 +59,15 @@
   @apply focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-300;
 }
 
+.focus-border {
+  @apply border-2 focus:border-blue-600 dark:focus:border-blue-300;
+}
+
+/* 
 .cm-tooltip-autocomplete {
   color: pink !important;
   background-color: azure !important;
   overflow: scroll !important;
   text-overflow: unset !important;
-}
+} 
+*/

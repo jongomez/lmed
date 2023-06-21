@@ -1,4 +1,5 @@
 "use client";
+
 import { ReactNode, createContext, useEffect, useState } from "react";
 
 export type SiteTheme = "light" | "dark";

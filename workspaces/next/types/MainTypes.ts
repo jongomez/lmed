@@ -52,10 +52,11 @@ export type PromptEditorState = {
   allTabs: PromptTab[];
 };
 
-// These settings are shared between the file editor and the LLM prompt editor.
-export type GlobalEditorSettings = {
+// Codemirror editor settings.
+export type EditorSettings = {
   theme: EditorTheme;
   fontSize: number;
+  keyBindings: "vim" | "default";
 };
 
 export type LayoutState = {
@@ -72,9 +73,12 @@ export type HeaderItem =
   | "mainMenu"
   | "settings";
 
+export type KeyboardShortcutAction = "Save File" | "Get Inline Suggestion";
+
 export type MainState = {
   settings: {
-    globalEditorSettings: GlobalEditorSettings;
+    editorSettings: EditorSettings;
+    keyboardShortcuts: Record<KeyboardShortcutAction, string>;
     openAIAPIKey: string;
   };
   fileEditor: FileEditorState;
@@ -194,6 +198,17 @@ export type MainStateAction =
         abortController?: AbortController;
         errorMessage?: string;
         textAreaValue?: string;
+      };
+    }
+  | {
+      type: "SET_KEY_BINDINGS";
+      payload: EditorSettings["keyBindings"];
+    }
+  | {
+      type: "SET_KEYBOARD_SHORTCUT";
+      payload: {
+        keyboardShortcutAction: KeyboardShortcutAction;
+        keys: string;
       };
     };
 
