@@ -254,7 +254,7 @@ export const mainStateReducer = (
       return draft;
     }
 
-    case "SAVE_AS": {
+    case "SAVE_FILE_AS": {
       const { fileNode, fileHandle } = action.payload;
 
       const draftFileNode = getFileNode(draft.explorerNodeMap, fileNode.path);
@@ -269,6 +269,18 @@ export const mainStateReducer = (
         draftFileNode.parentDirectoryPath,
         draft.explorerNodeMap
       );
+
+      draftFileNode.isDirty = false;
+
+      return draft;
+    }
+
+    case "SAVE_FILE": {
+      const { fileNode } = action.payload;
+
+      const draftFileNode = getFileNode(draft.explorerNodeMap, fileNode.path);
+
+      draftFileNode.isDirty = false;
 
       return draft;
     }

@@ -1,16 +1,20 @@
 import { MainContext } from "@/components/MainProvider.client";
+import { MainState, MainStateDispatch, SiteTheme } from "@/types/MainTypes";
+import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import {
-  KeyboardShortcutAction,
-  MainStateDispatch,
-  SiteTheme,
-} from "@/types/MainTypes";
-import { useContext, useEffect, useState } from "react";
+  MutableRefObject,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { HotkeysEvent } from "react-hotkeys-hook/dist/types";
 import { Socket, io } from "socket.io-client";
 import { WEBSOCKET_SERVER_PORT } from "../../../../shared/constants";
 import { keyboardShortcutsHandler } from "../keyboardShortcutUtils";
 import { defaultLayout, getLayoutFromLocalStorage } from "../layoutUtils";
+import { saveFile } from "../mainMenuUtils";
 
 type UseThemeReturnType = {
   siteTheme: SiteTheme;
@@ -73,9 +77,19 @@ export const useStateFromLocalStorage = (
 };
 
 export const useKeyboardShortcuts = (
-  keyboardShortcuts: Record<KeyboardShortcutAction, string>,
-  mainStateDispatch: MainStateDispatch
+  mainState: MainState,
+  mainStateDispatch: MainStateDispatch,
+  fileEditorRef: MutableRefObject<ReactCodeMirrorRef>
 ) => {
+  const keyboardShortcuts = mainState.settings.keyboardShortcuts;
+  const explorerNodeMap = mainState.explorerNodeMap;
+
+  const saveFileCallback = useCallback(() => {
+    console.log("saveFileCallback");
+
+    saveFile(mainStateDispatch, explorerNodeMap, fileEditorRef);
+  }, [explorerNodeMap, fileEditorRef, mainStateDispatch]);
+
   useHotkeys(
     Object.values(keyboardShortcuts), // The shortcut keys to press are the values of keyboardShortcuts.
     (keyboardEvent: KeyboardEvent, hotkeysEvent: HotkeysEvent) => {
@@ -83,9 +97,15 @@ export const useKeyboardShortcuts = (
       keyboardShortcutsHandler(
         hotkeysEvent,
         keyboardShortcuts,
+        saveFileCallback,
         mainStateDispatch
       );
     },
-    [keyboardShortcuts]
+    {
+      preventDefault: true,
+      enableOnContentEditable: true,
+      enableOnFormTags: true,
+    },
+    [keyboardShortcuts, saveFileCallback]
   );
 };

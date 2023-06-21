@@ -150,10 +150,16 @@ export type MainStateAction =
       };
     }
   | {
-      type: "SAVE_AS";
+      type: "SAVE_FILE_AS";
       payload: {
         fileNode: FileNode;
         fileHandle: FileSystemFileHandle;
+      };
+    }
+  | {
+      type: "SAVE_FILE";
+      payload: {
+        fileNode: FileNode;
       };
     }
   | {

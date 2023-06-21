@@ -25,7 +25,7 @@ export const MainContent = () => {
   >(mainStateReducer, getInitialState());
   // Get state from local storage. This is wrapped in a useEffect because of NextJS SSR stuff.
   useStateFromLocalStorage(mainStateDispatch);
-  useKeyboardShortcuts(mainState.settings.keyboardShortcuts, mainStateDispatch);
+  useKeyboardShortcuts(mainState, mainStateDispatch, fileEditorRef);
 
   return (
     // <div className={`h-screen w-screen grid ${tabGridClasses[activeMainTab]}`}>

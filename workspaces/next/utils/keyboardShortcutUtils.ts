@@ -52,6 +52,7 @@ export const getShortcutAction = (
 export const keyboardShortcutsHandler = (
   hotkeysEvent: HotkeysEvent,
   keyboardShortcuts: Record<KeyboardShortcutAction, string>,
+  saveFileCallback: () => void,
   mainStateDispatch: MainStateDispatch
 ) => {
   // Whenever a keyboard shortcut is pressed, this is called.
@@ -59,6 +60,7 @@ export const keyboardShortcutsHandler = (
 
   switch (shortcutAction) {
     case "Save File":
+      saveFileCallback();
       break;
     case "Get Inline Suggestion":
       // This shortcut is handled by codemirror, so no need to do anything here.

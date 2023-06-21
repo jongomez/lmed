@@ -49,6 +49,7 @@ export const MainMenu = ({
       <MenuItem
         onClick={() => {
           createNewFile(mainStateDispatch, explorerNodeMap, fileEditorRef);
+          mainStateDispatch({ type: "TOGGLE_MAIN_MENU" });
         }}
       >
         <FilePlus size={iconSize} className={iconClasses} />
@@ -57,6 +58,7 @@ export const MainMenu = ({
       <MenuItem
         onClick={() => {
           openFile(mainStateDispatch, fileEditorRef, explorerNodeMap);
+          mainStateDispatch({ type: "TOGGLE_MAIN_MENU" });
         }}
       >
         <File size={iconSize} className={iconClasses} />
@@ -65,6 +67,7 @@ export const MainMenu = ({
       <MenuItem
         onClick={() => {
           openDirectory(mainStateDispatch, explorerNodeMap);
+          mainStateDispatch({ type: "TOGGLE_MAIN_MENU" });
         }}
       >
         <FolderOpen size={iconSize} className={iconClasses} />
@@ -72,32 +75,28 @@ export const MainMenu = ({
       </MenuItem>
       <MenuItem
         onClick={() => {
-          saveFile(
-            mainStateDispatch,
-            explorerNodeMap,
-            fileEditorState,
-            fileEditorRef
-          );
+          saveFile(mainStateDispatch, explorerNodeMap, fileEditorRef);
+          mainStateDispatch({ type: "TOGGLE_MAIN_MENU" });
         }}
       >
         <Save size={iconSize} className={iconClasses} />
         Save
       </MenuItem>
       <MenuItem
-        onClick={() =>
-          saveFileAs(
-            mainStateDispatch,
-            explorerNodeMap,
-            fileEditorState,
-            fileEditorRef
-          )
-        }
+        onClick={() => {
+          saveFileAs(mainStateDispatch, explorerNodeMap, fileEditorRef);
+          mainStateDispatch({ type: "TOGGLE_MAIN_MENU" });
+        }}
       >
         <Import size={iconSize} className={iconClasses} />
         Save As...
       </MenuItem>
       <a href="https://www.github.com" target="_blank" rel="noreferrer">
-        <MenuItem onClick={() => {}}>
+        <MenuItem
+          onClick={() => {
+            mainStateDispatch({ type: "TOGGLE_MAIN_MENU" });
+          }}
+        >
           <Github size={iconSize} className={iconClasses} />
           Github
         </MenuItem>

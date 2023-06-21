@@ -1,6 +1,5 @@
 import type {
   ExplorerNode,
-  FileEditorState,
   FileNode,
   MainState,
   MainStateDispatch,
@@ -99,7 +98,6 @@ export const openDirectory = async (
 export const saveFile = async (
   mainStateDispatch: MainStateDispatch,
   explorerNodeMap: MainState["explorerNodeMap"],
-  fileEditorState: FileEditorState,
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>
 ) => {
   const selectedFileNode = getCurrentlySelectedFile(explorerNodeMap);
@@ -112,12 +110,7 @@ export const saveFile = async (
 
   // If there's no fileHandle, call saveFileAs to save the file with a new name.
   if (!fileHandle) {
-    saveFileAs(
-      mainStateDispatch,
-      explorerNodeMap,
-      fileEditorState,
-      fileEditorRef
-    );
+    saveFileAs(mainStateDispatch, explorerNodeMap, fileEditorRef);
 
     return;
   }
@@ -128,8 +121,8 @@ export const saveFile = async (
 
   if (selectedFileNode.isDirty) {
     mainStateDispatch({
-      type: "UPDATE_FILE_IS_DIRTY",
-      payload: { fileNode: selectedFileNode, isDirty: false },
+      type: "SAVE_FILE",
+      payload: { fileNode: selectedFileNode },
     });
   }
 };
@@ -137,7 +130,6 @@ export const saveFile = async (
 export const saveFileAs = async (
   mainStateDispatch: MainStateDispatch,
   explorerNodeMap: MainState["explorerNodeMap"],
-  fileEditorState: FileEditorState,
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>
 ) => {
   const selectedFileNode = getCurrentlySelectedFile(explorerNodeMap);
@@ -168,16 +160,22 @@ export const saveFileAs = async (
     return;
   }
 
-  // Show a file save dialog and update fileHandle with the user-selected file.
-  const fileHandle = await window.showSaveFilePicker();
+  let fileHandle;
+  try {
+    // Show a file save dialog and update fileHandle with the user-selected file.
+    fileHandle = await window.showSaveFilePicker();
+  } catch (err) {
+    console.error("File save was cancelled by the user.");
+    return; // Return here if the user cancelled the file save.
+  }
 
   const writable = await fileHandle.createWritable();
   await writable.write(currentEditorViewState.doc.toString());
   await writable.close();
 
-  // Update state with the new fileHandle.
+  // Update the selected file node with it's new fileHandle.
   mainStateDispatch({
-    type: "SAVE_AS",
+    type: "SAVE_FILE_AS",
     payload: { fileNode: selectedFileNode, fileHandle },
   });
 };
