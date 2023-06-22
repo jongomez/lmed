@@ -11,11 +11,6 @@
     "test": "jest --watch"
   },
   "dependencies": {
-    "@codemirror/commands": "^6.2.4",
-    "@codemirror/language": "^6.8.0",
-    "@codemirror/search": "^6.5.0",
-    "@codemirror/state": "6.2.0",
-    "@codemirror/view": "6.13.2",
     "@replit/codemirror-vim": "^6.0.14",
     "@types/node": "^20.1.7",
     "@types/react": "18.2.6",
@@ -27,6 +22,7 @@
     "@uiw/react-codemirror": "^4.20.2",
     "autoprefixer": "^10.4.14",
     "bufferutil": "^4.0.7",
+    "codemirror": "^6.0.1",
     "eslint": "8.40.0",
     "eslint-config-next": "13.4.2",
     "eventsource-parser": "^1.0.0",

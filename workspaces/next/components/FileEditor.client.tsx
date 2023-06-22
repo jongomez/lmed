@@ -10,23 +10,17 @@ import {
   applyPromptTemplate,
   getCurrentlySelectedPrompt,
 } from "@/utils/chat/promptUtils";
-import {
-  getEditorLanguageFromState,
-  getEditorThemeFromState,
-} from "@/utils/editorUtils";
+import { inlineSuggestion } from "@/utils/codemirror/customInlineSuggestion/src";
+import { customKeymap } from "@/utils/codemirror/customKeymap/src";
+import { getEditorLanguageFromState } from "@/utils/editorUtils";
 import {
   SwitchToNewFileAnnotation,
   getCurrentlySelectedFile,
 } from "@/utils/fileUtils";
-
-import { inlineSuggestion } from "@/utils/codemirror/customInlineSuggestion/src";
 import { EditorState } from "@codemirror/state";
 import { ViewUpdate } from "@codemirror/view";
-
-import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
-
-import { customKeymap } from "@/utils/codemirror/customKeymap/src";
 import { vim } from "@replit/codemirror-vim";
+import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 
 const setPromptSuggestion = (
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>,
@@ -145,6 +139,7 @@ export const FileEditor = ({
         ref={refCallack}
         value="console.log('hello world!');"
         theme={getEditorThemeFromState(settings.editorSettings)}
+        // theme={githubDark}
         extensions={[
           ...(settings.editorSettings.keyBindings === "vim" ? [vim()] : []),
           getEditorLanguageFromState(explorerNodeMap),

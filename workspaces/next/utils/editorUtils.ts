@@ -71,9 +71,6 @@ const allThemeNames = [...themeNamesSingleWord, ...themeNamesMultipleWords];
 
 export type EditorTheme = (typeof allThemeNames)[number];
 
-export const keyboardHandlers = ["emacs", "vim", "vscode", "default"] as const;
-export type KeyboardHandler = (typeof keyboardHandlers)[number];
-
 export const getLanguageFromFileName = (fileName: string): Language => {
   const extension = fileName.split(".").pop();
 

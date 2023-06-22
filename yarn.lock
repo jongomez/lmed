@@ -459,7 +459,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/commands@npm:^6.0.0, @codemirror/commands@npm:^6.1.0, @codemirror/commands@npm:^6.2.4":
+"@codemirror/commands@npm:^6.0.0, @codemirror/commands@npm:^6.1.0":
   version: 6.2.4
   resolution: "@codemirror/commands@npm:6.2.4"
   dependencies:
@@ -736,20 +736,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/language@npm:^6.8.0":
-  version: 6.8.0
-  resolution: "@codemirror/language@npm:6.8.0"
-  dependencies:
-    "@codemirror/state": ^6.0.0
-    "@codemirror/view": ^6.0.0
-    "@lezer/common": ^1.0.0
-    "@lezer/highlight": ^1.0.0
-    "@lezer/lr": ^1.0.0
-    style-mod: ^4.0.0
-  checksum: 64408d996641931fa4c6b892e17ee1fdaee0f63d3d84c019a6ea7b1e6d1c774f92357b95c2ebaed60545062b795b72d0a058c03578b2bf4023c87726e97b5d2f
-  languageName: node
-  linkType: hard
-
 "@codemirror/legacy-modes@npm:^6.0.0, @codemirror/legacy-modes@npm:^6.1.0":
   version: 6.3.2
   resolution: "@codemirror/legacy-modes@npm:6.3.2"
@@ -781,18 +767,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/search@npm:^6.5.0":
-  version: 6.5.0
-  resolution: "@codemirror/search@npm:6.5.0"
-  dependencies:
-    "@codemirror/state": ^6.0.0
-    "@codemirror/view": ^6.0.0
-    crelt: ^1.0.5
-  checksum: 2e9f2344b7dbd4bad79058c105d8cbd02b2bf94c27495310f0e3b6e999010aa080dceea47ef46e35439cc9e131b47c46f7d2eda700ef491b5f2f34bbc8e145ab
-  languageName: node
-  linkType: hard
-
-"@codemirror/state@npm:6.2.0, @codemirror/state@npm:^6.0.0, @codemirror/state@npm:^6.1.1, @codemirror/state@npm:^6.1.4, @codemirror/state@npm:^6.2.0":
+"@codemirror/state@npm:^6.0.0, @codemirror/state@npm:^6.1.1, @codemirror/state@npm:^6.1.4, @codemirror/state@npm:^6.2.0":
   version: 6.2.0
   resolution: "@codemirror/state@npm:6.2.0"
   checksum: fdc99c773dc09c700dd02bf918f06132aa8d3069c262cc4eb6ca5c810ce24ae2d7e90719ae7630a8158fd263018de6d40bd78f312e6bfba754e737b64e6c6b3d
@@ -808,17 +783,6 @@ __metadata:
     "@codemirror/view": ^6.0.0
     "@lezer/highlight": ^1.0.0
   checksum: 29bc09f79534115f62658caf3d0db527fe347d058b69a8c7f580ae636827377aadd0606fd0d83dbab8d6f3b0a5df53d3253c619341b5fb93d2c8291a8efb9556
-  languageName: node
-  linkType: hard
-
-"@codemirror/view@npm:6.13.2":
-  version: 6.13.2
-  resolution: "@codemirror/view@npm:6.13.2"
-  dependencies:
-    "@codemirror/state": ^6.1.4
-    style-mod: ^4.0.0
-    w3c-keyname: ^2.2.4
-  checksum: db0d638fbbe2f9a832674f06512ca55cdb7576a265c01ab8a7b6715d2a50ddf53200f597637b146adebe1df51255fe5bd2d2c74cf1fa539b0434764c0550d3a5
   languageName: node
   linkType: hard
 
@@ -3280,7 +3244,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"codemirror@npm:^6.0.0":
+"codemirror@npm:^6.0.0, codemirror@npm:^6.0.1":
   version: 6.0.1
   resolution: "codemirror@npm:6.0.1"
   dependencies:
@@ -6399,11 +6363,6 @@ __metadata:
   resolution: "llmeditor-next@workspace:workspaces/next"
   dependencies:
     "@babel/core": ^7.22.5
-    "@codemirror/commands": ^6.2.4
-    "@codemirror/language": ^6.8.0
-    "@codemirror/search": ^6.5.0
-    "@codemirror/state": 6.2.0
-    "@codemirror/view": 6.13.2
     "@replit/codemirror-vim": ^6.0.14
     "@testing-library/jest-dom": ^5.16.5
     "@testing-library/react": ^14.0.0
@@ -6419,6 +6378,7 @@ __metadata:
     autoprefixer: ^10.4.14
     babel-jest: ^29.5.0
     bufferutil: ^4.0.7
+    codemirror: ^6.0.1
     eslint: 8.40.0
     eslint-config-next: 13.4.2
     eventsource-parser: ^1.0.0

@@ -1,4 +1,6 @@
-import { Extension } from "@codemirror/state";
+import { Extension, Prec } from "@codemirror/state";
+import { EditorView, keymap } from "@codemirror/view";
+import { InlineSuggestionConfig, inlineSuggestionConfig } from "./config";
 import {
   InlineSuggestionEffect,
   InlineSuggestionState,
@@ -7,10 +9,6 @@ import {
   insertCompletionText,
   renderInlineSuggestionPlugin,
 } from "./extension";
-
-import { Prec } from "@codemirror/state";
-import { EditorView, keymap } from "@codemirror/view";
-import { InlineSuggestionConfig, inlineSuggestionConfig } from "./config";
 
 export const shortcutFetch = (view: EditorView) => {
   console.log("Ctrl-Enter has been pressed.");
