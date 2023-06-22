@@ -6,7 +6,7 @@ import {
   InlineSuggestionState,
   automaticFetchSuggestion,
   clearInlineSuggestion,
-  insertCompletionText,
+  insertInlineSuggestionText,
   renderInlineSuggestionPlugin,
 } from "./extension";
 
@@ -41,17 +41,20 @@ export const inlineSuggestionKeymap = Prec.highest(
           InlineSuggestionState
         )?.suggestion;
 
+        const suggestionStartPos = view.state.field(
+          InlineSuggestionState
+        )?.startPos;
+
         // If there is no suggestion, do nothing and let the default keymap handle it.
-        if (!suggestionText) {
+        if (!suggestionText || suggestionStartPos === null) {
           return false;
         }
 
         view.dispatch({
-          ...insertCompletionText(
+          ...insertInlineSuggestionText(
             view.state,
             suggestionText,
-            view.state.selection.main.head,
-            view.state.selection.main.head
+            suggestionStartPos
           ),
         });
 
@@ -63,7 +66,7 @@ export const inlineSuggestionKeymap = Prec.highest(
       run: shortcutFetch,
     },
     {
-      key: "Esc",
+      key: "Escape",
       run: clearInlineSuggestion,
     },
   ])

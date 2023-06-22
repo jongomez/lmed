@@ -21,9 +21,10 @@ import { inlineSuggestionConfig } from "./config";
 // Current state of the autosuggestion. Basically holds the suggestion text.
 export const InlineSuggestionState = StateField.define<{
   suggestion: null | string;
+  startPos: null | number;
 }>({
   create() {
-    return { suggestion: null };
+    return { suggestion: null, startPos: null };
   },
 
   // tr is the transaction that represents the state change.
@@ -33,16 +34,44 @@ export const InlineSuggestionState = StateField.define<{
     );
 
     if (clearInlineSuggestion) {
-      return { suggestion: null };
+      return { suggestion: null, startPos: null };
     }
 
     const inlineSuggestion = tr.effects.find((e) =>
       e.is(InlineSuggestionEffect)
     );
 
+    const currentLineText = tr.state.doc.lineAt(
+      tr.state.selection.main.from
+    ).text;
+
+    // if (inlineSuggestion) {
+    //   debugger;
+    // }
+
     // If an inline suggestion is found and it corresponds to the current document.
     if (inlineSuggestion && tr.state.doc == inlineSuggestion.value.doc) {
-      return { suggestion: inlineSuggestion.value.text };
+      const leadingWhiteSpaceLen =
+        currentLineText.length - currentLineText.trimStart().length;
+
+      // Try to match the suggestion with existing text in the current line.
+      // e.g. suggestion is "Hello World!" and current line is "Hello" - start pos is at the end of "Hello"
+      let startPos = inlineSuggestion.value.text.indexOf(
+        currentLineText.trimStart()
+      );
+
+      if (startPos === -1) {
+        // If the suggestion is not a part of the current line, return suggestion with startPos as current cursor position
+        startPos = tr.state.selection.main.from;
+      } else {
+        // Adjust startPos to the global position in the document
+        const lineStartPos = tr.state.doc.lineAt(
+          tr.state.selection.main.from
+        ).from;
+        startPos += lineStartPos + leadingWhiteSpaceLen;
+      }
+
+      return { suggestion: inlineSuggestion.value.text, startPos: startPos };
     }
 
     // If the document hasn't changed, keep the previous suggestion.
@@ -50,8 +79,18 @@ export const InlineSuggestionState = StateField.define<{
       return value;
     }
 
+    const suggestionStart = value.suggestion?.startsWith(
+      currentLineText.trimStart()
+    );
+
+    // If the suggestion starts with what the user has typed in, don't reset the suggestion.
+    // e.g. the suggestion is "Hello World", and the user has typed in "Hello W" - don't clear suggestion.
+    if (suggestionStart) {
+      return value;
+    }
+
     // Otherwise, reset the suggestion.
-    return { suggestion: null };
+    return { suggestion: null, startPos: null };
   },
 });
 
@@ -62,15 +101,49 @@ export const InlineSuggestionEffect = StateEffect.define<{
 
 export const ClearInlineSuggestionEffect = StateEffect.define<null>();
 
-export function inlineSuggestionDecoration(view: EditorView, prefix: string) {
-  const pos = view.state.selection.main.head;
-  const widgets = [];
-  const w = Decoration.widget({
-    widget: new InlineSuggestionWidget(prefix),
+export function inlineSuggestionDecoration(
+  view: EditorView,
+  suggestionText: string,
+  suggestionStartPos: number
+) {
+  const currentCursorPos = view.state.selection.main.from;
+  //const currentCursorPos = view.state.selection.main.head;
+  const line = view.state.doc.lineAt(currentCursorPos);
+
+  // If the cursor is behind the start of the suggestion, clear the suggestion
+  if (currentCursorPos < suggestionStartPos) {
+    return Decoration.none;
+  }
+
+  // Add a check if the cursor is still in the same line as the suggestion
+  const suggestionLine = view.state.doc.lineAt(suggestionStartPos);
+  if (suggestionLine.number !== line.number) {
+    return Decoration.none;
+  }
+
+  // The alreadyTypedAmount tells us how much of the suggestion has already been typed.
+  const alreadyTypedAmount = currentCursorPos - suggestionStartPos;
+
+  if (alreadyTypedAmount >= suggestionText.length) {
+    // If the cursor is past the end of the suggestion, we no longer need to show the suggestion.
+    return Decoration.none;
+  }
+
+  const suggestionLeftToType = suggestionText.substring(alreadyTypedAmount);
+
+  const inlineSuggestion = Decoration.widget({
+    widget: new InlineSuggestionWidget(suggestionLeftToType),
     side: 1,
   });
-  widgets.push(w.range(pos));
-  return Decoration.set(widgets);
+
+  const adjustedSuggestionStartPos = suggestionStartPos + alreadyTypedAmount;
+
+  // console.log("suggestionText.length", suggestionText.length);
+  // console.log("suggestionLeftToType.length", suggestionLeftToType.length);
+  // console.log("suggestionLeftToType", suggestionLeftToType);
+  // console.log("adjustedSuggestionStartPos", adjustedSuggestionStartPos);
+
+  return Decoration.set([inlineSuggestion.range(adjustedSuggestionStartPos)]);
 }
 
 export class InlineSuggestionWidget extends WidgetType {
@@ -144,14 +217,19 @@ export const renderInlineSuggestionPlugin = ViewPlugin.fromClass(
         InlineSuggestionState
       )?.suggestion;
 
-      if (!suggestionText) {
+      const suggestionStartPosition = update.state.field(
+        InlineSuggestionState
+      )?.startPos;
+
+      if (!suggestionText || suggestionStartPosition === null) {
         this.decorations = Decoration.none;
         return;
       }
 
       this.decorations = inlineSuggestionDecoration(
         update.view,
-        suggestionText
+        suggestionText,
+        suggestionStartPosition
       );
     }
   },
@@ -160,34 +238,24 @@ export const renderInlineSuggestionPlugin = ViewPlugin.fromClass(
   }
 );
 
-export function insertCompletionText(
-  state: EditorState,
-  text: string,
-  from: number,
-  to: number
+// This is called when the insertion keymap shortcut is called (default is "Tab").
+// This is what replaces the suggestion with actual text. So this assumes a suggestion was already fetched.
+export function insertInlineSuggestionText(
+  state: EditorState, // The current editor state.
+  suggestionText: string, // The text to be inserted.
+  from: number // The position to start inserting the text.
 ): TransactionSpec {
-  return {
-    ...state.changeByRange((range) => {
-      if (range == state.selection.main)
-        return {
-          changes: { from: from, to: to, insert: text },
-          range: EditorSelection.cursor(from + text.length),
-        };
-      const len = to - from;
-      if (
-        !range.empty ||
-        (len &&
-          state.sliceDoc(range.from - len, range.from) !=
-            state.sliceDoc(from, to))
-      )
-        return { range };
-      return {
-        changes: { from: range.from - len, to: range.from, insert: text },
-        range: EditorSelection.cursor(range.from - len + text.length),
-      };
-    }),
-    userEvent: "input.complete",
-  };
+  // Create a new transaction from the state to make changes.
+  const tr = state.update({
+    // Insert the suggestion text at the 'from' position.
+    changes: { from: from, insert: suggestionText },
+    // Move the cursor to the end of the inserted suggestion.
+    selection: EditorSelection.cursor(from + suggestionText.length),
+    // Annotating this change as a user event of accepting an inline suggestion.
+    userEvent: "inlineSuggestionAccepted",
+  });
+
+  return tr;
 }
 
 export const clearInlineSuggestion: Command = (view: EditorView) => {

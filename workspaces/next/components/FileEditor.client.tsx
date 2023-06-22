@@ -12,7 +12,10 @@ import {
 } from "@/utils/chat/promptUtils";
 import { inlineSuggestion } from "@/utils/codemirror/customInlineSuggestion/src";
 import { customKeymap } from "@/utils/codemirror/customKeymap/src";
-import { getEditorLanguageFromState } from "@/utils/editorUtils";
+import {
+  getEditorLanguageFromState,
+  getEditorThemeFromState,
+} from "@/utils/editorUtils";
 import {
   SwitchToNewFileAnnotation,
   getCurrentlySelectedFile,
@@ -122,7 +125,7 @@ export const FileEditor = ({
       //   settings
       // );
 
-      return Promise.resolve("Testing testing");
+      return Promise.resolve("Testing\ntesting\ntestingggggg testing");
     },
     [mainStateDispatch, fileEditorRef, chatState, settings]
   );
