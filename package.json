@@ -13,5 +13,9 @@
   },
   "devDependencies": {
     "concurrently": "^8.0.1"
+  },
+  "packageManager": "yarn@3.6.0",
+  "dependencies": {
+    "node-gyp": "^9.4.0"
   }
 }

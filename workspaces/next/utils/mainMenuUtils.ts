@@ -161,6 +161,7 @@ export const saveFileAs = async (
   }
 
   let fileHandle;
+
   try {
     // Show a file save dialog and update fileHandle with the user-selected file.
     fileHandle = await window.showSaveFilePicker();

@@ -8,6 +8,7 @@ import {
   TransactionSpec,
 } from "@codemirror/state";
 import {
+  Command,
   Decoration,
   DecorationSet,
   EditorView,
@@ -27,6 +28,14 @@ export const InlineSuggestionState = StateField.define<{
 
   // tr is the transaction that represents the state change.
   update(value, tr: Transaction) {
+    const clearInlineSuggestion = tr.effects.find((e) =>
+      e.is(ClearInlineSuggestionEffect)
+    );
+
+    if (clearInlineSuggestion) {
+      return { suggestion: null };
+    }
+
     const inlineSuggestion = tr.effects.find((e) =>
       e.is(InlineSuggestionEffect)
     );
@@ -50,6 +59,8 @@ export const InlineSuggestionEffect = StateEffect.define<{
   text: string | null;
   doc: Text;
 }>();
+
+export const ClearInlineSuggestionEffect = StateEffect.define<null>();
 
 export function inlineSuggestionDecoration(view: EditorView, prefix: string) {
   const pos = view.state.selection.main.head;
@@ -178,3 +189,9 @@ export function insertCompletionText(
     userEvent: "input.complete",
   };
 }
+
+export const clearInlineSuggestion: Command = (view: EditorView) => {
+  view.dispatch({ effects: ClearInlineSuggestionEffect.of(null) });
+
+  return true;
+};

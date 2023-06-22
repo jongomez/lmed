@@ -3,6 +3,7 @@ import {
   InlineSuggestionEffect,
   InlineSuggestionState,
   automaticFetchSuggestion,
+  clearInlineSuggestion,
   insertCompletionText,
   renderInlineSuggestionPlugin,
 } from "./extension";
@@ -62,6 +63,10 @@ export const inlineSuggestionKeymap = Prec.highest(
     {
       key: "Ctrl-Enter",
       run: shortcutFetch,
+    },
+    {
+      key: "Esc",
+      run: clearInlineSuggestion,
     },
   ])
 );

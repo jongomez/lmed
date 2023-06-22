@@ -8,7 +8,6 @@ import {
   PromptTemplate,
   PromptTemplateMap,
   applyPromptTemplate,
-  defaultPromptTemplateMap,
   getCurrentlySelectedPrompt,
 } from "@/utils/chat/promptUtils";
 import {
@@ -20,7 +19,6 @@ import {
   getCurrentlySelectedFile,
 } from "@/utils/fileUtils";
 
-import { fetchInlineSuggestion } from "@/utils/chat/messageHandlingUtils";
 import { inlineSuggestion } from "@/utils/codemirror/customInlineSuggestion/src";
 import { EditorState } from "@codemirror/state";
 import { ViewUpdate } from "@codemirror/view";
@@ -122,13 +120,15 @@ export const FileEditor = ({
 
   const fetchCallback = useCallback(
     (editorState: EditorState) => {
-      return fetchInlineSuggestion(
-        mainStateDispatch,
-        fileEditorRef,
-        defaultPromptTemplateMap,
-        chatState,
-        settings
-      );
+      // return fetchInlineSuggestion(
+      //   mainStateDispatch,
+      //   fileEditorRef,
+      //   defaultPromptTemplateMap,
+      //   chatState,
+      //   settings
+      // );
+
+      return Promise.resolve("Testing testing");
     },
     [mainStateDispatch, fileEditorRef, chatState, settings]
   );
