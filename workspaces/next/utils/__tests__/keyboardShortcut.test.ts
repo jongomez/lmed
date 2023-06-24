@@ -42,7 +42,7 @@ describe("getShortcutAction", () => {
     expect(result).toBe("Save File");
   });
 
-  it.only("returns empty string for invalid shortcut", () => {
+  it("returns empty string for invalid shortcut", () => {
     const keyboardShortcuts: Record<string, string> = {
       "Save File": "ctrl+s",
     };

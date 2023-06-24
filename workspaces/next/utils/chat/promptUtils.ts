@@ -36,6 +36,7 @@ export const replaceCurrentSelection: PromptActionToken =
 const lineCompletionPrompt: PromptTemplate = {
   prompt: `Your task is to assist in writing a single, complete line of code.
 Respond using markdown and ensure to enclose your code within triple back ticks \`\`\`.
+Your response should contain the whole following line, plus what's missing:
 ${lineCompletionPlaceholder}
 `,
   action: `${replaceCurrentLine}`,

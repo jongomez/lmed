@@ -83,12 +83,9 @@ export const getCompletionSources = (
       return loadingCompletionResult;
     }
 
-    debugger;
     //
     ////
     ////// Case 2: The currently selected line does not match lastLLMResponse, meaning there's no valid completion.
-    console.log("lastLLMResponse", lastLLMResponse);
-    debugger;
     // if (!lastLLMResponse.includes(lineText.trim())) {
     if (!lastLLMResponse) {
       const lineCompletionPrompt = applyPromptTemplate(
