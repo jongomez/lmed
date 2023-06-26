@@ -1,4 +1,5 @@
 import { MainState, MainStateDispatch } from "@/types/MainTypes";
+import { useSocket, useTerminalAvailability } from "@/utils/hooks/randomHooks";
 import { Delta } from "@/utils/hooks/useDrag";
 import { getMainGridStyles } from "@/utils/layoutUtils";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
@@ -6,8 +7,9 @@ import { MutableRefObject } from "react";
 import { Explorer } from "./Explorer.client";
 import { FileEditor } from "./FileEditor.client";
 import { ResizeHandle } from "./ResizeHandle.client";
-import { MyTerminal } from "./Terminal.client";
 import { Chat } from "./chat/Chat.client";
+import { MyTerminal } from "./terminal/MyTerminal.client";
+import { TerminalNotAvailable } from "./terminal/TerminalNotAvailable.server";
 
 type MainGridProps = {
   mainState: MainState;
@@ -31,6 +33,12 @@ export const MainGrid = ({
     chatClassNames,
     resizeHandleInitialSize,
   } = getMainGridStyles(mainState.layout);
+
+  // Socket is not part of the mainState because I was getting some immer type errors.
+  // Likely due to the complexity of the socket object.
+  const socket = useSocket();
+  const { isSocketConnected, isDevelopment, isTerminalMode } =
+    useTerminalAvailability(socket);
 
   return (
     <div style={mainGridStyle} className="bg-main-colors">
@@ -82,11 +90,21 @@ export const MainGrid = ({
         keyboardShortcuts={mainState.settings.keyboardShortcuts}
       />
 
-      <MyTerminal
-        isTerminalActive={mainState.activeHeaderItems.terminal}
-        className={terminalClassNames}
-        layoutState={mainState.layout}
-      />
+      {isSocketConnected && isDevelopment && isTerminalMode ? (
+        <MyTerminal
+          isTerminalActive={mainState.activeHeaderItems.terminal}
+          className={terminalClassNames}
+          layoutState={mainState.layout}
+          socket={socket}
+        />
+      ) : (
+        <TerminalNotAvailable
+          isTerminalActive={mainState.activeHeaderItems.terminal}
+          isSocketConnected={isSocketConnected}
+          isDevelopment={isDevelopment}
+          isTerminalMode={isTerminalMode}
+        />
+      )}
     </div>
   );
 };

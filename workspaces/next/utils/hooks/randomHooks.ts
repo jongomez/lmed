@@ -51,6 +51,10 @@ export const useSocket = (): Socket | null => {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
+    if (process && process.env.NEXT_PUBLIC_TERMINAL_MODE !== "true") {
+      return;
+    }
+
     // Connect to the websocket server.
     const ioSocket = io(`http://localhost:${WEBSOCKET_SERVER_PORT}`);
     setSocket(ioSocket);
@@ -108,4 +112,36 @@ export const useKeyboardShortcuts = (
     },
     [keyboardShortcuts, saveFileCallback]
   );
+};
+
+type TerminalAvailability = {
+  isSocketConnected: boolean;
+  isDevelopment: boolean;
+  isTerminalMode: boolean;
+};
+
+export const useTerminalAvailability = (
+  socket: Socket | null
+): TerminalAvailability => {
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
+  const [isDevelopment, setIsDevelopment] = useState(false);
+  const [isTerminalMode, setIsTerminalMode] = useState(false);
+
+  const socketConnected = socket?.connected;
+
+  useEffect(() => {
+    if (process && process.env.NODE_ENV === "development") {
+      setIsDevelopment(true);
+    }
+
+    if (process && process.env.NEXT_PUBLIC_TERMINAL_MODE === "true") {
+      setIsTerminalMode(true);
+    }
+
+    if (socketConnected) {
+      setIsSocketConnected(true);
+    }
+  }, [socketConnected]);
+
+  return { isSocketConnected, isDevelopment, isTerminalMode };
 };

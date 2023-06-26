@@ -75,7 +75,7 @@ describe("state and decoration tests", () => {
     expect(decoration!.textContent).toBe(", world!");
   });
 
-  it.only("partially complete multiline suggestion - should display partial multiline suggestion", () => {
+  it("partially complete multiline suggestion - should display partial multiline suggestion", () => {
     // Replace the entire content with 'Hello'
     view.dispatch({
       changes: { from: 0, to: view.state.doc.length, insert: "Hello" },
@@ -90,9 +90,8 @@ describe("state and decoration tests", () => {
     // Now there should be a decoration with the remaining part of the suggestion text
     let decoration = view.dom.querySelector(".cm-inline-suggestion");
 
-    console.log(decoration);
-
-    console.log(decoration?.textContent);
+    // console.log(decoration);
+    // console.log(decoration?.textContent);
 
     expect(decoration).not.toBeNull();
     expect(decoration!.textContent).toBe(

@@ -6428,7 +6428,6 @@ __metadata:
   resolution: "llmeditor@workspace:."
   dependencies:
     concurrently: ^8.0.1
-    node-gyp: ^9.4.0
   languageName: unknown
   linkType: soft
 
@@ -7234,7 +7233,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-gyp@npm:^9.4.0, node-gyp@npm:latest":
+"node-gyp@npm:latest":
   version: 9.4.0
   resolution: "node-gyp@npm:9.4.0"
   dependencies:

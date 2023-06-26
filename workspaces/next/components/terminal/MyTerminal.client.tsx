@@ -1,7 +1,6 @@
 "use client";
 
 import { LayoutState } from "@/types/MainTypes";
-import { useSocket } from "@/utils/hooks/randomHooks";
 import { MutableRefObject, useEffect, useRef } from "react";
 import { Socket } from "socket.io-client";
 import type { Terminal as TerminalType } from "xterm";
@@ -23,6 +22,7 @@ type MyTerminalProps = {
   isTerminalActive: boolean;
   className: string;
   layoutState: LayoutState;
+  socket: Socket | null;
 };
 
 const initTerminal = async (
@@ -58,9 +58,8 @@ export const MyTerminal = ({
   isTerminalActive,
   className,
   layoutState,
+  socket,
 }: MyTerminalProps) => {
-  // Socket is not part of the mainState because I was getting some immer type errors.
-  const socket = useSocket();
   const fitAddonRef = useRef<FitAddonType>(null);
   const xtermRef = useRef<HTMLDivElement>(null);
   const hasInitTerminal = useRef(false);
@@ -97,7 +96,7 @@ export const MyTerminal = ({
   return (
     <div
       // HACK: use position absolute with top: -999999px to hide the terminal. Using display: none made the
-      // fit addon not work: the terminal internal renderer is not able to calculate some necessary dimensions stuff.
+      // fit addon not work: the terminal internal renderer is not able to calculate some necessary dimension stuff.
       className={`
         ${isTerminalActive ? "" : "absolute top-[-999999px]"} 
         ${className}

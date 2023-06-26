@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { getSuggestionStartPosition } from "../src/utils";
 
-describe.only("getSuggestionStartPosition function", () => {
+describe("getSuggestionStartPosition function", () => {
   it("Should return null when the suggestion text is null or undefined", () => {
     const inlineSuggestion = { text: null, startPos: 0, startLine: 0 };
     const currentLineText = "Hello World";

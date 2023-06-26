@@ -1,9 +1,9 @@
-import { createServer } from "http";
-import express from "express";
-import { Server, Socket } from "socket.io";
-import { spawn, IPty } from "node-pty";
-import { WEBSOCKET_SERVER_PORT } from "../../shared/constants";
 import cors from "cors";
+import express from "express";
+import { createServer } from "http";
+import { IPty, spawn } from "node-pty";
+import { Server, Socket } from "socket.io";
+import { WEBSOCKET_SERVER_PORT } from "../../shared/constants";
 
 function filterEnv(env: NodeJS.ProcessEnv): { [key: string]: string } {
   const filteredEnv: { [key: string]: string } = {};

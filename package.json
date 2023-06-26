@@ -9,13 +9,11 @@
   "scripts": {
     "next": "yarn workspace llmeditor-next",
     "ws": "yarn workspace llmeditor-websocket-server",
-    "dev": "concurrently \"yarn next dev\" \"yarn ws start\""
+    "dev": "yarn next dev",
+    "dev-terminal": "NEXT_PUBLIC_TERMINAL_MODE=true concurrently \"yarn next dev\" \"yarn ws start\""
   },
   "devDependencies": {
     "concurrently": "^8.0.1"
   },
-  "packageManager": "yarn@3.6.0",
-  "dependencies": {
-    "node-gyp": "^9.4.0"
-  }
+  "packageManager": "yarn@3.6.0"
 }
