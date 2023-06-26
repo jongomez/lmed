@@ -11,7 +11,7 @@ import {
 import { useHotkeys } from "react-hotkeys-hook";
 import { HotkeysEvent } from "react-hotkeys-hook/dist/types";
 import { Socket, io } from "socket.io-client";
-import { WEBSOCKET_SERVER_PORT } from "../../../../shared/constants";
+import { WEBSOCKET_SERVER_PORT } from "../../shared/constants";
 import { keyboardShortcutsHandler } from "../keyboardShortcutUtils";
 import { defaultLayout, getLayoutFromLocalStorage } from "../layoutUtils";
 import { saveFile } from "../mainMenuUtils";
