@@ -124,9 +124,11 @@ export const addToExplorerNodeMap = (
   node: ExplorerNode
 ) => {
   if (explorerNodeMap.has(node.path)) {
-    throw new Error(
+    console.warn(
       "Node already exists in explorerNodeMap. Node path: " + node.path
     );
+
+    return;
   }
 
   explorerNodeMap.set(node.path, node);

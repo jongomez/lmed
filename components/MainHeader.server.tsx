@@ -26,12 +26,15 @@ export const MainHeader = ({
     <div
       className="flex justify-between z-30 w-screen h-[42px]
   border-b-2 border-innactive-colors bg-main-colors"
+      data-testid="main-header"
     >
-      <div className="flex">
+      <div className="flex ">
         <TabsOnTheLeft
           activeHeaderItems={activeHeaderItems}
           mainStateDispatch={mainStateDispatch}
         />
+      </div>
+      <div className="flex mr-auto overflow-x-auto overflow-y-hidden">
         <FileEditorTabs
           isEditorShowing={activeHeaderItems.fileEditor}
           fileEditorState={fileEditorState}
@@ -40,7 +43,7 @@ export const MainHeader = ({
           fileEditorRef={fileEditorRef}
         />
       </div>
-      <div>
+      <div className="flex">
         <TabsOnTheRight
           activeHeaderItems={activeHeaderItems}
           mainStateDispatch={mainStateDispatch}

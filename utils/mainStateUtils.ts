@@ -96,9 +96,13 @@ export const mainStateReducer = (
   switch (action.type) {
     case "OPEN_FILE": {
       const { newNode, fileEditor } = action.payload;
-      addToExplorerNodeMap(draft.explorerNodeMap, newNode);
 
-      // TODO: Save current tab's editor state to the fileNode.
+      addToExplorerNodeMap(draft.explorerNodeMap, newNode);
+      const draftFileNode = getFileNode(draft.explorerNodeMap, newNode.path);
+
+      switchSelectedFile(draft.explorerNodeMap, draftFileNode.path, fileEditor);
+
+      draft.fileEditor.openFilePaths.push(draftFileNode.path);
 
       return draft;
     }
@@ -237,9 +241,38 @@ export const mainStateReducer = (
     case "CLOSE_FILE": {
       const { fileNode, fileEditor } = action.payload;
 
-      // TODO:
+      if (draft.fileEditor.openFilePaths.length === 1) {
+        console.log("Can't close last open file at the moment.");
+        return draft;
+      }
 
-      // Gotta check if file is dirty. Maybe check befor dispatching this action?
+      const draftFileNode = getFileNode(draft.explorerNodeMap, fileNode.path);
+
+      // Remove the closed tab file from the openFilePaths array.
+      draft.fileEditor.openFilePaths = draft.fileEditor.openFilePaths.filter(
+        (filePath) => filePath !== fileNode.path
+      );
+
+      draftFileNode.openInTab = false;
+
+      // If the closed tab was the currently active tab - switch to another tab.
+      if (draftFileNode.selected) {
+        draftFileNode.selected = false;
+
+        const filePathToSwitchTo = draft.fileEditor.openFilePaths.find(
+          (filePath) => filePath !== fileNode.path
+        );
+
+        if (!filePathToSwitchTo) {
+          throw new Error("CLOSE_FILE - filePathToSwitchTo is undefined");
+        }
+
+        switchSelectedFile(
+          draft.explorerNodeMap,
+          filePathToSwitchTo,
+          fileEditor
+        );
+      }
 
       return draft;
     }

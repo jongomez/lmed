@@ -90,7 +90,10 @@ export const ChatTextArea = ({
       { role: "assistant", content: "Hey, how's it going?" },
       {
         role: "assistant",
-        content: "```console.log('heyy')```",
+        content: "```\nconsole.log('heyy')\n```",
+        // content: "```console.log('heyy')```",
+        // content:
+        //   'You can achieve this by first rendering the component that contains the `Tab` component, and then querying for all the `Tab` components using `getAllByRole` with the `role` set to `"tab"`. You can then check if the length of the resulting array is greater than or equal to 3. Here\'s an example:\n\n```\nimport { render } from "@testing-library/react";\n\nit("renders at least 3 open tabs", () => {\n  const { getAllByRole } = render(<TabsComponent />);\n  const tabs = getAllByRole("tab");\n  expect(tabs.length).toBeGreaterThanOrEqual(3);\n});\n```\n\nNote that you\'ll need to replace `TabsComponent` with the actual component that contains the `Tab` component.',
       },
     ];
 
@@ -231,6 +234,7 @@ export const Chat = ({
         <ChatErrors
           errorMessage={chatState.errorMessage}
           charCount={chatState.charCount}
+          mainStateDispatch={mainStateDispatch}
         />
       </div>
     </div>

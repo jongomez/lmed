@@ -21,6 +21,25 @@ import {
 
 // XXX: Move the below functions to a separate file.
 
+export const createFileNodeFromFile = (
+  file: File,
+  fileHandle: FileSystemFileHandle,
+  explorerNodeMap: MainState["explorerNodeMap"],
+  serializedEditorState: string
+): FileNode => {
+  return {
+    name: file.name,
+    type: "file",
+    selected: false,
+    language: getLanguageFromFileName(file.name),
+    serializedEditorState,
+    openInTab: true,
+    path: createPath(file.name, undefined, explorerNodeMap),
+    fileHandle,
+    isDirty: false,
+  };
+};
+
 export const openFile = async (
   mainStateDispatch: MainStateDispatch,
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>,
@@ -28,22 +47,18 @@ export const openFile = async (
 ) => {
   const [fileHandle] = await window.showOpenFilePicker();
   const file = await fileHandle.getFile();
+
   const fileContent = await file.text();
   const editorStateForFile = EditorState.create({ doc: fileContent });
 
   // XXX: Check if file is already open. If yes, show a message.
 
-  const newNode: FileNode = {
-    name: file.name,
-    type: "file",
-    selected: false,
-    language: getLanguageFromFileName(file.name),
-    serializedEditorState: editorStateForFile.toJSON(),
-    openInTab: true,
-    path: createPath(file.name, undefined, explorerNodeMap),
+  const newNode = createFileNodeFromFile(
+    file,
     fileHandle,
-    isDirty: false,
-  };
+    explorerNodeMap,
+    editorStateForFile.toJSON()
+  );
 
   // File will be inserted as a child of the root.
   mainStateDispatch({

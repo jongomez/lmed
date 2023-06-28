@@ -14,7 +14,7 @@ import {
 } from "./promptUtils";
 
 const CHAT_MESSAGES_URL = "/api";
-const OPENAI_TIMEOUT_MILLISECONDS = 5_000;
+const OPENAI_TIMEOUT_MILLISECONDS = 10_000;
 export const MAX_CHARS = 999_999;
 
 export type ChatServerResponse =
@@ -127,14 +127,14 @@ export const sendPostRequestWithMultipleMessages = async (
 
   if (chatState.isLoadingMessage && chatState.abortController) {
     console.log("Aborting previous request.");
-    chatState.abortController.abort();
+    chatState.abortController.abort("New request sent - aborting previous.");
   }
 
   try {
     const abortController = new AbortController();
     const timeoutId = setTimeout(() => {
       console.log("Request took too long. Aborting.");
-      abortController.abort();
+      abortController.abort("Request took too long. Aborting.");
     }, OPENAI_TIMEOUT_MILLISECONDS);
 
     mainStateDispatch({
@@ -170,8 +170,14 @@ export const sendPostRequestWithMultipleMessages = async (
     finalLLMMessage = await handleLLMResponse(response, mainStateDispatch);
   } catch (error) {
     errorMessage = "Error: something went wrong.";
+
     if (error instanceof Error) {
-      errorMessage = error.message;
+      if (error.message.includes("abort")) {
+        errorMessage =
+          "Request aborted due to timeout. This could be due to an incorrect OpenAI API key or internet connectivity issues.";
+      } else {
+        errorMessage = error.message;
+      }
     }
   }
 
@@ -221,6 +227,10 @@ export const fetchInlineSuggestion = async (
     chatState,
     settings
   );
+
+  // Mock llmResponses:
+  // const llmResponse =
+  //   '```typescript\ncase "James":\n  console.log("James");\n  break;\n```';
 
   const codeBlocks = extractCodeBlocksFromMarkdown(llmResponse);
 

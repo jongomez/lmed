@@ -2,11 +2,11 @@
 // https://nextjs.org/docs/pages/building-your-application/optimizing/testing#setting-up-jest-with-babel
 
 const esModules = [
-  "mdast[^/]+",
-  "micromark",
-  "micromark[^/]+",
-  "unist[^/]+",
-  "remark-parse",
+  "mdast[^/]*",
+  "micromark[^/]*",
+  "unist[^/]*",
+  "remark[^/]*",
+  "react[^/]*",
   "unified",
   "bail",
   "trough",
@@ -14,6 +14,11 @@ const esModules = [
   "vfile-message",
   "is-plain-obj",
   "decode-named-character-reference",
+  "trim-lines",
+  "property-information",
+  "hast-util-whitespace",
+  "space-separated-tokens",
+  "comma-separated-tokens",
 ];
 
 module.exports = {
@@ -41,8 +46,8 @@ module.exports = {
     // https://jestjs.io/docs/webpack#handling-static-assets
     "^.+\\.(png|jpg|jpeg|gif|webp|avif|ico|bmp|svg)$/i": `<rootDir>/__mocks__/fileMock.js`,
 
-    // Handle module aliases
-    "^@/components/(.*)$": "<rootDir>/components/$1",
+    // Handle alias imports
+    "^@/(.*)$": "<rootDir>/$1",
   },
   // Add more setup options before each test is run
   // setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
@@ -57,4 +62,5 @@ module.exports = {
     `/node_modules/(?!(${esModules.join("|")})/)`,
     "^.+\\.module\\.(css|sass|scss)$",
   ],
+  setupFiles: ["jest-canvas-mock", "<rootDir>/setupTests.js"],
 };

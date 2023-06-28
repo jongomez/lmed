@@ -36,7 +36,6 @@ export const replaceCurrentSelection: PromptActionToken =
 const lineCompletionPrompt: PromptTemplate = {
   prompt: `Your task is to assist in writing a single, complete line of code.
 Respond using markdown and ensure to enclose your code within triple back ticks \`\`\`.
-Your response should contain the whole following line, plus what's missing:
 ${lineCompletionPlaceholder}
 `,
   action: `${replaceCurrentLine}`,
@@ -204,14 +203,14 @@ export const getCodeForLineCompletionPrompt = (
   }
 
   if (codeAfterCursor.trim()) {
-    finalPrompt += `Code after:\n${codeBeforeCursor}\n`;
+    finalPrompt += `Code after:\n${codeAfterCursor}\n`;
   }
 
   const currentLine = fileEditor.view.state.doc.lineAt(cursorPos);
 
   if (currentLine.text.trim()) {
     // If we have something to show for the current line - ask the LLM to complete it.
-    finalPrompt += `Generate a complete line of code that can replace the following line:\n${currentLine.text}`;
+    finalPrompt += `Your response should contain the whole following line, plus what's missing:\n${currentLine.text}`;
   } else {
     // If we don't have anything to show for the current line - ask the LLM to create something.
     finalPrompt += "Given the context, create a new line of code.";

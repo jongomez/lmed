@@ -100,6 +100,7 @@ export const TabsOnTheLeft = ({
         }}
         isActive={activeHeaderItems.mainMenu}
         // className={`${isMainMenuOpen ? "z-50" : ""}`}
+        data-testid="main-menu"
       >
         <MenuIcon size={iconSize} />
       </Tab>
@@ -201,11 +202,12 @@ export const FileEditorTabs = ({
             }
             key={index}
             isActive={fileNode.selected}
-            className={`${
-              isEditorShowing ? "" : "hidden"
-            } flex justify-center items-center ${
-              fileNode.isDirty ? "font-bold italic" : ""
-            }`}
+            className={`whitespace-nowrap 
+              ${isEditorShowing ? "" : "hidden"} 
+              flex justify-center items-center 
+              ${fileNode.isDirty ? "font-bold italic" : ""}
+            `}
+            role="file-tab"
           >
             {fileNode.name}
             <X
@@ -213,13 +215,24 @@ export const FileEditorTabs = ({
               className="ml-2 hover-main-text-colors hover:stroke-[3px]"
               onClick={(e) => {
                 e.stopPropagation();
-                mainStateDispatch({
-                  type: "CLOSE_FILE",
-                  payload: {
-                    fileNode: fileNode,
-                    fileEditor: fileEditorRef.current,
-                  },
-                });
+
+                if (fileEditorState.openFilePaths.length === 1) {
+                  console.log("Can't close last tab");
+                  return;
+                }
+
+                if (
+                  !fileNode.isDirty ||
+                  confirm("File is dirty. Still want to close tab?") == true
+                ) {
+                  mainStateDispatch({
+                    type: "CLOSE_FILE",
+                    payload: {
+                      fileNode: fileNode,
+                      fileEditor: fileEditorRef.current,
+                    },
+                  });
+                }
               }}
             />
           </Tab>

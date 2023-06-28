@@ -45,7 +45,7 @@ export const TerminalNotAvailable = ({
               target="_blank"
               className="underline"
             >
-              install node-pty's dependencies.
+              install node-pty&apos;s dependencies.
             </A>
           </P>
         </>

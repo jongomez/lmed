@@ -5,6 +5,7 @@ import {
   OpenAIStreamPayload,
   streamMock,
 } from "@/utils/backendUtils";
+import { MISSING_KEY_ERROR_MESSAGE } from "@/utils/constants";
 import { NextResponse } from "next/server";
 import { dummyBotMessages } from "./dummyResponses";
 
@@ -21,10 +22,10 @@ export const POST = async (req: Request) => {
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY || keys[0];
 
   if (!OPENAI_API_KEY) {
-    console.error("Missing OpenAI API key");
+    console.error(MISSING_KEY_ERROR_MESSAGE);
     return NextResponse.json(
       {
-        error: "Missing OpenAI API key.",
+        error: MISSING_KEY_ERROR_MESSAGE,
       },
       { status: 500 }
     );

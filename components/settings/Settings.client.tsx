@@ -116,7 +116,11 @@ export const Settings = ({
       <SettingsSection title="LLM Settings">
         <div className="flex flex-col space-y-4">
           <div>
-            <form>
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+              }}
+            >
               <label htmlFor="OpenAIAPIKey">OpenAI API Key</label>
               <input
                 type="password"
@@ -134,8 +138,8 @@ export const Settings = ({
           <div className="text-red-500">
             WARNING - Setting an API key here is not recommended. If your
             browser is compromised, attackers can potentially steal your API
-            key. The recommended way to use this is to clone the github repo
-            locally and set your API key in a .env.local file.
+            key. It&apos;s safer to clone the github repo locally and set your
+            API key in a .env.local file.
           </div>
         </div>
       </SettingsSection>

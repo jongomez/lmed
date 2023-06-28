@@ -4,10 +4,12 @@ import CodeMirror from "@uiw/react-codemirror";
 import { MutableRefObject, useCallback, useEffect } from "react";
 
 import { ChatState, MainState, MainStateDispatch } from "@/types/MainTypes";
+import { fetchInlineSuggestion } from "@/utils/chat/messageHandlingUtils";
 import {
   PromptTemplate,
   PromptTemplateMap,
   applyPromptTemplate,
+  defaultPromptTemplateMap,
   getCurrentlySelectedPrompt,
 } from "@/utils/chat/promptUtils";
 import { inlineSuggestion } from "@/utils/codemirror/customInlineSuggestion/src";
@@ -117,15 +119,15 @@ export const FileEditor = ({
 
   const fetchCallback = useCallback(
     (editorState: EditorState) => {
-      // return fetchInlineSuggestion(
-      //   mainStateDispatch,
-      //   fileEditorRef,
-      //   defaultPromptTemplateMap,
-      //   chatState,
-      //   settings
-      // );
-
-      return Promise.resolve("Testing\ntesting\ntestingggggg testing");
+      return fetchInlineSuggestion(
+        mainStateDispatch,
+        fileEditorRef,
+        defaultPromptTemplateMap,
+        chatState,
+        settings
+      );
+      // Mock inline suggestion responses:
+      // return Promise.resolve("Testing\ntesting\ntestingggggg testing");
     },
     [mainStateDispatch, fileEditorRef, chatState, settings]
   );

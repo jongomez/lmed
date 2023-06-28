@@ -1,4 +1,6 @@
+import { MainStateDispatch } from "@/types/MainTypes";
 import { MAX_CHARS } from "@/utils/chat/messageHandlingUtils";
+import { MISSING_KEY_ERROR_MESSAGE } from "@/utils/constants";
 import { ReactNode } from "react";
 
 type ChatErrorTextComponentProps = {
@@ -12,9 +14,28 @@ const ChatErrorTextComponent = ({ children }: ChatErrorTextComponentProps) => {
 type ChatErrorsProps = {
   errorMessage: string;
   charCount: number;
+  mainStateDispatch: MainStateDispatch;
 };
 
-export const ChatErrors = ({ errorMessage, charCount }: ChatErrorsProps) => {
+export const ChatErrors = ({
+  errorMessage,
+  charCount,
+  mainStateDispatch,
+}: ChatErrorsProps) => {
+  if (errorMessage === MISSING_KEY_ERROR_MESSAGE) {
+    return (
+      <ChatErrorTextComponent>
+        {MISSING_KEY_ERROR_MESSAGE} You can{" "}
+        <span
+          className="underline cursor-pointer"
+          onClick={() => mainStateDispatch({ type: "TOGGLE_SETTINGS" })}
+        >
+          set it in the settings.
+        </span>
+      </ChatErrorTextComponent>
+    );
+  }
+
   if (errorMessage) {
     return <ChatErrorTextComponent>{errorMessage}</ChatErrorTextComponent>;
   }

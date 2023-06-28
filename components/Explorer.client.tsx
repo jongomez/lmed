@@ -201,6 +201,7 @@ export const Explorer = ({
               openFile(mainStateDispatch, fileEditorRef, explorerNodeMap)
             }
             className={buttonClasses}
+            data-testid="open-file"
           >
             <File size={iconSize} className={iconClasses} />
             Open File

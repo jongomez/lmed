@@ -1,6 +1,6 @@
 {
-  "name": "llmeditor-next",
-  "description": "Next.js code for the llmeditor project",
+  "name": "lmed",
+  "description": "Llm based code editor",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -58,6 +58,7 @@
     "concurrently": "^8.0.1",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^29.5.0",
+    "jest-canvas-mock": "^2.5.1",
     "jest-environment-jsdom": "^29.5.0",
     "ts-jest": "^29.1.0"
   },

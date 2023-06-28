@@ -4,7 +4,7 @@ import "xterm/css/xterm.css";
 import "./globals.css";
 
 export const metadata = {
-  title: "llmeditor",
+  title: "lmed",
   description: "Llm based code editor",
 };
 

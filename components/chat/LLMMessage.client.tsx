@@ -46,6 +46,15 @@ export const LLMMessage = ({
                 className || ""
               );
 
+              // If the code is meant to be inline, return a simple span.
+              if (inline) {
+                return (
+                  <span {...props} className="font-bold">
+                    `{children}`
+                  </span>
+                );
+              }
+
               return (
                 <>
                   <CodeBlockHeader

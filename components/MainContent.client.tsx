@@ -1,8 +1,7 @@
 "use client";
 
-import type { MainState, MainStateAction } from "@/types/MainTypes";
-import { getInitialState, mainStateReducer } from "@/utils/mainStateUtils";
-import { useImmerReducer } from "use-immer";
+import type { MainState, MainStateDispatch } from "@/types/MainTypes";
+
 import { Settings } from "./settings/Settings.client";
 // import { MainTabHeader } from "./Tabs.server";
 import {
@@ -15,14 +14,19 @@ import { MainGrid } from "./MainGrid.server";
 import { MainHeader } from "./MainHeader.server";
 import { MainMenu } from "./menus/MainMenu.server";
 
-export const MainContent = () => {
+type MainContentProps = {
+  mainState: MainState;
+  mainStateDispatch: MainStateDispatch;
+};
+
+export const MainContent = ({
+  mainState,
+  mainStateDispatch,
+}: MainContentProps) => {
   // The following ReactCodeMirrorRef is a fairly complex object. I think immer doesn't like it.
   // The ref is also mutable, so putting it in state or context is probably not a great idea.
   const fileEditorRef = useRef<ReactCodeMirrorRef>({});
-  const [mainState, mainStateDispatch] = useImmerReducer<
-    MainState,
-    MainStateAction
-  >(mainStateReducer, getInitialState());
+
   // Get state from local storage. This is wrapped in a useEffect because of NextJS SSR stuff.
   useStateFromLocalStorage(mainStateDispatch);
   useKeyboardShortcuts(mainState, mainStateDispatch, fileEditorRef);
