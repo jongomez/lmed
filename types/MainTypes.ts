@@ -228,7 +228,6 @@ export type MainStateReducer = (
 export type ChatMessage = {
   role: "user" | "system" | "assistant";
   content: string;
-  // origin?: "chat" | "codemirror"; // pressing ctrl-space on the codemirror editor will send a message to the chat.
 };
 
 export type ChatState = {
