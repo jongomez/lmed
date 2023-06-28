@@ -57,6 +57,31 @@ const ChatMessages = memo(function ChatMessages({
   );
 });
 
+const useDummyMessage = (mainStateDispatch: MainStateDispatch) => {
+  // For debugging purposes - show and initial chat message.
+  // A useEffect is used to prevent hydration errors.
+  useEffect(() => {
+    const dummyInitialMessages: ChatMessage[] = [
+      { role: "assistant", content: "Hey, how's it going?" },
+      {
+        role: "assistant",
+        content: "```\nconsole.log('heyy')\n```",
+        // content: "```console.log('heyy')```",
+        // content:
+        //   'You can achieve this by first rendering the component that contains the `Tab` component, and then querying for all the `Tab` components using `getAllByRole` with the `role` set to `"tab"`. You can then check if the length of the resulting array is greater than or equal to 3. Here\'s an example:\n\n```\nimport { render } from "@testing-library/react";\n\nit("renders at least 3 open tabs", () => {\n  const { getAllByRole } = render(<TabsComponent />);\n  const tabs = getAllByRole("tab");\n  expect(tabs.length).toBeGreaterThanOrEqual(3);\n});\n```\n\nNote that you\'ll need to replace `TabsComponent` with the actual component that contains the `Tab` component.',
+      },
+    ];
+
+    mainStateDispatch({
+      type: "UPDATE_CHAT_STATE",
+      payload: {
+        newMessage: dummyInitialMessages[1],
+        isLoadingMessage: false,
+      },
+    });
+  }, [mainStateDispatch]);
+};
+
 type ChatTextAreProps = {
   mainStateDispatch: MainStateDispatch;
   chatState: ChatState;
@@ -83,28 +108,7 @@ export const ChatTextArea = ({
     }
   }, [textAreaRef, promptSuggestion]);
 
-  // For debugging purposes - show and initial chat message.
-  // A useEffect is used to prevent hydration errors.
-  useEffect(() => {
-    const dummyInitialMessages: ChatMessage[] = [
-      { role: "assistant", content: "Hey, how's it going?" },
-      {
-        role: "assistant",
-        content: "```\nconsole.log('heyy')\n```",
-        // content: "```console.log('heyy')```",
-        // content:
-        //   'You can achieve this by first rendering the component that contains the `Tab` component, and then querying for all the `Tab` components using `getAllByRole` with the `role` set to `"tab"`. You can then check if the length of the resulting array is greater than or equal to 3. Here\'s an example:\n\n```\nimport { render } from "@testing-library/react";\n\nit("renders at least 3 open tabs", () => {\n  const { getAllByRole } = render(<TabsComponent />);\n  const tabs = getAllByRole("tab");\n  expect(tabs.length).toBeGreaterThanOrEqual(3);\n});\n```\n\nNote that you\'ll need to replace `TabsComponent` with the actual component that contains the `Tab` component.',
-      },
-    ];
-
-    mainStateDispatch({
-      type: "UPDATE_CHAT_STATE",
-      payload: {
-        newMessage: dummyInitialMessages[1],
-        isLoadingMessage: false,
-      },
-    });
-  }, [mainStateDispatch]);
+  // useDummyMessage(mainStateDispatch);
 
   return (
     <div

@@ -138,8 +138,15 @@ export const Settings = ({
           <div className="text-red-500">
             WARNING - Setting an API key here is not recommended. If your
             browser is compromised, attackers can potentially steal your API
-            key. It&apos;s safer to clone the github repo locally and set your
-            API key in a .env.local file.
+            key. It&apos;s safer to{" "}
+            <a
+              href="https://github.com/jongomez/lmed"
+              className="underline"
+              target="_blank"
+            >
+              clone the github repo
+            </a>{" "}
+            locally and set your API key in a .env.local file.
           </div>
         </div>
       </SettingsSection>

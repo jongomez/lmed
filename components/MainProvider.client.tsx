@@ -35,16 +35,6 @@ export const MainProvider = ({ children }: MainProviderProps) => {
 
     if (localStorageTheme) {
       setSiteTheme(localStorageTheme);
-    } else if (
-      window?.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-    ) {
-      setSiteTheme("dark");
-    } else if (
-      window?.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: light)").matches
-    ) {
-      setSiteTheme("light");
     } else {
       setSiteTheme("dark");
     }

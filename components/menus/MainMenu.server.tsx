@@ -91,7 +91,11 @@ export const MainMenu = ({
         <Import size={iconSize} className={iconClasses} />
         Save As...
       </MenuItem>
-      <a href="https://www.github.com" target="_blank" rel="noreferrer">
+      <a
+        href="https://github.com/jongomez/lmed"
+        target="_blank"
+        rel="noreferrer"
+      >
         <MenuItem
           onClick={() => {
             mainStateDispatch({ type: "TOGGLE_MAIN_MENU" });
