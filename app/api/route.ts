@@ -1,5 +1,3 @@
-// Inspired by: https://github.com/Nutlope/twitterbio/
-
 import {
   OpenAIStream,
   OpenAIStreamPayload,
@@ -12,9 +10,7 @@ import { dummyBotMessages } from "./dummyResponses";
 const MAX_REQUEST_BODY_LENGTH = 999_999;
 const USE_DUMMY_MESSAGES = false;
 
-export const config = {
-  runtime: "edge",
-};
+export const runtime = "edge";
 
 export const POST = async (req: Request) => {
   const { messages, keys } = await req.json();
