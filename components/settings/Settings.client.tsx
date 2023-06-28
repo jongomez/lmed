@@ -136,9 +136,9 @@ export const Settings = ({
           </div>
 
           <div className="text-red-500">
-            WARNING - Setting an API key here is not recommended. If your
-            browser is compromised, attackers can potentially steal your API
-            key. It&apos;s safer to{" "}
+            WARNING - Setting an API key here is risky - if your browser is
+            compromised, attackers can potentially steal your API key. It&apos;s
+            safer to{" "}
             <a
               href="https://github.com/jongomez/lmed"
               className="underline"

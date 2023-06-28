@@ -25,12 +25,12 @@ export const ChatErrors = ({
   if (errorMessage === MISSING_KEY_ERROR_MESSAGE) {
     return (
       <ChatErrorTextComponent>
-        {MISSING_KEY_ERROR_MESSAGE} You can{" "}
+        {MISSING_KEY_ERROR_MESSAGE}{" "}
         <span
           className="underline cursor-pointer"
           onClick={() => mainStateDispatch({ type: "TOGGLE_SETTINGS" })}
         >
-          set it in the settings.
+          Check the settings for more info.
         </span>
       </ChatErrorTextComponent>
     );
