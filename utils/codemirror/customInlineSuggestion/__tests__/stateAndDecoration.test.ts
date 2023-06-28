@@ -11,6 +11,17 @@ const fetchCallback = (editorState: EditorState): Promise<string> => {
   return Promise.resolve(suggestionText);
 };
 
+export const getTestEditorView = (): EditorView => {
+  return new EditorView({
+    state: EditorState.create({
+      extensions: inlineSuggestion({
+        fetchFn: fetchCallback,
+        mode: "manual",
+      }),
+    }),
+  });
+};
+
 const dispatchInlineSuggestionEffect = (
   view: EditorView,
   suggestionTextOverride?: string
@@ -29,14 +40,7 @@ describe("state and decoration tests", () => {
 
   beforeEach(() => {
     // Create an editor view with the plugin.
-    view = new EditorView({
-      state: EditorState.create({
-        extensions: inlineSuggestion({
-          fetchFn: fetchCallback,
-          mode: "manual",
-        }),
-      }),
-    });
+    view = getTestEditorView();
 
     // Initially, there should be no decorations
     expect(view.dom.querySelector(".cm-inline-suggestion")).toBeNull();

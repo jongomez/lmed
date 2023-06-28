@@ -32,7 +32,7 @@ const mockFilePicking = (
   return { file, fileHandle };
 };
 
-describe.only("open file", () => {
+describe("open file", () => {
   it("should open a file", async () => {
     const fileContents = "Hello World!";
     const filename = "test.txt";

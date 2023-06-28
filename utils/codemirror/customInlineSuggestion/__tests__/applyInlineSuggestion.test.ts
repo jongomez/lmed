@@ -1,4 +1,3 @@
-import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import { describe, expect, it } from "@jest/globals";
 
@@ -7,16 +6,25 @@ import {
   InlineSuggestionState,
   insertInlineSuggestionText,
 } from "../src/extension";
+import { getTestEditorView } from "./stateAndDecoration.test";
 
 // TODO: More tests please.
 
-describe("applyInlineSuggestion", () => {
-  it("should insert suggestion text at the cursor", () => {
-    // Create an editor view
-    let view = new EditorView({ state: EditorState.create() });
+describe.only("applyInlineSuggestion", () => {
+  let view: EditorView;
 
+  beforeEach(() => {
+    // Create an editor view with the plugin.
+    view = getTestEditorView();
+
+    // Initially, there should be no decorations
+    expect(view.dom.querySelector(".cm-inline-suggestion")).toBeNull();
+  });
+
+  it("should insert suggestion text at the cursor", () => {
     // Dispatch an effect with the suggestion text
     const suggestionText = "Hello, world!";
+
     view.dispatch({
       effects: InlineSuggestionEffect.of({
         text: suggestionText,
