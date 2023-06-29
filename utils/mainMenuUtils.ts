@@ -45,7 +45,15 @@ export const openFile = async (
   fileEditorRef: MutableRefObject<ReactCodeMirrorRef>,
   explorerNodeMap: MainState["explorerNodeMap"]
 ) => {
-  const [fileHandle] = await window.showOpenFilePicker();
+  let fileHandle: FileSystemFileHandle;
+
+  try {
+    [fileHandle] = await window.showOpenFilePicker();
+  } catch (err) {
+    console.error("showOpenFilePicker was cancelled by the user.");
+    return;
+  }
+
   const file = await fileHandle.getFile();
 
   const fileContent = await file.text();
@@ -74,7 +82,15 @@ export const openDirectory = async (
   mainStateDispatch: MainStateDispatch,
   explorerNodeMap: MainState["explorerNodeMap"]
 ) => {
-  const dirHandle = await window.showDirectoryPicker();
+  let dirHandle: FileSystemDirectoryHandle;
+
+  try {
+    dirHandle = await window.showDirectoryPicker();
+  } catch (err) {
+    console.error("showDirectoryPicker was cancelled by the user.");
+    return;
+  }
+
   const parentDirectoryNode = createDirectoryNode(
     dirHandle,
     undefined,

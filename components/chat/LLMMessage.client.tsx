@@ -90,7 +90,7 @@ export const LLMMessage = ({
           {message.content}
         </ReactMarkdown>
       ) : (
-        <pre className="main-text-colors overflow-auto">
+        <pre className="main-text-colors overflow-auto px-[10px]">
           {message.content.replace(/\n/g, "\\n")}
         </pre>
       )}

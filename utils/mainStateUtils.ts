@@ -19,6 +19,7 @@ import {
   getFileNode,
 } from "./explorerUtils";
 import { createEmptyFileInMemory, switchSelectedFile } from "./fileUtils";
+import { updateMapKeys } from "./javascriptUtils";
 import { defaultLayout, setLayoutInLocalStorage } from "./layoutUtils";
 
 // Not sure if this is necessary.
@@ -289,21 +290,35 @@ export const mainStateReducer = (
 
     case "SAVE_FILE_AS": {
       const { fileNode, fileHandle } = action.payload;
+      const oldPath = fileNode.path;
 
       const draftFileNode = getFileNode(draft.explorerNodeMap, fileNode.path);
 
       draftFileNode.fileHandle = fileHandle;
       draftFileNode.name = fileHandle.name;
+      draftFileNode.isDirty = false;
 
       // FIXME: This won't work if users save file in a new directory.
       // A possible solution would be to refresh the explorer nodes.
-      draftFileNode.path = createPath(
+      const newPath = createPath(
         fileHandle.name,
         draftFileNode.parentDirectoryPath,
         draft.explorerNodeMap
       );
 
-      draftFileNode.isDirty = false;
+      draftFileNode.path = newPath;
+
+      draft.explorerNodeMap = updateMapKeys(
+        draft.explorerNodeMap,
+        oldPath,
+        newPath
+      );
+
+      draft.fileEditor.openFilePaths = draft.fileEditor.openFilePaths.filter(
+        (filePath) => filePath !== oldPath
+      );
+
+      draft.fileEditor.openFilePaths.push(newPath);
 
       return draft;
     }

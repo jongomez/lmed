@@ -9,7 +9,7 @@ export const createEmptyFileInMemory = (
   explorerNodeMap: MainState["explorerNodeMap"]
 ): FileNode => {
   const hasWindow = typeof window !== "undefined";
-  const emptyFileContent = "hello world";
+  const emptyFileContent = "";
   const emptyFileEditorState = EditorState.create({ doc: emptyFileContent });
   // Get unique new file name.
   let newFileNameIndex = 1;
