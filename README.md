@@ -11,3 +11,7 @@ Browser based code editor with chat UI and code autocompletion - [https://lmed.i
 
 1. Install the dependencies: `yarn install`
 2. Run the development server: `yarn dev`
+
+## Beta Status
+
+This project is currently in Beta. Any help identifying bugs would be greatly appreciated.
