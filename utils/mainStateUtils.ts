@@ -258,8 +258,6 @@ export const mainStateReducer = (
 
       // If the closed tab was the currently active tab - switch to another tab.
       if (draftFileNode.selected) {
-        draftFileNode.selected = false;
-
         const filePathToSwitchTo = draft.fileEditor.openFilePaths.find(
           (filePath) => filePath !== fileNode.path
         );
@@ -273,6 +271,11 @@ export const mainStateReducer = (
           filePathToSwitchTo,
           fileEditor
         );
+
+        // This has to be done after switchSelectedFile, because switchSelectedFile
+        // calls getCurrentlySelectedFile. If we set selected to false before calling
+        // switchSelectedFile, there won't be a currently selected file.
+        draftFileNode.selected = false;
       }
 
       return draft;
