@@ -4,7 +4,7 @@ Browser based code editor with chat UI and code autocompletion - [https://lmed.i
 
 1. **Chat UI** - Easy access language model chat interface.
 2. **Automatic code completion** - basic copilot-like functionality. Press ctrl+enter to trigger.
-3. **File System Access API** - This feature allows you to open files from your local PC and save them in the browser. These files are saved on your local file system. Please be aware that this functionality is not be supported by all browsers.
+3. **File System Access API** - This feature allows you to open files from your local PC and save them in the browser. These files are saved on your local file system. Please be aware that this functionality is not supported by all browsers.
 4. **Terminal** - only available locally.
 
 ## How to run locally
