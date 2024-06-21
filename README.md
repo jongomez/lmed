@@ -1,4 +1,4 @@
-Browser based code editor with chat UI and code autocompletion - [lmed]([https://www.lmed.io](https://lmed-j4nypgsvl-jongomez.vercel.app/).
+Browser based code editor with chat UI and code autocompletion - [lmed](https://lmed-j4nypgsvl-jongomez.vercel.app/).
 
 ## Features
 
